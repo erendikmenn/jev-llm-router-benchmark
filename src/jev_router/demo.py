@@ -81,5 +81,9 @@ def handler_factory(config: AppConfig):
 def serve(config: AppConfig, host: str, port: int) -> None:
     server = ThreadingHTTPServer((host, port), handler_factory(config))
     print(f"Demo: http://{host}:{port} (Ctrl-C to stop)")
-    server.serve_forever()
-
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        print("\nDemo stopped.")
+    finally:
+        server.server_close()
