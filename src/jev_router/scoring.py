@@ -8,6 +8,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+from decimal import Decimal, InvalidOperation
 from pathlib import Path
 from typing import Any
 
@@ -38,7 +39,28 @@ def score_output(task: Task, output: str) -> float:
         return sum(actual.get(key) == value for key, value in expected.items()) / len(expected)
     if task.metric == "python_tests":
         return _score_python(task, output)
+    if task.metric == "choice_exact":
+        expected = str(task.expected).strip().upper()
+        cleaned = output.strip().upper()
+        direct = re.fullmatch(r"[\s\(\[\{]*([A-D])[\s\.\)\]\}:;!]*", cleaned)
+        if direct:
+            return float(direct.group(1) == expected)
+        explicit = re.search(r"(?:ANSWER|OPTION|CHOICE)\s*(?:IS|:)?\s*[\(\[]?([A-D])\b", cleaned)
+        return float(bool(explicit and explicit.group(1) == expected))
+    if task.metric == "numeric_exact":
+        return float(_numeric_value(output) == _numeric_value(str(task.expected)))
     raise ValueError(f"unknown metric: {task.metric}")
+
+
+def _numeric_value(value: str) -> Decimal | None:
+    normalized = value.replace("−", "-").replace("–", "-")
+    matches = re.findall(r"[-+]?\d[\d,]*(?:\.\d+)?", normalized)
+    if not matches:
+        return None
+    try:
+        return Decimal(matches[-1].replace(",", ""))
+    except InvalidOperation:
+        return None
 
 
 def _score_python(task: Task, output: str) -> float:

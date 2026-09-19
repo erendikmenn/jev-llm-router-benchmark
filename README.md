@@ -6,6 +6,8 @@ Bu repo bir RAG projesi değildir ve başka ErenAILab projelerinden bağımsızd
 
 Repo 40 görevlik fixture pilotuna ek olarak OpenRouter üzerinden `typesafe/jev-1.13`, `openai/gpt-5.6-luna` ve `openai/gpt-5.6-sol` ile kontrollü canlı smoke akışını destekler. Canlı smoke 8–12 görev, concurrency=1 ve kısa çıktı bütçesiyle sınırlandırılır.
 
+Ayrıca dört resmî İngilizce benchmark ailesinden 200 dev + 1.000 kilitli test örneği hazırlayan yeniden üretilebilir veri betiği ve ayrıntılı canlı analiz akışı vardır. Üçüncü taraf sorular repoya commitlenmez; kaynak revision'ları, örnekleme tohumu ve veri hash'i kaydedilir.
+
 ## Mimari
 
 ```text
@@ -67,6 +69,19 @@ uv run jev-router estimate --data data/live_smoke_v1.jsonl --split test
 uv run jev-router benchmark --data data/live_smoke_v1.jsonl --mode live \
   --threshold 0.58 --output results/openrouter-smoke-20260919
 
+# Büyük İngilizce benchmark verisini hazırla (Global-MMLU, Belebele, GSM8K, ARC-Challenge)
+uv sync --extra dev --extra data
+uv run python scripts/build_public_benchmark.py
+
+# Önce 200 dev, sonra dev'de dondurulan eşikle 1.000 test
+uv run jev-router benchmark --data data/public_benchmark_en_v1.jsonl --mode live \
+  --split dev --threshold 0.58 --max-usd 1.0 --output results/live-en-dev
+uv run python scripts/analyze_live_results.py results/live-en-dev --dev-only
+uv run jev-router benchmark --data data/public_benchmark_en_v1.jsonl --mode live \
+  --split test --threshold 0.02 --max-usd 4.0 --output results/live-en-test
+uv run python scripts/analyze_live_results.py results/live-en-test \
+  --calibration-results results/live-en-dev
+
 # Yerel demo
 uv run jev-router demo --port 8765
 ```
@@ -78,6 +93,12 @@ uv run jev-router demo --port 8765
 10 sentetik TR/EN görevde OpenRouter üzerinden 20 hedef model ve 10 Jev çağrısı çalıştı. Hata/fallback olmadı; tüm çağrılarda provider usage/cost ve streaming TTFT alındı. Sol kalite 1.00, Luna 0.70, Jev yolu 0.90 oldu. Jev yolu Sol'a göre %36.1 daha düşük politika maliyeti gösterdi, fakat 10 yüzde puanı kalite kaybıyla önceden tanımlı 2 puan hedefini karşılamadı. Gerçek benzersiz çağrı harcaması $0.009566 idi.
 
 Tam Türkçe rapor ve ham artefaktlar: [`results/openrouter-smoke-20260919/REPORT_TR.md`](results/openrouter-smoke-20260919/REPORT_TR.md).
+
+## 1.000 soruluk İngilizce canlı benchmark — 2026-09-19
+
+200 ayrı dev sorusunda eşik `0.02` olarak seçilip testten önce donduruldu. 1.000 kilitli testte Sol %94.2, Luna %83.9 ve Jev yolu %89.7 doğruluk verdi. Jev %19.2 Sol kullandı ve Sol politikasına göre %62.3 maliyet tasarrufu gösterdi; ancak 4.5 yüzde puan kalite kaybıyla önceden tanımlı 2 puan hedefini geçemedi. Jev, aynı Sol kullanım oranındaki rastgele router'dan 3.9 puan daha iyi olsa da p50 uçtan uca gecikmesi routing ek yükü nedeniyle Sol'dan daha yüksekti. Kalibrasyon + test için 3.600 çağrının gerçek ledger harcaması `$0.458076` oldu.
+
+Ayrıntılı rapor: [`results/openrouter-en-test-1000-20260919/DETAILED_REPORT_TR.md`](results/openrouter-en-test-1000-20260919/DETAILED_REPORT_TR.md).
 
 ## Anahtar ve gizlilik
 
@@ -113,6 +134,7 @@ Kod MIT lisanslıdır. İncelenen RouteLLM commit'i `0b64fdafe049e596a3f5657c219
 ## Sınırlar
 
 - 10 görevlik canlı smoke gerçek erişimi ve ölçüm tesisatını doğrular, fakat üretim kalitesi veya istatistiksel non-inferiority kanıtı değildir.
+- 1.000 soruluk İngilizce sonuç Türkçe trafiğe veya açık uçlu üretim görevlerine doğrudan genellenemez; dört aile de otomatik ve nesnel puanlanan görevlerdir.
 - 40 sentetik görev 2 yüzde puanlık non-inferiority iddiası için yetersizdir.
 - Yerel kod evaluator'ü ayrı süreç/resource sınırları yanında macOS `sandbox-exec` veya Linux Bubblewrap ile ağı kapatır ve backend yoksa fail-closed durur. Güvenilmeyen public benchmark çıktıları için yine de tek-kullanımlık container/VM savunma katmanı önerilir.
 - Açık uçlu kalite için kör, sıra dengeli judge + insan denetimi henüz canlı veri olmadığı için koşulmamıştır.

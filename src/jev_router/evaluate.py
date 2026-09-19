@@ -123,7 +123,42 @@ def run_measurement(
         result = generator.generate(request, selected)
     except ProviderError as exc:
         if selected != "cheap":
-            raise
+            failed_usage = Usage(
+                input_tokens=sum(item.usage.input_tokens for item in exc.attempts),
+                cached_input_tokens=sum(item.usage.cached_input_tokens for item in exc.attempts),
+                output_tokens=sum(item.usage.output_tokens for item in exc.attempts),
+            )
+            if failed_usage.input_tokens or failed_usage.output_tokens:
+                total_target_cost = usage_cost(failed_usage, config.strong)
+            else:
+                total_target_cost = estimate_request_cost(
+                    task.prompt, request.max_output_tokens, config.strong
+                )
+            if not exc.cached:
+                ledger.add(total_target_cost)
+            target_latency = sum(item.latency_ms for item in exc.attempts)
+            return Measurement(
+                run_id=run_id, mode=mode, baseline=baseline, task_id=task.id,
+                split=task.split, language=task.language, group=task.group,
+                selected_role="strong", selected_model=config.strong.model_id,
+                quality=0.0, target_cost_usd=total_target_cost,
+                router_cost_usd=router_cost,
+                total_cost_usd=total_target_cost + router_cost,
+                latency_ms=router_latency + target_latency,
+                router_latency_ms=router_latency, target_latency_ms=target_latency,
+                ttft_ms=None, fallback=False,
+                error=f"strong_{exc.kind};failed_attempt_cost_estimated_if_usage_missing",
+                route_rule=decision.rule, output_text="",
+                usage=failed_usage.__dict__, router_usage=router_usage.__dict__,
+                target_cost_source="calculated_from_usage",
+                router_cost_source=router_cost_source,
+                router_generation_id=router_generation_id,
+                router_provider=router_provider,
+                jev_choice=decision.jev.selected if decision.jev else None,
+                jev_strong_probability=decision.strong_probability,
+                jev_confidence=decision.confidence,
+                jev_task_type=decision.task_type,
+            )
         fallback = True
         failed_attempts = exc.attempts or (None,)
         for attempt in failed_attempts:
@@ -222,14 +257,18 @@ def run_benchmark(
     ledger = BudgetLedger(max_budget_usd)
     if mode == "live":
         generator = CachedGeneratorProvider(generator)
-    jev_decisions = {task.id: jev_router(task, config, jev, threshold) for task in tasks}
+    jev_decisions = {}
+    for index, task in enumerate(tasks, 1):
+        jev_decisions[task.id] = jev_router(task, config, jev, threshold)
+        if index == 1 or index % 25 == 0 or index == len(tasks):
+            print(f"[progress] Jev {index}/{len(tasks)}", flush=True)
     strong_rate = sum(
         decision.selected == "strong" for decision in jev_decisions.values()
     ) / max(1, len(tasks))
     baselines = ["always_strong", "always_cheap", "rule", "random_matched", "jev"]
     measurements: list[Measurement] = []
     for baseline in baselines:
-        for task in tasks:
+        for index, task in enumerate(tasks, 1):
             if baseline == "always_strong":
                 decision = fixed_router(task, "strong", config)
             elif baseline == "always_cheap":
@@ -243,6 +282,11 @@ def run_benchmark(
             measurements.append(
                 run_measurement(run_id, mode, baseline, task, decision, generator, config, ledger)
             )
+            if index == 1 or index % 25 == 0 or index == len(tasks):
+                print(
+                    f"[progress] {baseline} {index}/{len(tasks)} ledger=${ledger.spent_usd:.6f}",
+                    flush=True,
+                )
     summary = summarize(measurements, int(config.experiment["seed"]))
     summary["run"] = {
         "run_id": run_id,

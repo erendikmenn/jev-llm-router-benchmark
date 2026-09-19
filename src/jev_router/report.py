@@ -169,7 +169,7 @@ def generate_report(result_dir: str | Path) -> Path:
         (
             "Fixture gecikmeleri ölçülmüş canlı routing gecikmesi değildir. USD değerleri fixture usage alanlarından sabitlenmiş fiyat tablosuyla hesaplanır."
             if run["mode"] == "fixture"
-            else "Bu 10 görevlik kontrollü smoke istatistiksel güç veya üretim garantisi sağlamaz. OpenRouter tarafından usage.cost döndürülen çağrılarda bu değer, aksi halde doğrulanmış katalog fiyatı ile token hesabı kullanılmıştır. TTFT ilk boş olmayan streaming metin parçasına kadar istemci duvar saatidir."
+            else f"Bu {run['task_count']} görevlik canlı koşu ölçülen veri karmasıyla sınırlıdır ve üretim garantisi değildir. OpenRouter tarafından usage.cost döndürülen çağrılarda bu değer, aksi halde doğrulanmış katalog fiyatı ile token hesabı kullanılmıştır. TTFT ilk boş olmayan streaming metin parçasına kadar istemci duvar saatidir."
         ),
     ])
     report_path.write_text("\n".join(lines) + "\n", encoding="utf-8")

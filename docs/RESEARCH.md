@@ -63,14 +63,27 @@ OpenRouter `usage.cost` alanı ölçümde birincil maliyet kaynağıdır. Bu ala
 
 Bu ilk sürümde RouteLLM baseline F varsayılan koşuya alınmadı: seçilen GPT-5.6 çiftiyle eğitim eşleşmesi yok, ek embedding maliyeti ve ağır bağımlılık getiriyor, Jev desteği hazır değil. Bu bilinçli bir uyumluluk kararıdır; A–E baseline'ları önce ölçülür. İleride ayrı, açıkça etiketli bir ekstra olarak aynı dev/test protokolüne takılabilir.
 
-## Veri adayları
+## Canlı public benchmark v1 veri kaynakları
+
+İngilizce koşu için dört otomatik ve nesnel puanlanabilir kaynak sabitlendi:
+
+| Kaynak | Revision | Lisans | Dev / test örneği |
+|---|---|---|---:|
+| CohereLabs/Global-MMLU (`en`) | `0e619dbeb34206cd48705a1a0ea7fb21cae09993` | Apache-2.0 | 50 / 250 |
+| facebook/belebele (`eng_Latn`) | `7899cdfa4e1e0d733fd77c848e2c273cb1d32be2` | CC-BY-SA-4.0 | 50 / 250 |
+| openai/gsm8k (`main`) | `740312add88f781978c0658806c59bc2815b9866` | MIT | 50 / 250 |
+| allenai/ai2_arc (`ARC-Challenge`) | `210d026faf9955653af8916fad021475a3f00453` | CC-BY-SA-4.0 | 50 / 250 |
+
+Kaynak şemaları, split sayıları ve lisanslar Hugging Face Dataset Viewer/Hub API üzerinden doğrulandı. `scripts/build_public_benchmark.py` Parquet dönüşümlerini indirir, sabit seed `20260919` ile seçer ve yerel manifest/hash üretir. Public soru metinleri repoda yeniden dağıtılmaz.
+
+## Önceki veri adayları
 
 Demo pilot 40 özgün sentetik görevden oluşur ve yalnız altyapı doğrulamasıdır. Resmî benchmark diye sunulmaz. Bütçe onayından sonra yüzlerce örnek için aday havuz:
 
 | Grup | Aday | Dil | Lisans / yeniden dağıtım notu |
 |---|---|---|---|
 | Çok adımlı akıl yürütme | GSM8K | EN | MIT; orijinal test ayrımı korunur |
-| Çok dilli matematik | MGSM | TR/EN | CC BY 4.0; resmi split ve atıf korunur |
+| Çok dilli matematik | MGSM | EN ve desteklenen diğer diller; Türkçe yok | CC BY 4.0; Türkçe içerdiği varsayılmamalı |
 | Genel QA | MMLU seçili alt kümeler | EN | MIT; contamination riski ayrıca raporlanır |
 | Kodlama | HumanEval | EN | MIT; model kodu ağsız gerçek sandbox'ta çalıştırılmalı |
 | Çeviri | FLORES-200 `tur_Latn`/`eng_Latn` | TR/EN | CC BY-SA 4.0; türetilen dağıtım koşulları korunur |

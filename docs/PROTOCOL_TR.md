@@ -58,3 +58,5 @@ Tam matris yanıtının seçilen yol için yeniden kullanılması, ikinci bir he
 ## Pilot ve ölçek
 
 Fixture pilot 40 örnektir. Canlı smoke ise 10 zorlayıcı TR/EN sentetik görev, concurrency=1, görev başına en fazla 256 çıktı tokenı ve toplam 20 hedef + 10 Jev çağrısıyla sınırlıdır. Kullanıcının isteğiyle USD hard cap zorunlu değildir; capsiz canlı mod kod tarafından en fazla 12 görev ve 256 çıktı tokenı ile sınırlandırılır. Bu koşular 2 yüzde puanlık non-inferiority iddiasına yetmez.
+
+İngilizce public benchmark v1, Global-MMLU, Belebele, GSM8K ve ARC-Challenge ailelerinin her birinden 50 dev + 250 test örneği alır. Toplam 200 dev ve 1.000 test vardır. Global-MMLU konu kategorisine göre tabakalanır; diğerleri sabit tohumla yerine koymadan örneklenir. Belebele'nin tek resmî split'inden ayrılan 50 dev satırı 250 test satırıyla çakışmaz. Tüm promptlarda cevap bütçesi 16 token, reasoning effort `none`, streaming açık ve concurrency=1'dir. Dev koşusu 1 USD, test koşusu 4 USD yazılım kesicisiyle sınırlandırılır.

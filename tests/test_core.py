@@ -40,6 +40,18 @@ def test_scoring_json_and_code(tasks):
     assert score_output(coding, coding.fixture["strong"]["text"]) == 1
 
 
+def test_public_benchmark_choice_and_numeric_scoring(tasks):
+    choice = replace(tasks[0], metric="choice_exact", expected="B")
+    assert score_output(choice, "B") == 1
+    assert score_output(choice, "(B).") == 1
+    assert score_output(choice, "The answer is B") == 1
+    assert score_output(choice, "A") == 0
+    numeric = replace(tasks[0], metric="numeric_exact", expected="1,250")
+    assert score_output(numeric, "$1,250") == 1
+    assert score_output(numeric, "Final answer: 1250") == 1
+    assert score_output(numeric, "1251") == 0
+
+
 def test_code_sandbox_blocks_network_socket(tasks):
     coding = next(task for task in tasks if task.metric == "python_tests")
     probe = replace(

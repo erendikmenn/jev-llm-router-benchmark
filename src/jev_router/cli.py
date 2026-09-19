@@ -55,6 +55,7 @@ def parser() -> argparse.ArgumentParser:
     benchmark.add_argument("--mode", choices=["fixture", "live"], default="fixture")
     benchmark.add_argument("--threshold", type=float, default=None)
     benchmark.add_argument("--max-usd", type=float, default=None)
+    benchmark.add_argument("--split", choices=["dev", "test"], default="test")
     benchmark.add_argument("--output", default=str(ROOT / "results" / "fixture-test"))
 
     report = sub.add_parser("report", help="Regenerate report and SVG charts")
@@ -127,7 +128,12 @@ def main(argv: list[str] | None = None) -> None:
         data = DEFAULT_DATA if args.command == "smoke" else Path(args.data)
         all_tasks = load_tasks(data)
         dev_tasks = split_tasks(all_tasks, "dev")
-        curve = calibration_curve(dev_tasks) if dev_tasks else []
+        should_fixture_calibrate = (
+            getattr(args, "threshold", None) is None
+            and dev_tasks
+            and all("strong" in task.fixture and "cheap" in task.fixture and task.jev_fixture for task in dev_tasks)
+        )
+        curve = calibration_curve(dev_tasks) if should_fixture_calibrate else []
         chosen = select_threshold(curve, float(config.experiment["quality_loss_limit_pp"])) if curve else None
         if getattr(args, "threshold", None) is not None:
             threshold = args.threshold
@@ -135,7 +141,8 @@ def main(argv: list[str] | None = None) -> None:
             threshold = chosen.threshold
         else:
             threshold = float(config.experiment["default_threshold"])
-        tasks = split_tasks(all_tasks, "test")
+        selected_split = "test" if args.command == "smoke" else args.split
+        tasks = split_tasks(all_tasks, selected_split)
         if args.command == "smoke":
             tasks = tasks[:5]
             mode = "fixture"

@@ -5,4 +5,5 @@ __pycache__/
 .pytest_cache/
 results/live-*/
 results/tmp/
-
+data/public_benchmark_*.jsonl
+data/public_benchmark_*.manifest.json

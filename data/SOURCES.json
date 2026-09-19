@@ -20,5 +20,11 @@
     {"name": "MMLU", "url": "https://github.com/hendrycks/test", "license": "MIT", "redistributed": false},
     {"name": "HumanEval", "url": "https://github.com/openai/human-eval", "license": "MIT", "redistributed": false},
     {"name": "FLORES-200", "url": "https://huggingface.co/datasets/facebook/flores", "license": "CC-BY-SA-4.0", "redistributed": false}
+  ],
+  "public_benchmark_en_v1": [
+    {"name": "Global-MMLU", "url": "https://huggingface.co/datasets/CohereLabs/Global-MMLU", "revision": "0e619dbeb34206cd48705a1a0ea7fb21cae09993", "license": "Apache-2.0", "redistributed": false},
+    {"name": "Belebele", "url": "https://huggingface.co/datasets/facebook/belebele", "revision": "7899cdfa4e1e0d733fd77c848e2c273cb1d32be2", "license": "CC-BY-SA-4.0", "redistributed": false},
+    {"name": "GSM8K", "url": "https://huggingface.co/datasets/openai/gsm8k", "revision": "740312add88f781978c0658806c59bc2815b9866", "license": "MIT", "redistributed": false},
+    {"name": "ARC-Challenge", "url": "https://huggingface.co/datasets/allenai/ai2_arc", "revision": "210d026faf9955653af8916fad021475a3f00453", "license": "CC-BY-SA-4.0", "redistributed": false}
   ]
 }
