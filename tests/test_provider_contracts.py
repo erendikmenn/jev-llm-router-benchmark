@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import io
+import time
 from urllib.error import HTTPError
 
 import pytest
@@ -9,11 +10,26 @@ from jev_router.config import load_config
 from jev_router.providers.base import ProviderError
 from jev_router.providers.openai import _extract_output_text
 from jev_router.providers.typesafe import TypeSafeJevProvider
+from jev_router.providers.openrouter import OpenRouterChatProvider
 
 
 def test_openai_invalid_response_contract():
     with pytest.raises(ProviderError, match="no output text"):
         _extract_output_text({"output": []})
+
+
+def test_openrouter_stream_captures_text_usage_cost_and_ttft():
+    lines = [
+        b'data: {"id":"gen-1","model":"openai/gpt-5.6-luna","provider":"OpenAI","choices":[{"delta":{"content":"4"}}]}\n',
+        b'data: {"id":"gen-1","model":"openai/gpt-5.6-luna","choices":[{"delta":{"content":"2"}}],"usage":{"prompt_tokens":10,"completion_tokens":2,"prompt_tokens_details":{"cached_tokens":3},"cost":0.000004}}\n',
+        b'data: [DONE]\n',
+    ]
+    parsed = OpenRouterChatProvider._read_stream(lines, time.perf_counter())
+    assert parsed["text"] == "42"
+    assert parsed["usage"].input_tokens == 10
+    assert parsed["usage"].cached_input_tokens == 3
+    assert parsed["cost"] == pytest.approx(0.000004)
+    assert parsed["ttft_ms"] is not None
 
 
 class FakeResponse:

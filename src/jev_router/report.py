@@ -51,7 +51,7 @@ def generate_report(result_dir: str | Path) -> Path:
     evidence_label = (
         "fixture/simülasyon; gerçek sağlayıcı sonucu değildir"
         if run["mode"] == "fixture"
-        else "canlı sağlayıcı kullanım verisinden hesaplandı; fatura değildir"
+        else "canlı OpenRouter usage/cost verisi; sağlayıcı faturasıyla ayrıca mutabakat gerekir"
     )
     lines = [
         "# Jev LLM Router Benchmark — Türkçe Sonuç Raporu",
@@ -66,11 +66,13 @@ def generate_report(result_dir: str | Path) -> Path:
         f"- Jev eşiği: {run['threshold']:.3f}",
         f"- Jev güçlü model seçim oranı: %{run['jev_strong_rate'] * 100:.1f}",
         f"- Maliyet türü: `{run['cost_kind']}`",
+        f"- Gerçek benzersiz çağrı harcaması (ledger): `${run['ledger_spend_usd']:.6f}`",
+        f"- Benzersiz hedef/Jev çağrısı: {run.get('unique_live_target_calls') or '—'} / {run.get('unique_live_jev_calls') or '—'}",
         "",
         "## Ana karşılaştırma",
         "",
-        "| Politika | Kalite | Güçlüye fark | %95 eşleştirilmiş GA | Güçlü kullanım | Toplam USD | Tasarruf | p50 / p95 ms |",
-        "|---|---:|---:|---:|---:|---:|---:|---:|",
+        "| Politika | Kalite | Güçlüye fark | %95 eşleştirilmiş GA | Güçlü kullanım | Toplam USD | Tasarruf | E2E p50 / p95 ms | TTFT p50 / p95 ms |",
+        "|---|---:|---:|---:|---:|---:|---:|---:|---:|",
     ]
     for name in ["always_strong", "always_cheap", "rule", "random_matched", "jev"]:
         row = baselines[name]
@@ -80,7 +82,8 @@ def generate_report(result_dir: str | Path) -> Path:
             f"| {name} | {row['quality_mean']:.3f} | {row['quality_delta_vs_strong'] * 100:+.2f} yp | "
             f"[{ci[0] * 100:+.2f}, {ci[1] * 100:+.2f}] | %{row['strong_selection_rate'] * 100:.1f} | "
             f"${row['total_cost_usd']:.6f} | {('—' if savings is None else f'%{savings * 100:.1f}')} | "
-            f"{row['latency_p50_ms']:.1f} / {row['latency_p95_ms']:.1f} |"
+            f"{row['latency_p50_ms']:.1f} / {row['latency_p95_ms']:.1f} | "
+            f"{row['ttft_p50_ms']:.1f} / {row['ttft_p95_ms']:.1f} |"
         )
     loss_pp = (strong["quality_mean"] - jev["quality_mean"]) * 100
     lines.extend([
@@ -98,6 +101,32 @@ def generate_report(result_dir: str | Path) -> Path:
         f"- Fixture iş yükünde Jev ek maliyetini karşılamak için gereken asgari ucuz-model oranı: {('hesaplanamadı' if min_cheap_rate is None else f'%{min_cheap_rate * 100:.1f}')}",
         "",
     ])
+    if run["mode"] == "live":
+        lines.extend([
+            "## Görev bazında canlı tam matris ve Jev yolu",
+            "",
+            "Her Luna/Sol hücresi bir canlı çağrıdır. Jev politikasının seçtiği hedef yanıt tam matristen yeniden kullanılmıştır; böylece yönlendirilmiş yolun kalite ve hedef gecikmesi aynı canlı yanıta dayanırken gereksiz ikinci ücret oluşmamıştır.",
+            "",
+            "| Görev | Dil / grup | Luna kalite · USD · ms · TTFT | Sol kalite · USD · ms · TTFT | Jev seçim · P(strong) · güven | Jev ms · USD | Yönlendirilmiş E2E ms |",
+            "|---|---|---:|---:|---|---:|---:|",
+        ])
+        task_ids = sorted({row["task_id"] for row in measurements})
+        for task_id in task_ids:
+            cheap_row = next(row for row in measurements if row["baseline"] == "always_cheap" and row["task_id"] == task_id)
+            strong_row = next(row for row in measurements if row["baseline"] == "always_strong" and row["task_id"] == task_id)
+            jev_row = next(row for row in measurements if row["baseline"] == "jev" and row["task_id"] == task_id)
+            cheap_ttft = "—" if cheap_row["ttft_ms"] is None else f"{cheap_row['ttft_ms']:.0f}"
+            strong_ttft = "—" if strong_row["ttft_ms"] is None else f"{strong_row['ttft_ms']:.0f}"
+            probability = "—" if jev_row["jev_strong_probability"] is None else f"{jev_row['jev_strong_probability']:.2f}"
+            confidence = "—" if jev_row["jev_confidence"] is None else f"{jev_row['jev_confidence']:.2f}"
+            lines.append(
+                f"| `{task_id}` | {jev_row['language']} / {jev_row['group']} | "
+                f"{cheap_row['quality']:.2f} · ${cheap_row['target_cost_usd']:.6f} · {cheap_row['target_latency_ms']:.0f} · {cheap_ttft} | "
+                f"{strong_row['quality']:.2f} · ${strong_row['target_cost_usd']:.6f} · {strong_row['target_latency_ms']:.0f} · {strong_ttft} | "
+                f"{jev_row['selected_role']} · {probability} · {confidence} | "
+                f"{jev_row['router_latency_ms']:.0f} · ${jev_row['router_cost_usd']:.6f} | {jev_row['latency_ms']:.0f} |"
+            )
+        lines.append("")
     if cheap_failures:
         lines.append("### Ucuz modelde başarısız seçilmiş örnekler")
         lines.append("")
@@ -137,7 +166,11 @@ def generate_report(result_dir: str | Path) -> Path:
         "",
         "## Yorum sınırları",
         "",
-        "Fixture gecikmeleri ölçülmüş canlı routing gecikmesi değildir. USD değerleri fixture usage alanlarından, sabitlenmiş fiyat tablosuyla hesaplanmıştır ve fatura değildir. Canlı koşuda provider usage kaydı kullanılır; fiyatlar koşudan hemen önce yeniden doğrulanmalıdır. Demo görevleri resmî benchmark sonucu değildir.",
+        (
+            "Fixture gecikmeleri ölçülmüş canlı routing gecikmesi değildir. USD değerleri fixture usage alanlarından sabitlenmiş fiyat tablosuyla hesaplanır."
+            if run["mode"] == "fixture"
+            else "Bu 10 görevlik kontrollü smoke istatistiksel güç veya üretim garantisi sağlamaz. OpenRouter tarafından usage.cost döndürülen çağrılarda bu değer, aksi halde doğrulanmış katalog fiyatı ile token hesabı kullanılmıştır. TTFT ilk boş olmayan streaming metin parçasına kadar istemci duvar saatidir."
+        ),
     ])
     report_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
     return report_path

@@ -11,6 +11,8 @@ from jev_router.eligibility import check_eligibility
 from jev_router.evaluate import BudgetLedger, run_measurement
 from jev_router.models import GenerationResult, JevJudgment, RouteDecision, Usage
 from jev_router.providers.base import ProviderError
+from jev_router.providers.base import CachedGeneratorProvider
+from jev_router.models import GenerationRequest
 from jev_router.pricing import jev_cost, usage_cost
 from jev_router.routers import jev_router
 from jev_router.routers import rule_router
@@ -130,3 +132,25 @@ def test_budget_limit_is_hard():
     ledger.add(0.009)
     with pytest.raises(Exception, match="exceed"):
         ledger.add(0.002)
+
+
+def test_cached_generator_reuses_live_matrix_result():
+    class CountingProvider:
+        calls = 0
+
+        def generate(self, request, role):
+            self.calls += 1
+            return GenerationResult(
+                text="ok", usage=Usage(3, 0, 1), latency_ms=12,
+                ttft_ms=4, model_id=role, provider_cost_usd=0.001,
+            )
+
+    inner = CountingProvider()
+    cached = CachedGeneratorProvider(inner)
+    request = GenerationRequest("task-1", "p", "s", 10)
+    first = cached.generate(request, "cheap")
+    second = cached.generate(request, "cheap")
+    assert inner.calls == 1
+    assert first.status == "ok"
+    assert second.status == "cache_replay"
+    assert second.provider_cost_usd == first.provider_cost_usd

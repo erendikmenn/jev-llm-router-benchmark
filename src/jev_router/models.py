@@ -39,6 +39,9 @@ class GenerationResult:
     model_id: str
     attempts: tuple[Attempt, ...] = ()
     status: str = "ok"
+    provider_cost_usd: float | None = None
+    generation_id: str | None = None
+    provider: str | None = None
 
 
 @dataclass(frozen=True)
@@ -52,6 +55,9 @@ class JevJudgment:
     latency_ms: float
     model_id: str
     attempts: tuple[Attempt, ...] = ()
+    provider_cost_usd: float | None = None
+    generation_id: str | None = None
+    provider: str | None = None
 
 
 @dataclass(frozen=True)
@@ -106,6 +112,17 @@ class Measurement:
     route_rule: str
     output_text: str
     usage: dict[str, int]
+    router_usage: dict[str, int] = field(default_factory=dict)
+    target_cost_source: str = "calculated_from_usage"
+    router_cost_source: str = "calculated_from_usage"
+    target_generation_id: str | None = None
+    router_generation_id: str | None = None
+    target_provider: str | None = None
+    router_provider: str | None = None
+    jev_choice: str | None = None
+    jev_strong_probability: float | None = None
+    jev_confidence: float | None = None
+    jev_task_type: str | None = None
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)

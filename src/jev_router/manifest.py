@@ -31,6 +31,16 @@ def build_manifest(config: AppConfig, dataset_path: str | Path, mode: str, thres
         "created_at": datetime.now(timezone.utc).isoformat(),
         "repository_commit": git_commit(root),
         "mode": mode,
+        "credential": {
+            "environment_variable": "OPENROUTER_API_KEY",
+            "value_recorded": False,
+            "local_source_note": "Loaded by the invoking shell; secrets are never written to artifacts.",
+        },
+        "provider_endpoints": {
+            "generation": "https://openrouter.ai/api/v1/chat/completions",
+            "decisions": "https://openrouter.ai/api/alpha/decisions",
+            "catalog": "https://openrouter.ai/api/v1/models",
+        },
         "models": {
             "cheap": config.cheap.model_id,
             "strong": config.strong.model_id,
@@ -49,6 +59,10 @@ def build_manifest(config: AppConfig, dataset_path: str | Path, mode: str, thres
         "cache": config.experiment["cache"],
         "concurrency": config.experiment["concurrency"],
         "stream": config.experiment["stream"],
+        "uncapped_live_safeguards": {
+            "max_tasks": config.experiment.get("max_live_tasks_without_usd_cap"),
+            "max_output_tokens_per_task": config.experiment.get("max_live_output_tokens_without_usd_cap"),
+        },
         "code_sandbox_backend": sandbox_backend(),
     }
 

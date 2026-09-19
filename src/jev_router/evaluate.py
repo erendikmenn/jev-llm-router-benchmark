@@ -12,7 +12,7 @@ from pathlib import Path
 from .config import AppConfig
 from .models import GenerationRequest, Measurement, RouteDecision, Task, Usage
 from .pricing import estimate_request_cost, estimate_tokens, jev_cost, usage_cost
-from .providers.base import GeneratorProvider, JevProvider, ProviderError
+from .providers.base import CachedGeneratorProvider, GeneratorProvider, JevProvider, ProviderError
 from .routers import fixed_router, jev_router, random_router, rule_router
 from .scoring import score_output
 
@@ -59,10 +59,20 @@ def run_measurement(
 ) -> Measurement:
     router_cost = 0.0
     router_latency = 0.0
+    router_usage = Usage()
+    router_cost_source = "calculated_from_usage"
+    router_generation_id = None
+    router_provider = None
     if decision.jev:
-        jev_usage = _attempt_usage(decision.jev.usage, decision.jev.attempts)
-        router_cost = jev_cost(jev_usage, config)
+        router_usage = _attempt_usage(decision.jev.usage, decision.jev.attempts)
+        if decision.jev.provider_cost_usd is not None:
+            router_cost = decision.jev.provider_cost_usd
+            router_cost_source = "provider_reported"
+        else:
+            router_cost = jev_cost(router_usage, config)
         router_latency = decision.jev.latency_ms
+        router_generation_id = decision.jev.generation_id
+        router_provider = decision.jev.provider
         ledger.add(router_cost)
     elif decision.router_attempts:
         # A failed/timeout response may have been processed and billed even when
@@ -75,15 +85,26 @@ def run_measurement(
             attempt_usage = attempt.usage
             if attempt_usage.input_tokens == 0 and attempt_usage.output_tokens == 0:
                 attempt_usage = Usage(input_tokens=estimated_jev_input)
+            router_usage = Usage(
+                input_tokens=router_usage.input_tokens + attempt_usage.input_tokens,
+                cached_input_tokens=router_usage.cached_input_tokens + attempt_usage.cached_input_tokens,
+                output_tokens=router_usage.output_tokens + attempt_usage.output_tokens,
+            )
             router_cost += jev_cost(attempt_usage, config)
             router_latency += attempt.latency_ms
         ledger.add(router_cost)
     if decision.selected is None:
         return Measurement(
-            run_id, mode, baseline, task.id, task.split, task.language, task.group,
-            None, None, 0.0, 0.0, router_cost, router_cost, router_latency,
-            router_latency, 0.0, None, False, decision.rejected_reason,
-            decision.rule, "", {},
+            run_id=run_id, mode=mode, baseline=baseline, task_id=task.id,
+            split=task.split, language=task.language, group=task.group,
+            selected_role=None, selected_model=None, quality=0.0,
+            target_cost_usd=0.0, router_cost_usd=router_cost,
+            total_cost_usd=router_cost, latency_ms=router_latency,
+            router_latency_ms=router_latency, target_latency_ms=0.0,
+            ttft_ms=None, fallback=False, error=decision.rejected_reason,
+            route_rule=decision.rule, output_text="", usage={},
+            router_usage=router_usage.__dict__, router_cost_source=router_cost_source,
+            router_generation_id=router_generation_id, router_provider=router_provider,
         )
 
     request = GenerationRequest(
@@ -97,6 +118,7 @@ def run_measurement(
     fallback = False
     error: str | None = None
     total_target_cost = 0.0
+    failed_cost_to_charge = 0.0
     try:
         result = generator.generate(request, selected)
     except ProviderError as exc:
@@ -113,13 +135,22 @@ def run_measurement(
                 total_target_cost += estimate_request_cost(
                     task.prompt, request.max_output_tokens, config.cheap
                 )
+        if not exc.cached:
+            failed_cost_to_charge = total_target_cost
         error = f"cheap_{exc.kind}_fallback;failed_attempt_cost_estimated_if_usage_missing"
         selected = "strong"
         result = generator.generate(request, selected)
     model_config = getattr(config, selected)
     billed_usage = _attempt_usage(result.usage, result.attempts)
-    total_target_cost += usage_cost(billed_usage, model_config)
-    ledger.add(total_target_cost)
+    target_cost_source = "calculated_from_usage"
+    if result.provider_cost_usd is not None:
+        result_cost = result.provider_cost_usd
+        target_cost_source = "provider_reported"
+    else:
+        result_cost = usage_cost(billed_usage, model_config)
+    total_target_cost += result_cost
+    if result.status != "cache_replay":
+        ledger.add(failed_cost_to_charge + result_cost)
     quality = score_output(task, result.text)
     return Measurement(
         run_id=run_id,
@@ -148,6 +179,21 @@ def run_measurement(
             "cached_input_tokens": billed_usage.cached_input_tokens,
             "output_tokens": billed_usage.output_tokens,
         },
+        router_usage={
+            "input_tokens": router_usage.input_tokens,
+            "cached_input_tokens": router_usage.cached_input_tokens,
+            "output_tokens": router_usage.output_tokens,
+        },
+        target_cost_source=target_cost_source,
+        router_cost_source=router_cost_source,
+        target_generation_id=result.generation_id,
+        router_generation_id=router_generation_id,
+        target_provider=result.provider,
+        router_provider=router_provider,
+        jev_choice=decision.jev.selected if decision.jev else None,
+        jev_strong_probability=decision.strong_probability,
+        jev_confidence=decision.confidence,
+        jev_task_type=decision.task_type,
     )
 
 
@@ -161,10 +207,21 @@ def run_benchmark(
     mode: str = "fixture",
     max_budget_usd: float | None = None,
 ) -> tuple[list[Measurement], dict]:
-    if mode == "live" and (max_budget_usd is None or max_budget_usd <= 0):
-        raise ValueError("live mode requires a positive --max-usd hard limit")
+    if mode == "live" and max_budget_usd is None:
+        max_tasks = int(config.experiment.get("max_live_tasks_without_usd_cap", 12))
+        max_output = int(config.experiment.get("max_live_output_tokens_without_usd_cap", 256))
+        if len(tasks) > max_tasks:
+            raise ValueError(f"uncapped live mode is limited to {max_tasks} tasks")
+        if int(config.experiment.get("concurrency", 1)) != 1:
+            raise ValueError("uncapped live mode requires concurrency=1")
+        if any(int(task.constraints.get("max_output_tokens", max_output)) > max_output for task in tasks):
+            raise ValueError(f"uncapped live mode limits each task to {max_output} output tokens")
+    if mode == "live" and max_budget_usd is not None and max_budget_usd <= 0:
+        raise ValueError("--max-usd must be positive when provided")
     run_id = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     ledger = BudgetLedger(max_budget_usd)
+    if mode == "live":
+        generator = CachedGeneratorProvider(generator)
     jev_decisions = {task.id: jev_router(task, config, jev, threshold) for task in tasks}
     strong_rate = sum(
         decision.selected == "strong" for decision in jev_decisions.values()
@@ -195,7 +252,9 @@ def run_benchmark(
         "jev_strong_rate": strong_rate,
         "budget_limit_usd": max_budget_usd,
         "ledger_spend_usd": ledger.spent_usd,
-        "cost_kind": "calculated_from_fixture_usage" if mode == "fixture" else "calculated_from_provider_usage",
+        "cost_kind": "calculated_from_fixture_usage" if mode == "fixture" else "provider_reported_when_available_else_calculated_from_usage",
+        "unique_live_target_calls": len(tasks) * 2 if mode == "live" else None,
+        "unique_live_jev_calls": len(tasks) if mode == "live" else None,
     }
     write_measurements(measurements, output_dir)
     path = Path(output_dir)
@@ -261,6 +320,8 @@ def summarize(measurements: list[Measurement], seed: int) -> dict:
             "latency_p95_ms": percentile([item.latency_ms for item in rows], 0.95),
             "router_latency_p50_ms": percentile([item.router_latency_ms for item in rows], 0.5),
             "target_latency_p50_ms": percentile([item.target_latency_ms for item in rows], 0.5),
+            "ttft_p50_ms": percentile([item.ttft_ms for item in rows if item.ttft_ms is not None], 0.5),
+            "ttft_p95_ms": percentile([item.ttft_ms for item in rows if item.ttft_ms is not None], 0.95),
         }
     for key_name, key_fn in {
         "language": lambda row: row.language,
@@ -285,7 +346,11 @@ def write_measurements(measurements: list[Measurement], output_dir: str | Path) 
             handle.write(json.dumps(row, ensure_ascii=False) + "\n")
     flat_rows = []
     for row in dictionaries:
-        flat = {**row, "usage": json.dumps(row["usage"], sort_keys=True)}
+        flat = {
+            **row,
+            "usage": json.dumps(row["usage"], sort_keys=True),
+            "router_usage": json.dumps(row["router_usage"], sort_keys=True),
+        }
         flat_rows.append(flat)
     with (path / "measurements.csv").open("w", newline="", encoding="utf-8") as handle:
         writer = csv.DictWriter(handle, fieldnames=list(flat_rows[0]) if flat_rows else [])

@@ -2,7 +2,7 @@
 
 Kontrol tarihi: **2026-09-19**. Canlı koşudan önce bu kayıt yeniden doğrulanmalıdır.
 
-## TypeSafe / Jev
+## TypeSafe / Jev — OpenRouter erişimi
 
 Resmî kaynaklar:
 
@@ -15,36 +15,43 @@ Resmî kaynaklar:
 - https://docs.typesafe.ai/primitives/noul
 - https://docs.typesafe.ai/confidence
 
-Doğrulanan sözleşme:
+OpenRouter ve TypeSafe belgeleriyle doğrulanan sözleşme:
 
-- Uç nokta `POST https://api.typesafe.ai/v1/systemone`; bearer kimlik doğrulaması.
+- Bu benchmarkın canlı uç noktası `POST https://openrouter.ai/api/alpha/decisions`; bearer `OPENROUTER_API_KEY` kimlik doğrulaması.
 - İstek üst alanları `state`, `model`, `questions`.
-- Sürüm `jev-1.13.0` olarak sabitlendi. `jev-latest` 2026-09-19'da bu sürüme işaret ediyor ancak hareketli alias kullanılmıyor.
+- Sürüm OpenRouter kimliğiyle `typesafe/jev-1.13` olarak sabitlendi; canlı yanıt sürümlenmiş `typesafe/jev-1.13-20260917` kimliğini döndürdü.
 - Jev 1.13 fiyatı girişte $0.042 / 1M token; çıktı tokenları ücretsiz.
-- İstek context sınırı 64k; `state + en uzun soru` sınırı 32k.
+- OpenRouter model endpoint'i context sınırını 32k olarak bildirdi.
 - Sadece metin; görüntü, ses ve video desteklenmiyor.
 - Choice çıktısı `choice`, tüm seçenekler için `probabilities` ve dağılımdan türetilen `confidence` taşır. Noul tek bir `noul` olasılığı verir ve ayrı confidence taşımaz.
-- Yanıtta sürümlenmiş `model`, `answers`, `usage.input_tokens`, `usage.output_tokens` alanları bulunur.
+- Yanıtta sürümlenmiş `model`, `provider`, `id`, `answers`, `usage.input_tokens`, `usage.output_tokens` ve `usage.cost` alanları bulunur.
 - 429/529 için sınırlı exponential backoff gerekir. Resmî Python SDK varsayılanı 2 retry, ilk backoff 0.5 s, üst sınır 5 s ve toplam 30 s retry bütçesidir. Projede politika açıkça konfigüre edilir.
 - Jev olasılığı tek isteğin doğruluk yüzdesi değildir. Eşikler yalnız dev kümesinde kalibre edilir.
 
 Jev'in belgelenen pürüzleri tasarımı doğrudan etkiledi: sayım, maliyet hesabı, context uygunluğu ve tarih/matematik kodda kalır; modelden gerekçe üretilmez; state yalnız gerekli alanları içerir; router soruları dar Choice kararlarıdır.
 
-## Üretici model çifti
+Ek OpenRouter kaynakları:
 
-Erişim anahtarları mevcut olmadığı için hesap erişimi doğrulanamadı. Aday çift aynı sağlayıcının aynı kuşak iki seviyesi seçilerek sağlayıcı farkı azaltıldı:
+- https://openrouter.ai/typesafe/jev-1.13
+- https://openrouter.ai/openapi.json (`/api/alpha/decisions` sözleşmesi)
+- https://openrouter.ai/api/v1/models/typesafe/jev-1.13/endpoints
+
+## Üretici model çifti — OpenRouter
+
+Yerel `OPENROUTER_API_KEY` varlığı değer yazdırılmadan doğrulandı. Model kimlikleri ve fiyatlar authenticated OpenRouter kataloğundan canlı koşu öncesinde okundu:
 
 | Rol | Tam model kimliği | Context | Maks. çıktı | Girdi / cached / çıktı, USD/1M | Streaming |
 |---|---|---:|---:|---:|---|
-| ucuz | `gpt-5.6-luna` | 1,050,000 | 128,000 | 0.20 / 0.02 / 1.20 | destekleniyor |
-| güçlü | `gpt-5.6-sol` | 1,050,000 | 128,000 | 4.00 / 0.40 / 20.00 | destekleniyor |
+| ucuz | `openai/gpt-5.6-luna` | 1,050,000 | 128,000 | 0.20 / 0.02 / 1.20 | destekleniyor |
+| güçlü | `openai/gpt-5.6-sol` | 1,050,000 | 128,000 | 2.00 / 0.20 / 10.00 | destekleniyor |
 
 Kaynaklar:
 
-- https://developers.openai.com/api/docs/models/gpt-5.6-luna
-- https://developers.openai.com/api/docs/models/gpt-5.6-sol
+- https://openrouter.ai/openai/gpt-5.6-luna
+- https://openrouter.ai/openai/gpt-5.6-sol
+- https://openrouter.ai/api/v1/models
 
-`gpt-5.6-sol` fiyatı resmî sayfada en az 2026-11-21'e kadar promosyon olarak belirtiliyor. Bu nedenle her canlı koşu öncesi fiyat yenilemesi zorunludur. Model sayfaları tarihli snapshot göstermediği için model kimlikleri var olan en dar resmî kimlikle sabitlendi; manifest her canlı yanıtta sağlayıcının döndürdüğü model kimliğini de saklar.
+OpenRouter `usage.cost` alanı ölçümde birincil maliyet kaynağıdır. Bu alan yoksa koşu öncesi doğrulanmış katalog fiyatı ile native token usage çarpılır ve kaynak açıkça `calculated_from_usage` diye etiketlenir.
 
 ## RouteLLM incelemesi
 
@@ -71,4 +78,3 @@ Demo pilot 40 özgün sentetik görevden oluşur ve yalnız altyapı doğrulamas
 | Extraction / classification | açık şemalı görevlerin lisanslı alt kümesi + ayrı sentetik ürün senaryoları | TR/EN | Sentetik sonuçlar benchmark sonuçlarından ayrı tutulur |
 
 Public veri dosyaları bu repoda yeniden dağıtılmaz. İndirme URL'si, revision/hash ve lisans kabulü kilitlenmeden tam veri hazırlığı tamamlanmış sayılmaz.
-

@@ -13,7 +13,7 @@ from .evaluate import run_benchmark
 from .manifest import build_manifest, write_manifest
 from .models import GenerationRequest, Task
 from .pricing import estimate_request_cost
-from .providers import FixtureGenerator, FixtureJev, OpenAIResponsesProvider, TypeSafeJevProvider
+from .providers import FixtureGenerator, FixtureJev, OpenRouterChatProvider, OpenRouterJevProvider
 from .report import generate_report
 from .routers import jev_router, rule_router
 
@@ -80,12 +80,12 @@ def main(argv: list[str] | None = None) -> None:
     args = parser().parse_args(argv)
     config = load_config(args.config)
     if args.command == "environment":
-        print(json.dumps({name: bool(os.getenv(name)) for name in ("TYPESAFE_API_KEY", "OPENAI_API_KEY")}, indent=2))
+        print(json.dumps({"OPENROUTER_API_KEY": bool(os.getenv("OPENROUTER_API_KEY"))}, indent=2))
         return
     if args.command == "route":
         task = _anonymous_task(args.prompt)
         threshold = args.threshold if args.threshold is not None else float(config.experiment["default_threshold"])
-        decision = rule_router(task, config) if args.mode == "rule" else jev_router(task, config, TypeSafeJevProvider(config), threshold)
+        decision = rule_router(task, config) if args.mode == "rule" else jev_router(task, config, OpenRouterJevProvider(config), threshold)
         print(json.dumps({
             "selected_role": decision.selected,
             "selected_model": getattr(config, decision.selected).model_id if decision.selected else None,
@@ -99,7 +99,7 @@ def main(argv: list[str] | None = None) -> None:
     if args.command == "run-model":
         tasks = load_tasks(DEFAULT_DATA)
         task = next(item for item in tasks if item.id == args.task_id)
-        provider = FixtureGenerator(config) if args.mode == "fixture" else OpenAIResponsesProvider(config)
+        provider = FixtureGenerator(config) if args.mode == "fixture" else OpenRouterChatProvider(config)
         result = provider.generate(GenerationRequest(task.id, task.prompt, "Answer directly.", 256, {"fixture": task.fixture}), args.role)
         print(json.dumps({"model": result.model_id, "text": result.text, "usage": result.usage.__dict__, "latency_ms": result.latency_ms}, ensure_ascii=False, indent=2))
         return
@@ -126,9 +126,15 @@ def main(argv: list[str] | None = None) -> None:
     if args.command in {"smoke", "benchmark"}:
         data = DEFAULT_DATA if args.command == "smoke" else Path(args.data)
         all_tasks = load_tasks(data)
-        curve = calibration_curve(split_tasks(all_tasks, "dev"))
-        chosen = select_threshold(curve, float(config.experiment["quality_loss_limit_pp"]))
-        threshold = chosen.threshold if getattr(args, "threshold", None) is None else args.threshold
+        dev_tasks = split_tasks(all_tasks, "dev")
+        curve = calibration_curve(dev_tasks) if dev_tasks else []
+        chosen = select_threshold(curve, float(config.experiment["quality_loss_limit_pp"])) if curve else None
+        if getattr(args, "threshold", None) is not None:
+            threshold = args.threshold
+        elif chosen is not None:
+            threshold = chosen.threshold
+        else:
+            threshold = float(config.experiment["default_threshold"])
         tasks = split_tasks(all_tasks, "test")
         if args.command == "smoke":
             tasks = tasks[:5]
@@ -137,18 +143,19 @@ def main(argv: list[str] | None = None) -> None:
         else:
             mode = args.mode
             max_usd = args.max_usd
-        generator = FixtureGenerator(config) if mode == "fixture" else OpenAIResponsesProvider(config)
-        jev = FixtureJev(config) if mode == "fixture" else TypeSafeJevProvider(config)
+        generator = FixtureGenerator(config) if mode == "fixture" else OpenRouterChatProvider(config)
+        jev = FixtureJev(config) if mode == "fixture" else OpenRouterJevProvider(config)
         output = Path(args.output)
         _, summary = run_benchmark(tasks, generator, jev, config, threshold, output, mode, max_usd)
-        (output / "calibration.json").write_text(
-            json.dumps(
-                {"selected": chosen.__dict__, "curve": [point.__dict__ for point in curve]},
-                indent=2,
+        if chosen is not None:
+            (output / "calibration.json").write_text(
+                json.dumps(
+                    {"selected": chosen.__dict__, "curve": [point.__dict__ for point in curve]},
+                    indent=2,
+                )
+                + "\n",
+                encoding="utf-8",
             )
-            + "\n",
-            encoding="utf-8",
-        )
         write_manifest(output, build_manifest(config, data, mode, threshold))
         report_path = generate_report(output)
         print(json.dumps({"summary": summary["run"], "report": str(report_path)}, ensure_ascii=False, indent=2))

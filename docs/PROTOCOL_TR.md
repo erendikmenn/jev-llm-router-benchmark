@@ -19,8 +19,8 @@ Ana hipotez: Jev, hedef model yanıtlarını görmeden ve yalnız kullanıcı is
 1. Deterministik filtre modality, araç gereksinimi, input/output context sınırlarını kontrol eder.
 2. Jev bir Choice ile `cheap`/`strong` yetenek profili arasından seçim sinyali ve ayrı bir Choice ile görev türü üretir.
 3. Kod, dev'de seçilmiş `P(strong)` eşiğini uygular. Confidence düşükse açık fallback kuralı güçlü modeldir.
-4. Yalnız seçilen üretici model çağrılır.
-5. Timeout/429/5xx için en fazla iki retry yapılır. Ucuz yol tamamen başarısız olursa güçlü modele tek fallback uygulanır. Tüm başarılı retry usage kayıtları toplam maliyete girer.
+4. Canlı smoke'ta eşleştirilmiş tam Luna/Sol matrisi her görev/model çifti için bir kez çağrılır. Jev politikasının seçtiği yol aynı canlı matris yanıtını yeniden kullanır; kalite, hedef latency ve TTFT bu gerçek yanıta dayanır.
+5. Timeout/429/5xx için en fazla bir retry yapılır. Ucuz yol tamamen başarısız olursa güçlü modele fallback uygulanır. Sağlayıcı usage/cost kayıtları ve başarısız denemeler muhasebeye girer.
 
 Jev fiyatları görmez ve maliyeti hesaplamaz. Jev açıklama üretmediği için rapor yalnız görev etiketi, skorlar ve uygulanan kod kuralını gösterir.
 
@@ -53,8 +53,8 @@ Routed toplam maliyet = Jev + seçilen hedef + retry + fallback + varsa validato
 
 Timeout veya bağlantı hatasında sağlayıcı usage gövdesi dönmezse çağrının ücretsiz olduğu varsayılmaz: başarısız deneme konfigüre edilmiş tam çıktı bütçesiyle muhafazakâr tahmin edilir ve measurement hata alanında bu tahmin açıkça işaretlenir.
 
-Replay kalite/maliyet eğrileri canlı routing gecikmesi değildir. Canlı latency koşusunda yalnız gerçekten seçilen yol çağrılır. Uçtan uca p50/p95, Jev ve hedef süreleri ayrı; streaming açıksa TTFT raporlanır. Ağır RAG benchmarkı ile aynı makinede eşzamanlı adil latency koşusu yapılmaz.
+Tam matris yanıtının seçilen yol için yeniden kullanılması, ikinci bir hedef model çağrısını önler. Yönlendirilmiş uçtan uca latency `ölçülmüş Jev latency + seçilen canlı matris yanıtının ölçülmüş hedef latency` olarak hesaplanır; aynı ağ anında ardışık gerçekleşmiş tek bir zincir ölçümü değildir ve raporda bu sınır açıkça belirtilir. Uçtan uca p50/p95, Jev ve hedef süreleri ayrı; streaming TTFT ilk boş olmayan metin parçasine kadar kaydedilir.
 
 ## Pilot ve ölçek
 
-İlk pilot 40 örnektir. Bu sayı pipeline, metrik ve kaba hata tiplerini doğrular; 2 yüzde puanlık non-inferiority iddiasına yetmez. Yüzlerce örnekli test boyutu, pilotta gözlenen eşleştirilmiş fark varyansı ve hedef güven aralığı genişliği ile güç analizi yapılarak seçilir. Bütçe belirlenmeden ücretli matrise başlanmaz.
+Fixture pilot 40 örnektir. Canlı smoke ise 10 zorlayıcı TR/EN sentetik görev, concurrency=1, görev başına en fazla 256 çıktı tokenı ve toplam 20 hedef + 10 Jev çağrısıyla sınırlıdır. Kullanıcının isteğiyle USD hard cap zorunlu değildir; capsiz canlı mod kod tarafından en fazla 12 görev ve 256 çıktı tokenı ile sınırlandırılır. Bu koşular 2 yüzde puanlık non-inferiority iddiasına yetmez.

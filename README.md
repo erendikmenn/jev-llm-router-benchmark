@@ -4,7 +4,7 @@ Jev ile iki üretici LLM arasında **yanıt üretilmeden önce** seçim yapan, k
 
 Bu repo bir RAG projesi değildir ve başka ErenAILab projelerinden bağımsızdır. Ana sonuç ilkesi: “ucuzladı” tek başına başarı değildir; kalite farkı, eşleştirilmiş belirsizlik, hata/fallback oranı ve mutlak USD ile birlikte raporlanır.
 
-> Mevcut repodaki sonuçlar 40 görevlik **sentetik fixture pilotudur**. Gerçek API anahtarı bulunmadığından canlı benchmark çalıştırılmamıştır; fixture USD ve latency değerleri fatura veya canlı ölçüm değildir.
+Repo 40 görevlik fixture pilotuna ek olarak OpenRouter üzerinden `typesafe/jev-1.13`, `openai/gpt-5.6-luna` ve `openai/gpt-5.6-sol` ile kontrollü canlı smoke akışını destekler. Canlı smoke 8–12 görev, concurrency=1 ve kısa çıktı bütçesiyle sınırlandırılır.
 
 ## Mimari
 
@@ -14,12 +14,12 @@ istek + izinli bağlam + kısıtlar
         deterministik uygunluk
         (text / tools / context)
                 │
-         Jev 1.13.0 Choice
+   OpenRouter Jev 1.13 Choice
        görev türü + model uygunluğu
                 │
      kodda threshold / fallback / bütçe
           ┌─────┴─────┐
-  gpt-5.6-luna   gpt-5.6-sol
+ openai/gpt-5.6-luna   openai/gpt-5.6-sol
 ```
 
 Jev yanıt yazmaz, fiyat toplamaz ve doğruluk yüzdesi iddia etmez. Maliyet hesabı, eligibility, retry, threshold ve fallback deterministik koddadır.
@@ -46,7 +46,7 @@ uv run jev-router report
 # Bir isteği sadece route et; model yanıtı üretmez
 uv run jev-router route --mode rule --prompt "Bu mesajı üç sınıftan birine ayır"
 
-# Jev ile canlı route (TYPESAFE_API_KEY gerekir)
+# Jev ile canlı route (OPENROUTER_API_KEY gerekir)
 uv run jev-router route --mode live-jev --threshold 0.58 --prompt "..."
 
 # Bir aday modeli doğrudan fixture üzerinde çalıştır
@@ -61,9 +61,11 @@ uv run jev-router smoke
 # Kilitli testte A–E fixture benchmarkı
 uv run jev-router benchmark --mode fixture --output results/fixture-test
 
-# Canlı koşu: pozitif hard limit olmadan başlamaz
-uv run jev-router estimate --split test
-uv run jev-router benchmark --mode live --max-usd 5.00 --output results/live-001
+# Kontrollü canlı smoke: aynı OpenRouter anahtarıyla Jev + tam Luna/Sol matrisi
+set -a; source ~/.config/openrouter.env; set +a
+uv run jev-router estimate --data data/live_smoke_v1.jsonl --split test
+uv run jev-router benchmark --data data/live_smoke_v1.jsonl --mode live \
+  --threshold 0.58 --output results/openrouter-smoke-20260919
 
 # Yerel demo
 uv run jev-router demo --port 8765
@@ -73,15 +75,15 @@ uv run jev-router demo --port 8765
 
 ## Anahtar ve gizlilik
 
-`.env.example` yalnız değişken adlarını gösterir. Uygulama `TYPESAFE_API_KEY` ve `OPENAI_API_KEY` değerlerini yalnız process environment'tan okur; `.env` dosyasını kendi başına yüklemez, değerleri loglamaz. `environment` komutu yalnız boolean var/yok sonucu verir. Demo formu girdiyi yanıtta veya server logunda göstermez.
+`.env.example` yalnız değişken adını gösterir. Uygulama `OPENROUTER_API_KEY` değerini yalnız process environment'tan okur; `.env` dosyasını kendi başına yüklemez, değeri loglamaz. `environment` komutu yalnız boolean var/yok sonucu verir. Yerel `~/.config/openrouter.env` kaynağı çağıran shell tarafından yüklenebilir.
 
 ## Model ve fiyat kayıtları
 
-- Router: sabit `jev-1.13.0`, text-only, 64k istek / 32k state+en uzun soru, $0.042 / 1M input token.
-- Ucuz aday: `gpt-5.6-luna`, 1.05M context, $0.20 / $0.02 cached / $1.20 output per 1M.
-- Güçlü aday: `gpt-5.6-sol`, 1.05M context, $4.00 / $0.40 cached / $20.00 output per 1M.
+- Router: sabit `typesafe/jev-1.13`, 32k context, $0.042 / 1M input token.
+- Ucuz aday: `openai/gpt-5.6-luna`, 1.05M context, $0.20 / $0.02 cached / $1.20 output per 1M.
+- Güçlü aday: `openai/gpt-5.6-sol`, 1.05M context, $2.00 / $0.20 cached / $10.00 output per 1M.
 
-Kontrol tarihi 2026-09-19'dur. Sol fiyatı geçici promosyon içerdiği için canlı koşudan hemen önce `configs/default.toml` güncellenmeli ve commitlenmelidir. Kaynak/sözleşme ayrıntıları [docs/RESEARCH.md](docs/RESEARCH.md), deney tasarımı [docs/PROTOCOL_TR.md](docs/PROTOCOL_TR.md) içindedir.
+Kontrol tarihi 2026-09-19'dur. Kimlikler ve fiyatlar authenticated OpenRouter model/endpoints API'sinden doğrulanmıştır. Canlı yanıtta `usage.cost` varsa doğrudan saklanır; yoksa katalog fiyatı ve provider token usage ile hesaplanır. Kaynak/sözleşme ayrıntıları [docs/RESEARCH.md](docs/RESEARCH.md), deney tasarımı [docs/PROTOCOL_TR.md](docs/PROTOCOL_TR.md) içindedir.
 
 ## Sonuç artefaktları
 
@@ -92,7 +94,7 @@ Her koşu dizini şunları üretir:
 - `manifest.json`: commit, tam model kimlikleri, veri hash'i, prompt/fiyat sürümleri, seed, retry, cache, concurrency ve streaming ayarları.
 - `cost-quality.svg`, `latency-quality.svg`, `REPORT_TR.md`.
 
-Tam model matrisi üretimi ile canlı routing ayrı deneylerdir. Fixture/replay latency canlı ölçüm diye sunulmaz. Streaming varsayılan olarak kapalı olduğu için TTFT `null` kalır; streaming açılan ayrı protokolde raporlanmalıdır.
+Canlı smoke'ta tam Luna/Sol matrisi her görev/model için yalnız bir kez üretilir ve Jev'in seçtiği yol aynı canlı yanıtı yeniden kullanır. Streaming açıktır; ilk boş olmayan metin parçasine kadar TTFT, tam hedef latency ve Jev latency ayrı saklanır.
 
 Timeout gibi usage dönmeyen başarısız çağrılar ücretsiz varsayılmaz; tam çıktı bütçesine göre muhafazakâr tahmin edilir ve measurement hata alanında etiketlenir. Provider usage bulunan retry/fallback çağrıları doğrudan toplam maliyete eklenir.
 
@@ -104,7 +106,7 @@ Kod MIT lisanslıdır. İncelenen RouteLLM commit'i `0b64fdafe049e596a3f5657c219
 
 ## Sınırlar
 
-- API anahtarları olmadığı için mevcut artefaktlar gerçek model yeteneklerini ölçmez.
+- 10 görevlik canlı smoke gerçek erişimi ve ölçüm tesisatını doğrular, fakat üretim kalitesi veya istatistiksel non-inferiority kanıtı değildir.
 - 40 sentetik görev 2 yüzde puanlık non-inferiority iddiası için yetersizdir.
 - Yerel kod evaluator'ü ayrı süreç/resource sınırları yanında macOS `sandbox-exec` veya Linux Bubblewrap ile ağı kapatır ve backend yoksa fail-closed durur. Güvenilmeyen public benchmark çıktıları için yine de tek-kullanımlık container/VM savunma katmanı önerilir.
 - Açık uçlu kalite için kör, sıra dengeli judge + insan denetimi henüz canlı veri olmadığı için koşulmamıştır.
