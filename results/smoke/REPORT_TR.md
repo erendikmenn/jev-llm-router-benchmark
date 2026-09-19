@@ -4,7 +4,7 @@
 
 ## Koşu özeti
 
-- Koşu: `20260919T165056Z`
+- Koşu: `20260919T165146Z`
 - Mod: `fixture`
 - Örnek sayısı: 5
 - Jev eşiği: 0.680

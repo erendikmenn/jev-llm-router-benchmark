@@ -13,6 +13,7 @@ from jev_router.models import GenerationResult, JevJudgment, RouteDecision, Usag
 from jev_router.providers.base import ProviderError
 from jev_router.pricing import jev_cost, usage_cost
 from jev_router.routers import jev_router
+from jev_router.routers import rule_router
 from jev_router.scoring import score_output
 
 
@@ -79,6 +80,11 @@ def test_low_confidence_falls_back_to_strong(config, tasks):
     assert "confidence" in decision.rule
 
 
+def test_rule_router_catches_turkish_inflection(config, tasks):
+    task = replace(tasks[0], prompt="Bir Python fonksiyonu yaz ve tüm kısıtları uygula.")
+    assert rule_router(task, config).selected == "strong"
+
+
 class CheapTimeoutThenStrong:
     def generate(self, request, role):
         if role == "cheap":
@@ -104,4 +110,3 @@ def test_budget_limit_is_hard():
     ledger.add(0.009)
     with pytest.raises(Exception, match="exceed"):
         ledger.add(0.002)
-

@@ -24,8 +24,8 @@ def rule_router(task: Task, config: AppConfig) -> RouteDecision:
     text = task.prompt.casefold()
     strong_patterns = (
         r"\b(prove|kanıtla|debug|hata ayıkla|optimize|dinamik programlama)\b",
-        r"\b(step by step|adım adım|all constraints|tüm kısıt)\b",
-        r"\b(write a function|fonksiyon yaz)\b",
+        r"\b(step by step|adım adım|all constraints|tüm kısıt\w*)\b",
+        r"\b(write a function|fonksiyon\w* yaz)\b",
     )
     selected = "strong" if any(re.search(pattern, text) for pattern in strong_patterns) else "cheap"
     return RouteDecision(selected, "rule", f"rule_pattern_{selected}")
@@ -62,4 +62,3 @@ def jev_router(task: Task, config: AppConfig, provider: JevProvider, threshold: 
         strong_probability=judgment.strong_probability,
         jev=judgment,
     )
-

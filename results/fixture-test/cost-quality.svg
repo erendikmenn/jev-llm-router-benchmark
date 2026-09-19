@@ -9,8 +9,8 @@
 <text x="740.0" y="49.7" font-family="ui-monospace,monospace" font-size="11" fill="#172033">always_strong</text>
 <circle cx="80.0" cy="347.9" r="7" fill="#89a7d8"/>
 <text x="90.0" y="338.9" font-family="ui-monospace,monospace" font-size="11" fill="#172033">always_cheap</text>
-<circle cx="80.0" cy="347.9" r="7" fill="#f49b45"/>
-<text x="90.0" y="338.9" font-family="ui-monospace,monospace" font-size="11" fill="#172033">rule</text>
+<circle cx="205.4" cy="321.0" r="7" fill="#f49b45"/>
+<text x="215.4" y="312.0" font-family="ui-monospace,monospace" font-size="11" fill="#172033">rule</text>
 <circle cx="197.3" cy="267.2" r="7" fill="#a6a6a6"/>
 <text x="207.3" y="258.2" font-family="ui-monospace,monospace" font-size="11" fill="#172033">random_matched</text>
 <circle cx="373.6" cy="240.3" r="7" fill="#0b8f6a"/>
