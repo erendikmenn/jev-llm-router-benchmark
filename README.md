@@ -73,6 +73,12 @@ uv run jev-router demo --port 8765
 
 `benchmark` threshold verilmezse yalnız dev split'inde kalibre eder, sonra test split'ini çalıştırır. Rastgele baseline, Jev'in güçlü model kullanım oranıyla ve sabit seed ile eşleştirilir.
 
+## Doğrulanmış canlı smoke — 2026-09-19
+
+10 sentetik TR/EN görevde OpenRouter üzerinden 20 hedef model ve 10 Jev çağrısı çalıştı. Hata/fallback olmadı; tüm çağrılarda provider usage/cost ve streaming TTFT alındı. Sol kalite 1.00, Luna 0.70, Jev yolu 0.90 oldu. Jev yolu Sol'a göre %36.1 daha düşük politika maliyeti gösterdi, fakat 10 yüzde puanı kalite kaybıyla önceden tanımlı 2 puan hedefini karşılamadı. Gerçek benzersiz çağrı harcaması $0.009566 idi.
+
+Tam Türkçe rapor ve ham artefaktlar: [`results/openrouter-smoke-20260919/REPORT_TR.md`](results/openrouter-smoke-20260919/REPORT_TR.md).
+
 ## Anahtar ve gizlilik
 
 `.env.example` yalnız değişken adını gösterir. Uygulama `OPENROUTER_API_KEY` değerini yalnız process environment'tan okur; `.env` dosyasını kendi başına yüklemez, değeri loglamaz. `environment` komutu yalnız boolean var/yok sonucu verir. Yerel `~/.config/openrouter.env` kaynağı çağıran shell tarafından yüklenebilir.

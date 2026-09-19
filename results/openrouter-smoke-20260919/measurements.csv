@@ -1,0 +1,374 @@
+run_id,mode,baseline,task_id,split,language,group,selected_role,selected_model,quality,target_cost_usd,router_cost_usd,total_cost_usd,latency_ms,router_latency_ms,target_latency_ms,ttft_ms,fallback,error,route_rule,output_text,usage,router_usage,target_cost_source,router_cost_source,target_generation_id,router_generation_id,target_provider,router_provider,jev_choice,jev_strong_probability,jev_confidence,jev_task_type
+20260919T171750Z,live,always_strong,live-001,test,tr,multi_step_reasoning,strong,openai/gpt-5.6-sol,1.0,0.000332,0.0,0.000332,1525.8222089978517,0.0,1525.8222089978517,1431.37937499705,False,,fixed_strong,4/5,"{""cached_input_tokens"": 0, ""input_tokens"": 131, ""output_tokens"": 7}","{""cached_input_tokens"": 0, ""input_tokens"": 0, ""output_tokens"": 0}",provider_reported,calculated_from_usage,gen-1789838275-kgzPhwjtKnnLzj7YokHv,,OpenAI,,,,,
+20260919T171750Z,live,always_strong,live-002,test,en,multi_step_reasoning,strong,openai/gpt-5.6-sol,1.0,0.000202,0.0,0.000202,4097.161833000428,0.0,4097.161833000428,3846.5186249995895,False,,fixed_strong,157,"{""cached_input_tokens"": 0, ""input_tokens"": 76, ""output_tokens"": 5}","{""cached_input_tokens"": 0, ""input_tokens"": 0, ""output_tokens"": 0}",provider_reported,calculated_from_usage,gen-1789838279-6LbV4H4ngjNWMWhLNLaB,,OpenAI,,,,,
+20260919T171750Z,live,always_strong,live-003,test,en,constraint_reasoning,strong,openai/gpt-5.6-sol,1.0,0.000248,0.0,0.000248,1478.5077500018815,0.0,1478.5077500018815,1276.0851249986445,False,,fixed_strong,ACDEBF,"{""cached_input_tokens"": 0, ""input_tokens"": 89, ""output_tokens"": 7}","{""cached_input_tokens"": 0, ""input_tokens"": 0, ""output_tokens"": 0}",provider_reported,calculated_from_usage,gen-1789838281-rdfJ8WHkzs2xA1AFq6Xr,,OpenAI,,,,,
+20260919T171750Z,live,always_strong,live-004,test,tr,combinatorics,strong,openai/gpt-5.6-sol,1.0,0.000188,0.0,0.000188,1667.66591600026,0.0,1667.66591600026,1496.3416249993315,False,,fixed_strong,20,"{""cached_input_tokens"": 0, ""input_tokens"": 69, ""output_tokens"": 5}","{""cached_input_tokens"": 0, ""input_tokens"": 0, ""output_tokens"": 0}",provider_reported,calculated_from_usage,gen-1789838283-Ue3f3n5xqZThcKCk1tbM,,OpenAI,,,,,
+20260919T171750Z,live,always_strong,live-005,test,en,coding,strong,openai/gpt-5.6-sol,1.0,0.002064,0.0,0.002064,2889.8677920005866,0.0,2889.8677920005866,1244.220167001913,False,,fixed_strong,"def longest_run(items):
+    iterator = iter(items)
+    try:
+        current = next(iterator)
+    except StopIteration:
+        return (None, 0, -1)
+
+    best_value = current
+    best_length = 1
+    best_start = 0
+
+    current_length = 1
+    current_start = 0
+
+    for index, value in enumerate(iterator, 1):
+        if value == current:
+            current_length += 1
+        else:
+            if current_length > best_length:
+                best_value = current
+                best_length = current_length
+                best_start = current_start
+            current = value
+            current_length = 1
+            current_start = index
+
+    if current_length > best_length:
+        best_value = current
+        best_length = current_length
+        best_start = current_start
+
+    return (best_value, best_length, best_start)","{""cached_input_tokens"": 0, ""input_tokens"": 92, ""output_tokens"": 188}","{""cached_input_tokens"": 0, ""input_tokens"": 0, ""output_tokens"": 0}",provider_reported,calculated_from_usage,gen-1789838284-QG3m2orVJEtK33b01vDy,,OpenAI,,,,,
+20260919T171750Z,live,always_strong,live-006,test,tr,coding,strong,openai/gpt-5.6-sol,1.0,0.001186,0.0,0.001186,2463.8820000000123,0.0,2463.8820000000123,1809.7686660003092,False,,fixed_strong,"def merge_intervals(intervals):
+    sorted_intervals = sorted((min(a, b), max(a, b)) for a, b in intervals)
+
+    merged = []
+    for start, end in sorted_intervals:
+        if not merged or start > merged[-1][1]:
+            merged.append((start, end))
+        else:
+            merged[-1] = (merged[-1][0], max(merged[-1][1], end))
+
+    return merged","{""cached_input_tokens"": 0, ""input_tokens"": 98, ""output_tokens"": 99}","{""cached_input_tokens"": 0, ""input_tokens"": 0, ""output_tokens"": 0}",provider_reported,calculated_from_usage,gen-1789838287-icw7Jmx91ZuYOo26caGV,,OpenAI,,,,,
+20260919T171750Z,live,always_strong,live-007,test,en,coding,strong,openai/gpt-5.6-sol,1.0,0.00208,0.0,0.00208,2722.5599580015114,0.0,2722.5599580015114,958.8766660017427,False,,fixed_strong,"def deep_merge(left, right):
+    def clone(value):
+        if isinstance(value, dict):
+            return {clone(key): clone(item) for key, item in value.items()}
+        if isinstance(value, list):
+            return [clone(item) for item in value]
+        return value
+
+    if not isinstance(left, dict) or not isinstance(right, dict):
+        return clone(right)
+
+    result = {}
+    for key, value in left.items():
+        if key in right:
+            right_value = right[key]
+            if isinstance(value, dict) and isinstance(right_value, dict):
+                result[clone(key)] = deep_merge(value, right_value)
+            else:
+                result[clone(key)] = clone(right_value)
+        else:
+            result[clone(key)] = clone(value)
+
+    for key, value in right.items():
+        if key not in left:
+            result[clone(key)] = clone(value)
+
+    return result","{""cached_input_tokens"": 0, ""input_tokens"": 80, ""output_tokens"": 192}","{""cached_input_tokens"": 0, ""input_tokens"": 0, ""output_tokens"": 0}",provider_reported,calculated_from_usage,gen-1789838290-GdeySfo1Qcn7ddieJNIo,,OpenAI,,,,,
+20260919T171750Z,live,always_strong,live-008,test,tr,structured_extraction,strong,openai/gpt-5.6-sol,1.0,0.000784,0.0,0.000784,3562.6060419999703,0.0,3562.6060419999703,3151.2182090009446,False,,fixed_strong,"{""date"":""2026-10-15"",""time"":""11:15"",""timezone"":""Europe/Istanbul"",""duration_minutes"":75,""required"":[""Ada""],""optional"":[""Lin""],""cancelled"":false}","{""cached_input_tokens"": 0, ""input_tokens"": 162, ""output_tokens"": 46}","{""cached_input_tokens"": 0, ""input_tokens"": 0, ""output_tokens"": 0}",provider_reported,calculated_from_usage,gen-1789838294-Kh2TFQhd0w9a4KZoQ6Za,,OpenAI,,,,,
+20260919T171750Z,live,always_strong,live-009,test,en,instruction_following,strong,openai/gpt-5.6-sol,1.0,0.000736,0.0,0.000736,1620.7349579999573,0.0,1620.7349579999573,989.1592919993855,False,,fixed_strong,"{""eligible"":false,""failed_rules"":[""trust""],""explanation"":""The record meets the region and risk rules but fails the trust rule because it is not verified and the account age is below 365 days.""}","{""cached_input_tokens"": 0, ""input_tokens"": 133, ""output_tokens"": 47}","{""cached_input_tokens"": 0, ""input_tokens"": 0, ""output_tokens"": 0}",provider_reported,calculated_from_usage,gen-1789838296-6VTNJFE8t1fftoo2Noon,,OpenAI,,,,,
+20260919T171750Z,live,always_strong,live-010,test,tr,translation_summary,strong,openai/gpt-5.6-sol,1.0,0.000498,0.0,0.000498,1500.6998750031926,0.0,1500.6998750031926,1291.1064580002858,False,,fixed_strong,"The team agreed to move the deadline up, but only if the security review is completed by Friday and the scope is not expanded again.","{""cached_input_tokens"": 0, ""input_tokens"": 94, ""output_tokens"": 31}","{""cached_input_tokens"": 0, ""input_tokens"": 0, ""output_tokens"": 0}",provider_reported,calculated_from_usage,gen-1789838298-8AuRBMuR8BiYLBNMxCSb,,OpenAI,,,,,
+20260919T171750Z,live,always_cheap,live-001,test,tr,multi_step_reasoning,cheap,openai/gpt-5.6-luna,0.0,4.18e-05,0.0,4.18e-05,933.0130829985137,0.0,933.0130829985137,723.4689159995469,False,,fixed_cheap,\(\frac{4}{5}\),"{""cached_input_tokens"": 0, ""input_tokens"": 131, ""output_tokens"": 13}","{""cached_input_tokens"": 0, ""input_tokens"": 0, ""output_tokens"": 0}",provider_reported,calculated_from_usage,gen-1789838299-lIGox1nD29s6WTXMAB6O,,OpenAI,,,,,
+20260919T171750Z,live,always_cheap,live-002,test,en,multi_step_reasoning,cheap,openai/gpt-5.6-luna,0.0,2.12e-05,0.0,2.12e-05,1009.820708000916,0.0,1009.820708000916,1008.570250000048,False,,fixed_cheap,67,"{""cached_input_tokens"": 0, ""input_tokens"": 76, ""output_tokens"": 5}","{""cached_input_tokens"": 0, ""input_tokens"": 0, ""output_tokens"": 0}",provider_reported,calculated_from_usage,gen-1789838300-hSni1JUiJuPSc97l224D,,OpenAI,,,,,
+20260919T171750Z,live,always_cheap,live-003,test,en,constraint_reasoning,cheap,openai/gpt-5.6-luna,0.0,2.62e-05,0.0,2.62e-05,996.0777089982003,0.0,996.0777089982003,770.7314170002064,False,,fixed_cheap,ACBEDF,"{""cached_input_tokens"": 0, ""input_tokens"": 89, ""output_tokens"": 7}","{""cached_input_tokens"": 0, ""input_tokens"": 0, ""output_tokens"": 0}",provider_reported,calculated_from_usage,gen-1789838301-deKh1ByEyG6haZX7GArf,,OpenAI,,,,,
+20260919T171750Z,live,always_cheap,live-004,test,tr,combinatorics,cheap,openai/gpt-5.6-luna,1.0,1.98e-05,0.0,1.98e-05,1048.192874997767,0.0,1048.192874997767,893.631708000612,False,,fixed_cheap,20,"{""cached_input_tokens"": 0, ""input_tokens"": 69, ""output_tokens"": 5}","{""cached_input_tokens"": 0, ""input_tokens"": 0, ""output_tokens"": 0}",provider_reported,calculated_from_usage,gen-1789838302-TjWzGUWswf4SCgYf3RIS,,OpenAI,,,,,
+20260919T171750Z,live,always_cheap,live-005,test,en,coding,cheap,openai/gpt-5.6-luna,1.0,0.0002512,0.0,0.0002512,2145.2244159991096,0.0,2145.2244159991096,958.2374999990861,False,,fixed_cheap,"def longest_run(items):
+    iterator = iter(items)
+    try:
+        current = next(iterator)
+    except StopIteration:
+        return (None, 0, -1)
+
+    best_value = current
+    best_length = 1
+    best_start = 0
+    run_length = 1
+    run_start = 0
+    index = 1
+
+    for value in iterator:
+        if value == current:
+            run_length += 1
+        else:
+            if run_length > best_length:
+                best_value = current
+                best_length = run_length
+                best_start = run_start
+            current = value
+            run_length = 1
+            run_start = index
+        index += 1
+
+    if run_length > best_length:
+        best_value = current
+        best_length = run_length
+        best_start = run_start
+
+    return (best_value, best_length, best_start)
+","{""cached_input_tokens"": 0, ""input_tokens"": 92, ""output_tokens"": 194}","{""cached_input_tokens"": 0, ""input_tokens"": 0, ""output_tokens"": 0}",provider_reported,calculated_from_usage,gen-1789838303-Dp3NqljjK8XwXXuacFLh,,OpenAI,,,,,
+20260919T171750Z,live,always_cheap,live-006,test,tr,coding,cheap,openai/gpt-5.6-luna,1.0,0.0001432,0.0,0.0001432,1315.762750000431,0.0,1315.762750000431,662.754834000225,False,,fixed_cheap,"```python
+def merge_intervals(intervals):
+    normalized = [(min(a, b), max(a, b)) for a, b in intervals]
+    normalized.sort()
+
+    merged = []
+    for start, end in normalized:
+        if not merged or start > merged[-1][1]:
+            merged.append((start, end))
+        else:
+            merged[-1] = (merged[-1][0], max(merged[-1][1], end))
+
+    return merged
+```","{""cached_input_tokens"": 0, ""input_tokens"": 98, ""output_tokens"": 103}","{""cached_input_tokens"": 0, ""input_tokens"": 0, ""output_tokens"": 0}",provider_reported,calculated_from_usage,gen-1789838305-Hu6apaTCHJ3Ds2JZYDYc,,OpenAI,,,,,
+20260919T171750Z,live,always_cheap,live-007,test,en,coding,cheap,openai/gpt-5.6-luna,1.0,0.0002236,0.0,0.0002236,1916.9872919992486,0.0,1916.9872919992486,769.0669590010657,False,,fixed_cheap,"def deep_merge(left, right):
+    def clone(value):
+        if isinstance(value, dict):
+            return {clone(key): clone(item) for key, item in value.items()}
+        if isinstance(value, list):
+            return [clone(item) for item in value]
+        return value
+
+    if isinstance(left, dict) and isinstance(right, dict):
+        result = {clone(key): clone(value) for key, value in left.items()}
+        for key, value in right.items():
+            if key in left and isinstance(left[key], dict) and isinstance(value, dict):
+                result[clone(key)] = deep_merge(left[key], value)
+            else:
+                result[clone(key)] = clone(value)
+        return result
+
+    return clone(right) if not isinstance(right, dict) or isinstance(left, dict) else clone(right)","{""cached_input_tokens"": 0, ""input_tokens"": 80, ""output_tokens"": 173}","{""cached_input_tokens"": 0, ""input_tokens"": 0, ""output_tokens"": 0}",provider_reported,calculated_from_usage,gen-1789838307-7ce5kpf72OBsMMKHTuKk,,OpenAI,,,,,
+20260919T171750Z,live,always_cheap,live-008,test,tr,structured_extraction,cheap,openai/gpt-5.6-luna,1.0,8.76e-05,0.0,8.76e-05,1147.4045840004692,0.0,1147.4045840004692,796.0649999986344,False,,fixed_cheap,"{""date"":""2026-10-15"",""time"":""11:15"",""timezone"":""Europe/Istanbul"",""duration_minutes"":75,""required"":[""Ada""],""optional"":[""Lin""],""cancelled"":false}","{""cached_input_tokens"": 0, ""input_tokens"": 162, ""output_tokens"": 46}","{""cached_input_tokens"": 0, ""input_tokens"": 0, ""output_tokens"": 0}",provider_reported,calculated_from_usage,gen-1789838309-S5s6LhLxFM3KY2GVVd0r,,OpenAI,,,,,
+20260919T171750Z,live,always_cheap,live-009,test,en,instruction_following,cheap,openai/gpt-5.6-luna,1.0,8.3e-05,0.0,8.3e-05,1214.6885830006795,0.0,1214.6885830006795,773.7430829984078,False,,fixed_cheap,"{""eligible"":false,""failed_rules"":[""trust""],""explanation"":""The record meets the region and risk requirements but fails the trust requirement because it is not verified and the account is younger than 365 days.""}","{""cached_input_tokens"": 0, ""input_tokens"": 133, ""output_tokens"": 47}","{""cached_input_tokens"": 0, ""input_tokens"": 0, ""output_tokens"": 0}",provider_reported,calculated_from_usage,gen-1789838310-TVVZgvkrZx7Kpw81qDfV,,OpenAI,,,,,
+20260919T171750Z,live,always_cheap,live-010,test,tr,translation_summary,cheap,openai/gpt-5.6-luna,1.0,5.6e-05,0.0,5.6e-05,926.0240410003462,0.0,926.0240410003462,671.3917080014653,False,,fixed_cheap,"The team agreed to move up the deadline, but only if the security review is completed by Friday and the scope is not expanded again.","{""cached_input_tokens"": 0, ""input_tokens"": 94, ""output_tokens"": 31}","{""cached_input_tokens"": 0, ""input_tokens"": 0, ""output_tokens"": 0}",provider_reported,calculated_from_usage,gen-1789838311-u4AaXk38GeEeTRn17idU,,OpenAI,,,,,
+20260919T171750Z,live,rule,live-001,test,tr,multi_step_reasoning,cheap,openai/gpt-5.6-luna,0.0,4.18e-05,0.0,4.18e-05,933.0130829985137,0.0,933.0130829985137,723.4689159995469,False,,rule_pattern_cheap,\(\frac{4}{5}\),"{""cached_input_tokens"": 0, ""input_tokens"": 131, ""output_tokens"": 13}","{""cached_input_tokens"": 0, ""input_tokens"": 0, ""output_tokens"": 0}",provider_reported,calculated_from_usage,gen-1789838299-lIGox1nD29s6WTXMAB6O,,OpenAI,,,,,
+20260919T171750Z,live,rule,live-002,test,en,multi_step_reasoning,cheap,openai/gpt-5.6-luna,0.0,2.12e-05,0.0,2.12e-05,1009.820708000916,0.0,1009.820708000916,1008.570250000048,False,,rule_pattern_cheap,67,"{""cached_input_tokens"": 0, ""input_tokens"": 76, ""output_tokens"": 5}","{""cached_input_tokens"": 0, ""input_tokens"": 0, ""output_tokens"": 0}",provider_reported,calculated_from_usage,gen-1789838300-hSni1JUiJuPSc97l224D,,OpenAI,,,,,
+20260919T171750Z,live,rule,live-003,test,en,constraint_reasoning,cheap,openai/gpt-5.6-luna,0.0,2.62e-05,0.0,2.62e-05,996.0777089982003,0.0,996.0777089982003,770.7314170002064,False,,rule_pattern_cheap,ACBEDF,"{""cached_input_tokens"": 0, ""input_tokens"": 89, ""output_tokens"": 7}","{""cached_input_tokens"": 0, ""input_tokens"": 0, ""output_tokens"": 0}",provider_reported,calculated_from_usage,gen-1789838301-deKh1ByEyG6haZX7GArf,,OpenAI,,,,,
+20260919T171750Z,live,rule,live-004,test,tr,combinatorics,cheap,openai/gpt-5.6-luna,1.0,1.98e-05,0.0,1.98e-05,1048.192874997767,0.0,1048.192874997767,893.631708000612,False,,rule_pattern_cheap,20,"{""cached_input_tokens"": 0, ""input_tokens"": 69, ""output_tokens"": 5}","{""cached_input_tokens"": 0, ""input_tokens"": 0, ""output_tokens"": 0}",provider_reported,calculated_from_usage,gen-1789838302-TjWzGUWswf4SCgYf3RIS,,OpenAI,,,,,
+20260919T171750Z,live,rule,live-005,test,en,coding,cheap,openai/gpt-5.6-luna,1.0,0.0002512,0.0,0.0002512,2145.2244159991096,0.0,2145.2244159991096,958.2374999990861,False,,rule_pattern_cheap,"def longest_run(items):
+    iterator = iter(items)
+    try:
+        current = next(iterator)
+    except StopIteration:
+        return (None, 0, -1)
+
+    best_value = current
+    best_length = 1
+    best_start = 0
+    run_length = 1
+    run_start = 0
+    index = 1
+
+    for value in iterator:
+        if value == current:
+            run_length += 1
+        else:
+            if run_length > best_length:
+                best_value = current
+                best_length = run_length
+                best_start = run_start
+            current = value
+            run_length = 1
+            run_start = index
+        index += 1
+
+    if run_length > best_length:
+        best_value = current
+        best_length = run_length
+        best_start = run_start
+
+    return (best_value, best_length, best_start)
+","{""cached_input_tokens"": 0, ""input_tokens"": 92, ""output_tokens"": 194}","{""cached_input_tokens"": 0, ""input_tokens"": 0, ""output_tokens"": 0}",provider_reported,calculated_from_usage,gen-1789838303-Dp3NqljjK8XwXXuacFLh,,OpenAI,,,,,
+20260919T171750Z,live,rule,live-006,test,tr,coding,cheap,openai/gpt-5.6-luna,1.0,0.0001432,0.0,0.0001432,1315.762750000431,0.0,1315.762750000431,662.754834000225,False,,rule_pattern_cheap,"```python
+def merge_intervals(intervals):
+    normalized = [(min(a, b), max(a, b)) for a, b in intervals]
+    normalized.sort()
+
+    merged = []
+    for start, end in normalized:
+        if not merged or start > merged[-1][1]:
+            merged.append((start, end))
+        else:
+            merged[-1] = (merged[-1][0], max(merged[-1][1], end))
+
+    return merged
+```","{""cached_input_tokens"": 0, ""input_tokens"": 98, ""output_tokens"": 103}","{""cached_input_tokens"": 0, ""input_tokens"": 0, ""output_tokens"": 0}",provider_reported,calculated_from_usage,gen-1789838305-Hu6apaTCHJ3Ds2JZYDYc,,OpenAI,,,,,
+20260919T171750Z,live,rule,live-007,test,en,coding,cheap,openai/gpt-5.6-luna,1.0,0.0002236,0.0,0.0002236,1916.9872919992486,0.0,1916.9872919992486,769.0669590010657,False,,rule_pattern_cheap,"def deep_merge(left, right):
+    def clone(value):
+        if isinstance(value, dict):
+            return {clone(key): clone(item) for key, item in value.items()}
+        if isinstance(value, list):
+            return [clone(item) for item in value]
+        return value
+
+    if isinstance(left, dict) and isinstance(right, dict):
+        result = {clone(key): clone(value) for key, value in left.items()}
+        for key, value in right.items():
+            if key in left and isinstance(left[key], dict) and isinstance(value, dict):
+                result[clone(key)] = deep_merge(left[key], value)
+            else:
+                result[clone(key)] = clone(value)
+        return result
+
+    return clone(right) if not isinstance(right, dict) or isinstance(left, dict) else clone(right)","{""cached_input_tokens"": 0, ""input_tokens"": 80, ""output_tokens"": 173}","{""cached_input_tokens"": 0, ""input_tokens"": 0, ""output_tokens"": 0}",provider_reported,calculated_from_usage,gen-1789838307-7ce5kpf72OBsMMKHTuKk,,OpenAI,,,,,
+20260919T171750Z,live,rule,live-008,test,tr,structured_extraction,cheap,openai/gpt-5.6-luna,1.0,8.76e-05,0.0,8.76e-05,1147.4045840004692,0.0,1147.4045840004692,796.0649999986344,False,,rule_pattern_cheap,"{""date"":""2026-10-15"",""time"":""11:15"",""timezone"":""Europe/Istanbul"",""duration_minutes"":75,""required"":[""Ada""],""optional"":[""Lin""],""cancelled"":false}","{""cached_input_tokens"": 0, ""input_tokens"": 162, ""output_tokens"": 46}","{""cached_input_tokens"": 0, ""input_tokens"": 0, ""output_tokens"": 0}",provider_reported,calculated_from_usage,gen-1789838309-S5s6LhLxFM3KY2GVVd0r,,OpenAI,,,,,
+20260919T171750Z,live,rule,live-009,test,en,instruction_following,cheap,openai/gpt-5.6-luna,1.0,8.3e-05,0.0,8.3e-05,1214.6885830006795,0.0,1214.6885830006795,773.7430829984078,False,,rule_pattern_cheap,"{""eligible"":false,""failed_rules"":[""trust""],""explanation"":""The record meets the region and risk requirements but fails the trust requirement because it is not verified and the account is younger than 365 days.""}","{""cached_input_tokens"": 0, ""input_tokens"": 133, ""output_tokens"": 47}","{""cached_input_tokens"": 0, ""input_tokens"": 0, ""output_tokens"": 0}",provider_reported,calculated_from_usage,gen-1789838310-TVVZgvkrZx7Kpw81qDfV,,OpenAI,,,,,
+20260919T171750Z,live,rule,live-010,test,tr,translation_summary,cheap,openai/gpt-5.6-luna,1.0,5.6e-05,0.0,5.6e-05,926.0240410003462,0.0,926.0240410003462,671.3917080014653,False,,rule_pattern_cheap,"The team agreed to move up the deadline, but only if the security review is completed by Friday and the scope is not expanded again.","{""cached_input_tokens"": 0, ""input_tokens"": 94, ""output_tokens"": 31}","{""cached_input_tokens"": 0, ""input_tokens"": 0, ""output_tokens"": 0}",provider_reported,calculated_from_usage,gen-1789838311-u4AaXk38GeEeTRn17idU,,OpenAI,,,,,
+20260919T171750Z,live,random_matched,live-001,test,tr,multi_step_reasoning,cheap,openai/gpt-5.6-luna,0.0,4.18e-05,0.0,4.18e-05,933.0130829985137,0.0,933.0130829985137,723.4689159995469,False,,seeded_random_at_0.400,\(\frac{4}{5}\),"{""cached_input_tokens"": 0, ""input_tokens"": 131, ""output_tokens"": 13}","{""cached_input_tokens"": 0, ""input_tokens"": 0, ""output_tokens"": 0}",provider_reported,calculated_from_usage,gen-1789838299-lIGox1nD29s6WTXMAB6O,,OpenAI,,,,,
+20260919T171750Z,live,random_matched,live-002,test,en,multi_step_reasoning,strong,openai/gpt-5.6-sol,1.0,0.000202,0.0,0.000202,4097.161833000428,0.0,4097.161833000428,3846.5186249995895,False,,seeded_random_at_0.400,157,"{""cached_input_tokens"": 0, ""input_tokens"": 76, ""output_tokens"": 5}","{""cached_input_tokens"": 0, ""input_tokens"": 0, ""output_tokens"": 0}",provider_reported,calculated_from_usage,gen-1789838279-6LbV4H4ngjNWMWhLNLaB,,OpenAI,,,,,
+20260919T171750Z,live,random_matched,live-003,test,en,constraint_reasoning,strong,openai/gpt-5.6-sol,1.0,0.000248,0.0,0.000248,1478.5077500018815,0.0,1478.5077500018815,1276.0851249986445,False,,seeded_random_at_0.400,ACDEBF,"{""cached_input_tokens"": 0, ""input_tokens"": 89, ""output_tokens"": 7}","{""cached_input_tokens"": 0, ""input_tokens"": 0, ""output_tokens"": 0}",provider_reported,calculated_from_usage,gen-1789838281-rdfJ8WHkzs2xA1AFq6Xr,,OpenAI,,,,,
+20260919T171750Z,live,random_matched,live-004,test,tr,combinatorics,strong,openai/gpt-5.6-sol,1.0,0.000188,0.0,0.000188,1667.66591600026,0.0,1667.66591600026,1496.3416249993315,False,,seeded_random_at_0.400,20,"{""cached_input_tokens"": 0, ""input_tokens"": 69, ""output_tokens"": 5}","{""cached_input_tokens"": 0, ""input_tokens"": 0, ""output_tokens"": 0}",provider_reported,calculated_from_usage,gen-1789838283-Ue3f3n5xqZThcKCk1tbM,,OpenAI,,,,,
+20260919T171750Z,live,random_matched,live-005,test,en,coding,cheap,openai/gpt-5.6-luna,1.0,0.0002512,0.0,0.0002512,2145.2244159991096,0.0,2145.2244159991096,958.2374999990861,False,,seeded_random_at_0.400,"def longest_run(items):
+    iterator = iter(items)
+    try:
+        current = next(iterator)
+    except StopIteration:
+        return (None, 0, -1)
+
+    best_value = current
+    best_length = 1
+    best_start = 0
+    run_length = 1
+    run_start = 0
+    index = 1
+
+    for value in iterator:
+        if value == current:
+            run_length += 1
+        else:
+            if run_length > best_length:
+                best_value = current
+                best_length = run_length
+                best_start = run_start
+            current = value
+            run_length = 1
+            run_start = index
+        index += 1
+
+    if run_length > best_length:
+        best_value = current
+        best_length = run_length
+        best_start = run_start
+
+    return (best_value, best_length, best_start)
+","{""cached_input_tokens"": 0, ""input_tokens"": 92, ""output_tokens"": 194}","{""cached_input_tokens"": 0, ""input_tokens"": 0, ""output_tokens"": 0}",provider_reported,calculated_from_usage,gen-1789838303-Dp3NqljjK8XwXXuacFLh,,OpenAI,,,,,
+20260919T171750Z,live,random_matched,live-006,test,tr,coding,strong,openai/gpt-5.6-sol,1.0,0.001186,0.0,0.001186,2463.8820000000123,0.0,2463.8820000000123,1809.7686660003092,False,,seeded_random_at_0.400,"def merge_intervals(intervals):
+    sorted_intervals = sorted((min(a, b), max(a, b)) for a, b in intervals)
+
+    merged = []
+    for start, end in sorted_intervals:
+        if not merged or start > merged[-1][1]:
+            merged.append((start, end))
+        else:
+            merged[-1] = (merged[-1][0], max(merged[-1][1], end))
+
+    return merged","{""cached_input_tokens"": 0, ""input_tokens"": 98, ""output_tokens"": 99}","{""cached_input_tokens"": 0, ""input_tokens"": 0, ""output_tokens"": 0}",provider_reported,calculated_from_usage,gen-1789838287-icw7Jmx91ZuYOo26caGV,,OpenAI,,,,,
+20260919T171750Z,live,random_matched,live-007,test,en,coding,cheap,openai/gpt-5.6-luna,1.0,0.0002236,0.0,0.0002236,1916.9872919992486,0.0,1916.9872919992486,769.0669590010657,False,,seeded_random_at_0.400,"def deep_merge(left, right):
+    def clone(value):
+        if isinstance(value, dict):
+            return {clone(key): clone(item) for key, item in value.items()}
+        if isinstance(value, list):
+            return [clone(item) for item in value]
+        return value
+
+    if isinstance(left, dict) and isinstance(right, dict):
+        result = {clone(key): clone(value) for key, value in left.items()}
+        for key, value in right.items():
+            if key in left and isinstance(left[key], dict) and isinstance(value, dict):
+                result[clone(key)] = deep_merge(left[key], value)
+            else:
+                result[clone(key)] = clone(value)
+        return result
+
+    return clone(right) if not isinstance(right, dict) or isinstance(left, dict) else clone(right)","{""cached_input_tokens"": 0, ""input_tokens"": 80, ""output_tokens"": 173}","{""cached_input_tokens"": 0, ""input_tokens"": 0, ""output_tokens"": 0}",provider_reported,calculated_from_usage,gen-1789838307-7ce5kpf72OBsMMKHTuKk,,OpenAI,,,,,
+20260919T171750Z,live,random_matched,live-008,test,tr,structured_extraction,cheap,openai/gpt-5.6-luna,1.0,8.76e-05,0.0,8.76e-05,1147.4045840004692,0.0,1147.4045840004692,796.0649999986344,False,,seeded_random_at_0.400,"{""date"":""2026-10-15"",""time"":""11:15"",""timezone"":""Europe/Istanbul"",""duration_minutes"":75,""required"":[""Ada""],""optional"":[""Lin""],""cancelled"":false}","{""cached_input_tokens"": 0, ""input_tokens"": 162, ""output_tokens"": 46}","{""cached_input_tokens"": 0, ""input_tokens"": 0, ""output_tokens"": 0}",provider_reported,calculated_from_usage,gen-1789838309-S5s6LhLxFM3KY2GVVd0r,,OpenAI,,,,,
+20260919T171750Z,live,random_matched,live-009,test,en,instruction_following,strong,openai/gpt-5.6-sol,1.0,0.000736,0.0,0.000736,1620.7349579999573,0.0,1620.7349579999573,989.1592919993855,False,,seeded_random_at_0.400,"{""eligible"":false,""failed_rules"":[""trust""],""explanation"":""The record meets the region and risk rules but fails the trust rule because it is not verified and the account age is below 365 days.""}","{""cached_input_tokens"": 0, ""input_tokens"": 133, ""output_tokens"": 47}","{""cached_input_tokens"": 0, ""input_tokens"": 0, ""output_tokens"": 0}",provider_reported,calculated_from_usage,gen-1789838296-6VTNJFE8t1fftoo2Noon,,OpenAI,,,,,
+20260919T171750Z,live,random_matched,live-010,test,tr,translation_summary,cheap,openai/gpt-5.6-luna,1.0,5.6e-05,0.0,5.6e-05,926.0240410003462,0.0,926.0240410003462,671.3917080014653,False,,seeded_random_at_0.400,"The team agreed to move up the deadline, but only if the security review is completed by Friday and the scope is not expanded again.","{""cached_input_tokens"": 0, ""input_tokens"": 94, ""output_tokens"": 31}","{""cached_input_tokens"": 0, ""input_tokens"": 0, ""output_tokens"": 0}",provider_reported,calculated_from_usage,gen-1789838311-u4AaXk38GeEeTRn17idU,,OpenAI,,,,,
+20260919T171750Z,live,jev,live-001,test,tr,multi_step_reasoning,cheap,openai/gpt-5.6-luna,0.0,4.18e-05,3.1206e-05,7.3006e-05,1612.984832998336,679.9717499998224,933.0130829985137,723.4689159995469,False,,strong_probability_lt_0.580,\(\frac{4}{5}\),"{""cached_input_tokens"": 0, ""input_tokens"": 131, ""output_tokens"": 13}","{""cached_input_tokens"": 0, ""input_tokens"": 743, ""output_tokens"": 106}",provider_reported,provider_reported,gen-1789838299-lIGox1nD29s6WTXMAB6O,gen-dec-1789838271-0uyWbjnZ4djFHSJkKU53,OpenAI,TypeSafe,cheap,0.16,0.69,multi_step_reasoning
+20260919T171750Z,live,jev,live-002,test,en,multi_step_reasoning,strong,openai/gpt-5.6-sol,1.0,0.000202,2.793e-05,0.00022993,4590.2338749983755,493.07204199794796,4097.161833000428,3846.5186249995895,False,,confidence_lt_0.20_fallback_strong,157,"{""cached_input_tokens"": 0, ""input_tokens"": 76, ""output_tokens"": 5}","{""cached_input_tokens"": 0, ""input_tokens"": 665, ""output_tokens"": 106}",provider_reported,provider_reported,gen-1789838279-6LbV4H4ngjNWMWhLNLaB,gen-dec-1789838271-zAZfXBSuzurDwnhcxPXg,OpenAI,TypeSafe,cheap,0.46,0.08,multi_step_reasoning
+20260919T171750Z,live,jev,live-003,test,en,constraint_reasoning,strong,openai/gpt-5.6-sol,1.0,0.000248,2.8518e-05,0.000276518,2000.0378340009775,521.530083999096,1478.5077500018815,1276.0851249986445,False,,confidence_lt_0.20_fallback_strong,ACDEBF,"{""cached_input_tokens"": 0, ""input_tokens"": 89, ""output_tokens"": 7}","{""cached_input_tokens"": 0, ""input_tokens"": 679, ""output_tokens"": 106}",provider_reported,provider_reported,gen-1789838281-rdfJ8WHkzs2xA1AFq6Xr,gen-dec-1789838272-KWVdKpxngND6s9pX6Qd2,OpenAI,TypeSafe,strong,0.59,0.17,multi_step_reasoning
+20260919T171750Z,live,jev,live-004,test,tr,combinatorics,cheap,openai/gpt-5.6-luna,1.0,1.98e-05,2.7678e-05,4.7478e-05,1574.4136659959622,526.2207909981953,1048.192874997767,893.631708000612,False,,strong_probability_lt_0.580,20,"{""cached_input_tokens"": 0, ""input_tokens"": 69, ""output_tokens"": 5}","{""cached_input_tokens"": 0, ""input_tokens"": 659, ""output_tokens"": 106}",provider_reported,provider_reported,gen-1789838302-TjWzGUWswf4SCgYf3RIS,gen-dec-1789838272-UKE6mOvTGwHw8ksAoiCs,OpenAI,TypeSafe,cheap,0.26,0.49,multi_step_reasoning
+20260919T171750Z,live,jev,live-005,test,en,coding,strong,openai/gpt-5.6-sol,1.0,0.002064,2.8602e-05,0.002092602,3277.0941669987224,387.2263749981357,2889.8677920005866,1244.220167001913,False,,strong_probability_gte_0.580,"def longest_run(items):
+    iterator = iter(items)
+    try:
+        current = next(iterator)
+    except StopIteration:
+        return (None, 0, -1)
+
+    best_value = current
+    best_length = 1
+    best_start = 0
+
+    current_length = 1
+    current_start = 0
+
+    for index, value in enumerate(iterator, 1):
+        if value == current:
+            current_length += 1
+        else:
+            if current_length > best_length:
+                best_value = current
+                best_length = current_length
+                best_start = current_start
+            current = value
+            current_length = 1
+            current_start = index
+
+    if current_length > best_length:
+        best_value = current
+        best_length = current_length
+        best_start = current_start
+
+    return (best_value, best_length, best_start)","{""cached_input_tokens"": 0, ""input_tokens"": 92, ""output_tokens"": 188}","{""cached_input_tokens"": 0, ""input_tokens"": 681, ""output_tokens"": 102}",provider_reported,provider_reported,gen-1789838284-QG3m2orVJEtK33b01vDy,gen-dec-1789838273-MQemcVTdtFHRqlfr2tqi,OpenAI,TypeSafe,strong,0.7,0.39,coding
+20260919T171750Z,live,jev,live-006,test,tr,coding,cheap,openai/gpt-5.6-luna,1.0,0.0001432,2.961e-05,0.00017281000000000002,1693.9903339989542,378.2275839985232,1315.762750000431,662.754834000225,False,,strong_probability_lt_0.580,"```python
+def merge_intervals(intervals):
+    normalized = [(min(a, b), max(a, b)) for a, b in intervals]
+    normalized.sort()
+
+    merged = []
+    for start, end in normalized:
+        if not merged or start > merged[-1][1]:
+            merged.append((start, end))
+        else:
+            merged[-1] = (merged[-1][0], max(merged[-1][1], end))
+
+    return merged
+```","{""cached_input_tokens"": 0, ""input_tokens"": 98, ""output_tokens"": 103}","{""cached_input_tokens"": 0, ""input_tokens"": 705, ""output_tokens"": 102}",provider_reported,provider_reported,gen-1789838305-Hu6apaTCHJ3Ds2JZYDYc,gen-dec-1789838273-lCBUTh2EBxW11M6vgbJu,OpenAI,TypeSafe,cheap,0.28,0.44,coding
+20260919T171750Z,live,jev,live-007,test,en,coding,strong,openai/gpt-5.6-sol,1.0,0.00208,2.814e-05,0.0021081399999999997,3325.76229100232,603.2023330008087,2722.5599580015114,958.8766660017427,False,,strong_probability_gte_0.580,"def deep_merge(left, right):
+    def clone(value):
+        if isinstance(value, dict):
+            return {clone(key): clone(item) for key, item in value.items()}
+        if isinstance(value, list):
+            return [clone(item) for item in value]
+        return value
+
+    if not isinstance(left, dict) or not isinstance(right, dict):
+        return clone(right)
+
+    result = {}
+    for key, value in left.items():
+        if key in right:
+            right_value = right[key]
+            if isinstance(value, dict) and isinstance(right_value, dict):
+                result[clone(key)] = deep_merge(value, right_value)
+            else:
+                result[clone(key)] = clone(right_value)
+        else:
+            result[clone(key)] = clone(value)
+
+    for key, value in right.items():
+        if key not in left:
+            result[clone(key)] = clone(value)
+
+    return result","{""cached_input_tokens"": 0, ""input_tokens"": 80, ""output_tokens"": 192}","{""cached_input_tokens"": 0, ""input_tokens"": 670, ""output_tokens"": 102}",provider_reported,provider_reported,gen-1789838290-GdeySfo1Qcn7ddieJNIo,gen-dec-1789838273-ILectLQszdP8ghZKdSfl,OpenAI,TypeSafe,strong,0.74,0.48,coding
+20260919T171750Z,live,jev,live-008,test,tr,structured_extraction,cheap,openai/gpt-5.6-luna,1.0,8.76e-05,3.255e-05,0.00012014999999999999,1530.717541998456,383.3129579979868,1147.4045840004692,796.0649999986344,False,,strong_probability_lt_0.580,"{""date"":""2026-10-15"",""time"":""11:15"",""timezone"":""Europe/Istanbul"",""duration_minutes"":75,""required"":[""Ada""],""optional"":[""Lin""],""cancelled"":false}","{""cached_input_tokens"": 0, ""input_tokens"": 162, ""output_tokens"": 46}","{""cached_input_tokens"": 0, ""input_tokens"": 775, ""output_tokens"": 108}",provider_reported,provider_reported,gen-1789838309-S5s6LhLxFM3KY2GVVd0r,gen-dec-1789838274-DIvdedYBaAnmlgV6qHkr,OpenAI,TypeSafe,cheap,0.11,0.79,extraction_classification
+20260919T171750Z,live,jev,live-009,test,en,instruction_following,cheap,openai/gpt-5.6-luna,1.0,8.3e-05,3.066e-05,0.00011365999999999999,1657.7885830010928,443.1000000004133,1214.6885830006795,773.7430829984078,False,,strong_probability_lt_0.580,"{""eligible"":false,""failed_rules"":[""trust""],""explanation"":""The record meets the region and risk requirements but fails the trust requirement because it is not verified and the account is younger than 365 days.""}","{""cached_input_tokens"": 0, ""input_tokens"": 133, ""output_tokens"": 47}","{""cached_input_tokens"": 0, ""input_tokens"": 730, ""output_tokens"": 106}",provider_reported,provider_reported,gen-1789838310-TVVZgvkrZx7Kpw81qDfV,gen-dec-1789838274-6dGudfCEXlrm2Bsx7BYP,OpenAI,TypeSafe,cheap,0.23,0.54,multi_step_reasoning
+20260919T171750Z,live,jev,live-010,test,tr,translation_summary,cheap,openai/gpt-5.6-luna,1.0,5.6e-05,2.9064e-05,8.5064e-05,1494.6704159992805,568.6463749989343,926.0240410003462,671.3917080014653,False,,strong_probability_lt_0.580,"The team agreed to move up the deadline, but only if the security review is completed by Friday and the scope is not expanded again.","{""cached_input_tokens"": 0, ""input_tokens"": 94, ""output_tokens"": 31}","{""cached_input_tokens"": 0, ""input_tokens"": 692, ""output_tokens"": 103}",provider_reported,provider_reported,gen-1789838311-u4AaXk38GeEeTRn17idU,gen-dec-1789838275-4PWaMyL5IdQ6eJj6Xp3z,OpenAI,TypeSafe,cheap,0.01,0.97,translation_summary

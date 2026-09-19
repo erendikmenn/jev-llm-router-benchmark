@@ -1,0 +1,205 @@
+{
+  "baselines": {
+    "always_strong": {
+      "n": 10,
+      "quality_mean": 1.0,
+      "quality_delta_vs_strong": 0.0,
+      "quality_delta_95ci": [
+        0.0,
+        0.0
+      ],
+      "success_rate": 1.0,
+      "strong_selection_rate": 1.0,
+      "fallback_rate": 0.0,
+      "error_rate": 0.0,
+      "total_cost_usd": 0.008317999999999999,
+      "usd_per_request": 0.0008317999999999999,
+      "usd_per_1000_requests": 0.8318,
+      "usd_per_success": 0.0008317999999999999,
+      "savings_vs_always_strong": 0.0,
+      "latency_p50_ms": 2065.773958000136,
+      "latency_p95_ms": 3856.611727050221,
+      "router_latency_p50_ms": 0.0,
+      "target_latency_p50_ms": 2065.773958000136,
+      "ttft_p50_ms": 1361.242916498668,
+      "ttft_p95_ms": 3533.6334378001984
+    },
+    "always_cheap": {
+      "n": 10,
+      "quality_mean": 0.7,
+      "quality_delta_vs_strong": -0.30000000000000004,
+      "quality_delta_95ci": [
+        -0.6,
+        -0.09750000000001365
+      ],
+      "success_rate": 0.7,
+      "strong_selection_rate": 0.0,
+      "fallback_rate": 0.0,
+      "error_rate": 0.0,
+      "total_cost_usd": 0.0009536,
+      "usd_per_request": 9.536e-05,
+      "usd_per_1000_requests": 0.09536,
+      "usd_per_success": 0.00013622857142857144,
+      "savings_vs_always_strong": 0.8853570569848521,
+      "latency_p50_ms": 1097.798729499118,
+      "latency_p95_ms": 2042.517710199172,
+      "router_latency_p50_ms": 0.0,
+      "target_latency_p50_ms": 1097.798729499118,
+      "ttft_p50_ms": 772.2372499993071,
+      "ttft_p95_ms": 985.9205124996151
+    },
+    "rule": {
+      "n": 10,
+      "quality_mean": 0.7,
+      "quality_delta_vs_strong": -0.30000000000000004,
+      "quality_delta_95ci": [
+        -0.6,
+        -0.09750000000001365
+      ],
+      "success_rate": 0.7,
+      "strong_selection_rate": 0.0,
+      "fallback_rate": 0.0,
+      "error_rate": 0.0,
+      "total_cost_usd": 0.0009536,
+      "usd_per_request": 9.536e-05,
+      "usd_per_1000_requests": 0.09536,
+      "usd_per_success": 0.00013622857142857144,
+      "savings_vs_always_strong": 0.8853570569848521,
+      "latency_p50_ms": 1097.798729499118,
+      "latency_p95_ms": 2042.517710199172,
+      "router_latency_p50_ms": 0.0,
+      "target_latency_p50_ms": 1097.798729499118,
+      "ttft_p50_ms": 772.2372499993071,
+      "ttft_p95_ms": 985.9205124996151
+    },
+    "random_matched": {
+      "n": 10,
+      "quality_mean": 0.9,
+      "quality_delta_vs_strong": -0.09999999999999998,
+      "quality_delta_95ci": [
+        -0.3,
+        0.0
+      ],
+      "success_rate": 0.9,
+      "strong_selection_rate": 0.5,
+      "fallback_rate": 0.0,
+      "error_rate": 0.0,
+      "total_cost_usd": 0.0032202,
+      "usd_per_request": 0.00032202,
+      "usd_per_1000_requests": 0.32202000000000003,
+      "usd_per_success": 0.00035779999999999997,
+      "savings_vs_always_strong": 0.6128636691512382,
+      "latency_p50_ms": 1644.2004370001086,
+      "latency_p95_ms": 3362.185908150239,
+      "router_latency_p50_ms": 0.0,
+      "target_latency_p50_ms": 1644.2004370001086,
+      "ttft_p50_ms": 973.6983959992358,
+      "ttft_p95_ms": 2929.981143449911
+    },
+    "jev": {
+      "n": 10,
+      "quality_mean": 0.9,
+      "quality_delta_vs_strong": -0.09999999999999998,
+      "quality_delta_95ci": [
+        -0.3,
+        0.0
+      ],
+      "success_rate": 0.9,
+      "strong_selection_rate": 0.4,
+      "fallback_rate": 0.0,
+      "error_rate": 0.0,
+      "total_cost_usd": 0.005319358,
+      "usd_per_request": 0.0005319357999999999,
+      "usd_per_1000_requests": 0.5319358,
+      "usd_per_success": 0.0005910397777777777,
+      "savings_vs_always_strong": 0.360500360663621,
+      "latency_p50_ms": 1675.8894585000235,
+      "latency_p95_ms": 4021.2216622001492,
+      "router_latency_p50_ms": 507.30106299852196,
+      "target_latency_p50_ms": 1265.2256665005552,
+      "ttft_p50_ms": 844.8483539996232,
+      "ttft_p95_ms": 2689.8235499991615
+    }
+  },
+  "subgroups": {
+    "language": {
+      "tr": {
+        "always_strong": 1.0,
+        "always_cheap": 0.8,
+        "rule": 0.8,
+        "random_matched": 0.8,
+        "jev": 0.8
+      },
+      "en": {
+        "always_strong": 1.0,
+        "always_cheap": 0.6,
+        "rule": 0.6,
+        "random_matched": 1.0,
+        "jev": 1.0
+      }
+    },
+    "group": {
+      "multi_step_reasoning": {
+        "always_strong": 1.0,
+        "always_cheap": 0.0,
+        "rule": 0.0,
+        "random_matched": 0.5,
+        "jev": 0.5
+      },
+      "constraint_reasoning": {
+        "always_strong": 1.0,
+        "always_cheap": 0.0,
+        "rule": 0.0,
+        "random_matched": 1.0,
+        "jev": 1.0
+      },
+      "combinatorics": {
+        "always_strong": 1.0,
+        "always_cheap": 1.0,
+        "rule": 1.0,
+        "random_matched": 1.0,
+        "jev": 1.0
+      },
+      "coding": {
+        "always_strong": 1.0,
+        "always_cheap": 1.0,
+        "rule": 1.0,
+        "random_matched": 1.0,
+        "jev": 1.0
+      },
+      "structured_extraction": {
+        "always_strong": 1.0,
+        "always_cheap": 1.0,
+        "rule": 1.0,
+        "random_matched": 1.0,
+        "jev": 1.0
+      },
+      "instruction_following": {
+        "always_strong": 1.0,
+        "always_cheap": 1.0,
+        "rule": 1.0,
+        "random_matched": 1.0,
+        "jev": 1.0
+      },
+      "translation_summary": {
+        "always_strong": 1.0,
+        "always_cheap": 1.0,
+        "rule": 1.0,
+        "random_matched": 1.0,
+        "jev": 1.0
+      }
+    }
+  },
+  "run": {
+    "run_id": "20260919T171750Z",
+    "mode": "live",
+    "task_count": 10,
+    "threshold": 0.58,
+    "jev_strong_rate": 0.4,
+    "budget_limit_usd": null,
+    "ledger_spend_usd": 0.009565558000000002,
+    "cost_kind": "provider_reported_when_available_else_calculated_from_usage",
+    "unique_live_target_calls": 20,
+    "unique_live_jev_calls": 10
+  }
+}

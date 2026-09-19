@@ -6,6 +6,14 @@
     "official_benchmark": false,
     "redistributable": true
   },
+  "synthetic_live_smoke_v1": {
+    "path": "data/live_smoke_v1.jsonl",
+    "count": 10,
+    "languages": ["tr", "en"],
+    "license": "project MIT license",
+    "official_benchmark": false,
+    "redistributable": true
+  },
   "planned_public_sources": [
     {"name": "GSM8K", "url": "https://github.com/openai/grade-school-math", "license": "MIT", "redistributed": false},
     {"name": "MGSM", "url": "https://github.com/google-research/url-nlp", "license": "CC-BY-4.0", "redistributed": false},

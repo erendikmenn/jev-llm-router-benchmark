@@ -90,7 +90,7 @@ def generate_report(result_dir: str | Path) -> Path:
         "",
         "## Önceden tanımlı hedef",
         "",
-        f"Hedef, güçlü baseline'a göre toplam başarı/kalite kaybını en fazla 2 yüzde puanında tutarken maliyeti azaltmaktı. Bu koşuda ölçülen kayıp **{loss_pp:.2f} yüzde puanı**. Küçük ve sentetik fixture kümesi kalite korumasını kanıtlamak için yeterli değildir; güven aralığı ve alt gruplar kararın parçasıdır.",
+        f"Hedef, güçlü baseline'a göre toplam başarı/kalite kaybını en fazla 2 yüzde puanında tutarken maliyeti azaltmaktı. Bu koşuda ölçülen kayıp **{loss_pp:.2f} yüzde puanı**. Küçük sentetik görev kümesi kalite korumasını kanıtlamak için yeterli değildir; güven aralığı ve alt gruplar kararın parçasıdır.",
         "",
         "## Hata analizi",
         "",
@@ -98,7 +98,7 @@ def generate_report(result_dir: str | Path) -> Path:
         f"- Ucuz model aynı kaliteyi sağlayabilecekken güçlü model seçilen örnek: {len(needless_strong)}",
         f"- Fallback oranı: %{jev['fallback_rate'] * 100:.1f}",
         f"- Hata oranı: %{jev['error_rate'] * 100:.1f}",
-        f"- Fixture iş yükünde Jev ek maliyetini karşılamak için gereken asgari ucuz-model oranı: {('hesaplanamadı' if min_cheap_rate is None else f'%{min_cheap_rate * 100:.1f}')}",
+        f"- Bu iş yükünde Jev ek maliyetini karşılamak için gereken asgari ucuz-model oranı: {('hesaplanamadı' if min_cheap_rate is None else f'%{min_cheap_rate * 100:.1f}')}",
         "",
     ])
     if run["mode"] == "live":
@@ -107,7 +107,7 @@ def generate_report(result_dir: str | Path) -> Path:
             "",
             "Her Luna/Sol hücresi bir canlı çağrıdır. Jev politikasının seçtiği hedef yanıt tam matristen yeniden kullanılmıştır; böylece yönlendirilmiş yolun kalite ve hedef gecikmesi aynı canlı yanıta dayanırken gereksiz ikinci ücret oluşmamıştır.",
             "",
-            "| Görev | Dil / grup | Luna kalite · USD · ms · TTFT | Sol kalite · USD · ms · TTFT | Jev seçim · P(strong) · güven | Jev ms · USD | Yönlendirilmiş E2E ms |",
+            "| Görev | Dil / grup | Luna kalite · USD · ms · TTFT | Sol kalite · USD · ms · TTFT | Jev ham seçim · P(strong) · güven → uygulanan yol | Jev ms · USD | Yönlendirilmiş E2E ms |",
             "|---|---|---:|---:|---|---:|---:|",
         ])
         task_ids = sorted({row["task_id"] for row in measurements})
@@ -123,7 +123,7 @@ def generate_report(result_dir: str | Path) -> Path:
                 f"| `{task_id}` | {jev_row['language']} / {jev_row['group']} | "
                 f"{cheap_row['quality']:.2f} · ${cheap_row['target_cost_usd']:.6f} · {cheap_row['target_latency_ms']:.0f} · {cheap_ttft} | "
                 f"{strong_row['quality']:.2f} · ${strong_row['target_cost_usd']:.6f} · {strong_row['target_latency_ms']:.0f} · {strong_ttft} | "
-                f"{jev_row['selected_role']} · {probability} · {confidence} | "
+                f"{jev_row['jev_choice']} · {probability} · {confidence} → {jev_row['selected_role']} | "
                 f"{jev_row['router_latency_ms']:.0f} · ${jev_row['router_cost_usd']:.6f} | {jev_row['latency_ms']:.0f} |"
             )
         lines.append("")
