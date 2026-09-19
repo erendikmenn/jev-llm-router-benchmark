@@ -51,6 +51,8 @@ Farklı metrikler doğrudan “tek skor” diye ortalanmaz. Demo agregası 0–1
 
 Routed toplam maliyet = Jev + seçilen hedef + retry + fallback + varsa validator. Provider usage yoksa değer `estimated/calculated` olarak etiketlenir, fatura denmez. Benchmark matrisi üretme maliyeti ayrı tutulur.
 
+Timeout veya bağlantı hatasında sağlayıcı usage gövdesi dönmezse çağrının ücretsiz olduğu varsayılmaz: başarısız deneme konfigüre edilmiş tam çıktı bütçesiyle muhafazakâr tahmin edilir ve measurement hata alanında bu tahmin açıkça işaretlenir.
+
 Replay kalite/maliyet eğrileri canlı routing gecikmesi değildir. Canlı latency koşusunda yalnız gerçekten seçilen yol çağrılır. Uçtan uca p50/p95, Jev ve hedef süreleri ayrı; streaming açıksa TTFT raporlanır. Ağır RAG benchmarkı ile aynı makinede eşzamanlı adil latency koşusu yapılmaz.
 
 ## Pilot ve ölçek

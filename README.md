@@ -94,6 +94,8 @@ Her koşu dizini şunları üretir:
 
 Tam model matrisi üretimi ile canlı routing ayrı deneylerdir. Fixture/replay latency canlı ölçüm diye sunulmaz. Streaming varsayılan olarak kapalı olduğu için TTFT `null` kalır; streaming açılan ayrı protokolde raporlanmalıdır.
 
+Timeout gibi usage dönmeyen başarısız çağrılar ücretsiz varsayılmaz; tam çıktı bütçesine göre muhafazakâr tahmin edilir ve measurement hata alanında etiketlenir. Provider usage bulunan retry/fallback çağrıları doğrudan toplam maliyete eklenir.
+
 ## Veri ve lisans
 
 `data/demo_pilot.jsonl` pipeline için özgün sentetik 40 görevdir; resmî benchmark değildir. Public benchmark içerikleri repoda yoktur. Adaylar, lisansları ve yeniden üretim politikası `data/SOURCES.json` ile araştırma belgesinde kayıtlıdır. Yeniden dağıtım izni net olmayan içerik commitlenmez.
