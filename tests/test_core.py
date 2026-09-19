@@ -38,6 +38,24 @@ def test_scoring_json_and_code(tasks):
     assert score_output(coding, coding.fixture["strong"]["text"]) == 1
 
 
+def test_code_sandbox_blocks_network_socket(tasks):
+    coding = next(task for task in tasks if task.metric == "python_tests")
+    probe = replace(
+        coding,
+        tests=[{"expression": "network_is_blocked()"}],
+    )
+    source = (
+        "def network_is_blocked():\n"
+        "    try:\n"
+        "        import socket\n"
+        "        socket.socket()\n"
+        "        return False\n"
+        "    except OSError:\n"
+        "        return True\n"
+    )
+    assert score_output(probe, source) == 1
+
+
 def test_deterministic_filter_rejects_non_text(config, tasks):
     task = replace(tasks[0], constraints={"modality": "image"})
     assert check_eligibility(task, config).reject_reason == "unsupported_modality:image"
