@@ -1,0 +1,55 @@
+[experiment]
+name = "jev-pre-routing-v1"
+seed = 20260919
+quality_loss_limit_pp = 2.0
+default_threshold = 0.58
+concurrency = 1
+cache = false
+stream = false
+max_output_tokens = 512
+request_timeout_seconds = 60.0
+max_retries = 2
+
+[router]
+jev_model = "jev-1.13.0"
+jev_context_tokens = 65536
+jev_state_plus_longest_question_tokens = 32768
+low_confidence_fallback = "strong"
+unsupported_fallback = "reject"
+
+[models.cheap]
+provider = "openai"
+model_id = "gpt-5.6-luna"
+context_tokens = 1050000
+max_output_tokens = 128000
+input_usd_per_million = 0.20
+cached_input_usd_per_million = 0.02
+output_usd_per_million = 1.20
+supports_streaming = true
+text_only_benchmark_eligible = true
+profile = "Routine rewriting, classification, extraction, translation, summarization, and straightforward QA; dev results must validate this profile."
+
+[models.strong]
+provider = "openai"
+model_id = "gpt-5.6-sol"
+context_tokens = 1050000
+max_output_tokens = 128000
+input_usd_per_million = 4.00
+cached_input_usd_per_million = 0.40
+output_usd_per_million = 20.00
+supports_streaming = true
+text_only_benchmark_eligible = true
+profile = "Complex constraints, multi-step reasoning, and difficult coding; dev results must validate this profile."
+
+[pricing.jev]
+input_usd_per_million = 0.042
+output_usd_per_million = 0.0
+source_checked_at = "2026-09-19"
+source_url = "https://docs.typesafe.ai/models"
+
+[pricing.openai]
+source_checked_at = "2026-09-19"
+luna_source_url = "https://developers.openai.com/api/docs/models/gpt-5.6-luna"
+sol_source_url = "https://developers.openai.com/api/docs/models/gpt-5.6-sol"
+note = "Sol promotional price is documented as available at least through 2026-11-21; refresh before every live run."
+

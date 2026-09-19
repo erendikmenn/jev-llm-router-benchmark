@@ -1,0 +1,16 @@
+{
+  "synthetic_demo": {
+    "path": "data/demo_pilot.jsonl",
+    "count": 40,
+    "license": "project MIT license",
+    "official_benchmark": false,
+    "redistributable": true
+  },
+  "planned_public_sources": [
+    {"name": "GSM8K", "url": "https://github.com/openai/grade-school-math", "license": "MIT", "redistributed": false},
+    {"name": "MGSM", "url": "https://github.com/google-research/url-nlp", "license": "CC-BY-4.0", "redistributed": false},
+    {"name": "MMLU", "url": "https://github.com/hendrycks/test", "license": "MIT", "redistributed": false},
+    {"name": "HumanEval", "url": "https://github.com/openai/human-eval", "license": "MIT", "redistributed": false},
+    {"name": "FLORES-200", "url": "https://huggingface.co/datasets/facebook/flores", "license": "CC-BY-SA-4.0", "redistributed": false}
+  ]
+}

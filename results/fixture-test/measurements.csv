@@ -1,0 +1,207 @@
+run_id,mode,baseline,task_id,split,language,group,selected_role,selected_model,quality,target_cost_usd,router_cost_usd,total_cost_usd,latency_ms,router_latency_ms,target_latency_ms,ttft_ms,fallback,error,route_rule,output_text,usage
+20260919T165033Z,fixture,always_strong,demo-003,test,en,extraction_classification,strong,gpt-5.6-sol,1.0,0.00036,0.0,0.00036,311.0,0.0,311.0,,False,,fixed_strong,"{""city"":""İzmir"",""country"":""TR""}","{""cached_input_tokens"": 0, ""input_tokens"": 50, ""output_tokens"": 8}"
+20260919T165033Z,fixture,always_strong,demo-004,test,en,extraction_classification,strong,gpt-5.6-sol,1.0,0.000268,0.0,0.000268,328.0,0.0,328.0,,False,,fixed_strong,neutral,"{""cached_input_tokens"": 0, ""input_tokens"": 52, ""output_tokens"": 3}"
+20260919T165033Z,fixture,always_strong,demo-007,test,en,translation_summary,strong,gpt-5.6-sol,1.0,0.000412,0.0,0.000412,289.0,0.0,289.0,,False,,fixed_strong,Could you please send the report now?,"{""cached_input_tokens"": 0, ""input_tokens"": 58, ""output_tokens"": 9}"
+20260919T165033Z,fixture,always_strong,demo-008,test,en,translation_summary,strong,gpt-5.6-sol,0.75,0.00054,0.0,0.00054,306.0,0.0,306.0,,False,,fixed_strong,"Revenue grew faster than costs, improving the operating margin.","{""cached_input_tokens"": 0, ""input_tokens"": 60, ""output_tokens"": 15}"
+20260919T165033Z,fixture,always_strong,demo-011,test,en,general_qa,strong,gpt-5.6-sol,1.0,0.000344,0.0,0.000344,267.0,0.0,267.0,,False,,fixed_strong,Ursula K. Le Guin,"{""cached_input_tokens"": 0, ""input_tokens"": 66, ""output_tokens"": 4}"
+20260919T165033Z,fixture,always_strong,demo-012,test,en,general_qa,strong,gpt-5.6-sol,1.0,0.000332,0.0,0.000332,284.0,0.0,284.0,,False,,fixed_strong,ohm,"{""cached_input_tokens"": 0, ""input_tokens"": 68, ""output_tokens"": 3}"
+20260919T165033Z,fixture,always_strong,demo-015,test,en,multi_step_reasoning,strong,gpt-5.6-sol,1.0,0.000356,0.0,0.000356,335.0,0.0,335.0,,False,,fixed_strong,48,"{""cached_input_tokens"": 0, ""input_tokens"": 74, ""output_tokens"": 3}"
+20260919T165033Z,fixture,always_strong,demo-016,test,en,multi_step_reasoning,strong,gpt-5.6-sol,1.0,0.000364,0.0,0.000364,262.0,0.0,262.0,,False,,fixed_strong,42,"{""cached_input_tokens"": 0, ""input_tokens"": 76, ""output_tokens"": 3}"
+20260919T165033Z,fixture,always_strong,demo-019,test,en,coding,strong,gpt-5.6-sol,1.0,0.000988,0.0,0.000988,313.0,0.0,313.0,,False,,fixed_strong,"def raises(fn):
+    try:
+        fn()
+    except ValueError:
+        return True
+    return False
+
+def chunks(items, size):
+    if size <= 0: raise ValueError('size')
+    return [items[i:i+size] for i in range(0, len(items), size)]","{""cached_input_tokens"": 0, ""input_tokens"": 82, ""output_tokens"": 33}"
+20260919T165033Z,fixture,always_strong,demo-020,test,en,coding,strong,gpt-5.6-sol,1.0,0.000896,0.0,0.000896,330.0,0.0,330.0,,False,,fixed_strong,"def dedupe(items):
+    out = []
+    for item in items:
+        if item not in out: out.append(item)
+    return out","{""cached_input_tokens"": 0, ""input_tokens"": 84, ""output_tokens"": 28}"
+20260919T165033Z,fixture,always_strong,demo-023,test,tr,extraction_classification,strong,gpt-5.6-sol,1.0,0.00052,0.0,0.00052,291.0,0.0,291.0,,False,,fixed_strong,"{""şehir"":""Eskişehir"",""plaka"":26}","{""cached_input_tokens"": 0, ""input_tokens"": 90, ""output_tokens"": 8}"
+20260919T165033Z,fixture,always_strong,demo-024,test,tr,extraction_classification,strong,gpt-5.6-sol,1.0,0.000428,0.0,0.000428,308.0,0.0,308.0,,False,,fixed_strong,nötr,"{""cached_input_tokens"": 0, ""input_tokens"": 92, ""output_tokens"": 3}"
+20260919T165033Z,fixture,always_strong,demo-027,test,tr,translation_summary,strong,gpt-5.6-sol,1.0,0.000672,0.0,0.000672,269.0,0.0,269.0,,False,,fixed_strong,Dosyayı lütfen en kısa sürede gönderebilir misiniz?,"{""cached_input_tokens"": 0, ""input_tokens"": 98, ""output_tokens"": 14}"
+20260919T165033Z,fixture,always_strong,demo-028,test,tr,translation_summary,strong,gpt-5.6-sol,1.0,0.00076,0.0,0.00076,286.0,0.0,286.0,,False,,fixed_strong,Gelir maliyetten daha hızlı arttığı için faaliyet marjı iyileşti.,"{""cached_input_tokens"": 0, ""input_tokens"": 100, ""output_tokens"": 18}"
+20260919T165033Z,fixture,always_strong,demo-031,test,tr,general_qa,strong,gpt-5.6-sol,1.0,0.000504,0.0,0.000504,337.0,0.0,337.0,,False,,fixed_strong,Ursula K. Le Guin,"{""cached_input_tokens"": 0, ""input_tokens"": 106, ""output_tokens"": 4}"
+20260919T165033Z,fixture,always_strong,demo-032,test,tr,general_qa,strong,gpt-5.6-sol,1.0,0.000492,0.0,0.000492,264.0,0.0,264.0,,False,,fixed_strong,ohm,"{""cached_input_tokens"": 0, ""input_tokens"": 108, ""output_tokens"": 3}"
+20260919T165033Z,fixture,always_strong,demo-035,test,tr,multi_step_reasoning,strong,gpt-5.6-sol,1.0,0.000516,0.0,0.000516,315.0,0.0,315.0,,False,,fixed_strong,48,"{""cached_input_tokens"": 0, ""input_tokens"": 114, ""output_tokens"": 3}"
+20260919T165033Z,fixture,always_strong,demo-036,test,tr,multi_step_reasoning,strong,gpt-5.6-sol,1.0,0.000524,0.0,0.000524,332.0,0.0,332.0,,False,,fixed_strong,42,"{""cached_input_tokens"": 0, ""input_tokens"": 116, ""output_tokens"": 3}"
+20260919T165033Z,fixture,always_strong,demo-039,test,tr,coding,strong,gpt-5.6-sol,1.0,0.001148,0.0,0.001148,293.0,0.0,293.0,,False,,fixed_strong,"def raises(fn):
+    try:
+        fn()
+    except ValueError:
+        return True
+    return False
+
+def chunks(items, size):
+    if size <= 0: raise ValueError('size')
+    return [items[i:i+size] for i in range(0, len(items), size)]","{""cached_input_tokens"": 0, ""input_tokens"": 122, ""output_tokens"": 33}"
+20260919T165033Z,fixture,always_strong,demo-040,test,tr,coding,strong,gpt-5.6-sol,1.0,0.001056,0.0,0.001056,310.0,0.0,310.0,,False,,fixed_strong,"def dedupe(items):
+    out = []
+    for item in items:
+        if item not in out: out.append(item)
+    return out","{""cached_input_tokens"": 0, ""input_tokens"": 124, ""output_tokens"": 28}"
+20260919T165033Z,fixture,always_cheap,demo-003,test,en,extraction_classification,cheap,gpt-5.6-luna,0.5,1.84e-05,0.0,1.84e-05,166.0,0.0,166.0,,False,,fixed_cheap,"{""city"":""Izmir"",""country"":""TR""}","{""cached_input_tokens"": 0, ""input_tokens"": 50, ""output_tokens"": 7}"
+20260919T165033Z,fixture,always_cheap,demo-004,test,en,extraction_classification,cheap,gpt-5.6-luna,0.0,1.4e-05,0.0,1.4e-05,183.0,0.0,183.0,,False,,fixed_cheap,negative,"{""cached_input_tokens"": 0, ""input_tokens"": 52, ""output_tokens"": 3}"
+20260919T165033Z,fixture,always_cheap,demo-007,test,en,translation_summary,cheap,gpt-5.6-luna,1.0,1.88e-05,0.0,1.88e-05,144.0,0.0,144.0,,False,,fixed_cheap,Please send the report now.,"{""cached_input_tokens"": 0, ""input_tokens"": 58, ""output_tokens"": 6}"
+20260919T165033Z,fixture,always_cheap,demo-008,test,en,translation_summary,cheap,gpt-5.6-luna,1.0,2.4e-05,0.0,2.4e-05,161.0,0.0,161.0,,False,,fixed_cheap,Revenue and costs rose; margin improved.,"{""cached_input_tokens"": 0, ""input_tokens"": 60, ""output_tokens"": 10}"
+20260919T165033Z,fixture,always_cheap,demo-011,test,en,general_qa,cheap,gpt-5.6-luna,0.0,1.6800000000000002e-05,0.0,1.6800000000000002e-05,122.0,0.0,122.0,,False,,fixed_cheap,Ursula Le Guin,"{""cached_input_tokens"": 0, ""input_tokens"": 66, ""output_tokens"": 3}"
+20260919T165033Z,fixture,always_cheap,demo-012,test,en,general_qa,cheap,gpt-5.6-luna,0.0,1.72e-05,0.0,1.72e-05,139.0,0.0,139.0,,False,,fixed_cheap,volt,"{""cached_input_tokens"": 0, ""input_tokens"": 68, ""output_tokens"": 3}"
+20260919T165033Z,fixture,always_cheap,demo-015,test,en,multi_step_reasoning,cheap,gpt-5.6-luna,0.0,1.84e-05,0.0,1.84e-05,190.0,0.0,190.0,,False,,fixed_cheap,50,"{""cached_input_tokens"": 0, ""input_tokens"": 74, ""output_tokens"": 3}"
+20260919T165033Z,fixture,always_cheap,demo-016,test,en,multi_step_reasoning,cheap,gpt-5.6-luna,1.0,1.88e-05,0.0,1.88e-05,117.0,0.0,117.0,,False,,fixed_cheap,42,"{""cached_input_tokens"": 0, ""input_tokens"": 76, ""output_tokens"": 3}"
+20260919T165033Z,fixture,always_cheap,demo-019,test,en,coding,cheap,gpt-5.6-luna,1.0,4.28e-05,0.0,4.28e-05,168.0,0.0,168.0,,False,,fixed_cheap,"def raises(fn):
+    try:
+        fn()
+    except ValueError:
+        return True
+    return False
+
+def chunks(items, size):
+    return [items[i:i+size] for i in range(0, len(items), size)]","{""cached_input_tokens"": 0, ""input_tokens"": 82, ""output_tokens"": 22}"
+20260919T165033Z,fixture,always_cheap,demo-020,test,en,coding,cheap,gpt-5.6-luna,0.0,3.3600000000000004e-05,0.0,3.3600000000000004e-05,185.0,0.0,185.0,,False,,fixed_cheap,"def dedupe(items):
+    return list(dict.fromkeys(items))","{""cached_input_tokens"": 0, ""input_tokens"": 84, ""output_tokens"": 14}"
+20260919T165033Z,fixture,always_cheap,demo-023,test,tr,extraction_classification,cheap,gpt-5.6-luna,0.5,2.88e-05,0.0,2.88e-05,146.0,0.0,146.0,,False,,fixed_cheap,"{""şehir"":""Eskişehir"",""plaka"":""26""}","{""cached_input_tokens"": 0, ""input_tokens"": 90, ""output_tokens"": 9}"
+20260919T165033Z,fixture,always_cheap,demo-024,test,tr,extraction_classification,cheap,gpt-5.6-luna,0.0,2.2e-05,0.0,2.2e-05,163.0,0.0,163.0,,False,,fixed_cheap,olumsuz,"{""cached_input_tokens"": 0, ""input_tokens"": 92, ""output_tokens"": 3}"
+20260919T165033Z,fixture,always_cheap,demo-027,test,tr,translation_summary,cheap,gpt-5.6-luna,1.0,2.92e-05,0.0,2.92e-05,124.0,0.0,124.0,,False,,fixed_cheap,Lütfen dosyayı hemen gönderin.,"{""cached_input_tokens"": 0, ""input_tokens"": 98, ""output_tokens"": 8}"
+20260919T165033Z,fixture,always_cheap,demo-028,test,tr,translation_summary,cheap,gpt-5.6-luna,1.0,3.2e-05,0.0,3.2e-05,141.0,0.0,141.0,,False,,fixed_cheap,"Gelir ve maliyet arttı, marj iyileşti.","{""cached_input_tokens"": 0, ""input_tokens"": 100, ""output_tokens"": 10}"
+20260919T165033Z,fixture,always_cheap,demo-031,test,tr,general_qa,cheap,gpt-5.6-luna,0.0,2.4800000000000003e-05,0.0,2.4800000000000003e-05,192.0,0.0,192.0,,False,,fixed_cheap,Ursula Le Guin,"{""cached_input_tokens"": 0, ""input_tokens"": 106, ""output_tokens"": 3}"
+20260919T165033Z,fixture,always_cheap,demo-032,test,tr,general_qa,cheap,gpt-5.6-luna,0.0,2.5200000000000003e-05,0.0,2.5200000000000003e-05,119.0,0.0,119.0,,False,,fixed_cheap,volt,"{""cached_input_tokens"": 0, ""input_tokens"": 108, ""output_tokens"": 3}"
+20260919T165033Z,fixture,always_cheap,demo-035,test,tr,multi_step_reasoning,cheap,gpt-5.6-luna,0.0,2.6399999999999998e-05,0.0,2.6399999999999998e-05,170.0,0.0,170.0,,False,,fixed_cheap,50,"{""cached_input_tokens"": 0, ""input_tokens"": 114, ""output_tokens"": 3}"
+20260919T165033Z,fixture,always_cheap,demo-036,test,tr,multi_step_reasoning,cheap,gpt-5.6-luna,1.0,2.6800000000000004e-05,0.0,2.6800000000000004e-05,187.0,0.0,187.0,,False,,fixed_cheap,42,"{""cached_input_tokens"": 0, ""input_tokens"": 116, ""output_tokens"": 3}"
+20260919T165033Z,fixture,always_cheap,demo-039,test,tr,coding,cheap,gpt-5.6-luna,1.0,5.0799999999999995e-05,0.0,5.0799999999999995e-05,148.0,0.0,148.0,,False,,fixed_cheap,"def raises(fn):
+    try:
+        fn()
+    except ValueError:
+        return True
+    return False
+
+def chunks(items, size):
+    return [items[i:i+size] for i in range(0, len(items), size)]","{""cached_input_tokens"": 0, ""input_tokens"": 122, ""output_tokens"": 22}"
+20260919T165033Z,fixture,always_cheap,demo-040,test,tr,coding,cheap,gpt-5.6-luna,0.0,4.16e-05,0.0,4.16e-05,165.0,0.0,165.0,,False,,fixed_cheap,"def dedupe(items):
+    return list(dict.fromkeys(items))","{""cached_input_tokens"": 0, ""input_tokens"": 124, ""output_tokens"": 14}"
+20260919T165033Z,fixture,rule,demo-003,test,en,extraction_classification,cheap,gpt-5.6-luna,0.5,1.84e-05,0.0,1.84e-05,166.0,0.0,166.0,,False,,rule_pattern_cheap,"{""city"":""Izmir"",""country"":""TR""}","{""cached_input_tokens"": 0, ""input_tokens"": 50, ""output_tokens"": 7}"
+20260919T165033Z,fixture,rule,demo-004,test,en,extraction_classification,cheap,gpt-5.6-luna,0.0,1.4e-05,0.0,1.4e-05,183.0,0.0,183.0,,False,,rule_pattern_cheap,negative,"{""cached_input_tokens"": 0, ""input_tokens"": 52, ""output_tokens"": 3}"
+20260919T165033Z,fixture,rule,demo-007,test,en,translation_summary,cheap,gpt-5.6-luna,1.0,1.88e-05,0.0,1.88e-05,144.0,0.0,144.0,,False,,rule_pattern_cheap,Please send the report now.,"{""cached_input_tokens"": 0, ""input_tokens"": 58, ""output_tokens"": 6}"
+20260919T165033Z,fixture,rule,demo-008,test,en,translation_summary,cheap,gpt-5.6-luna,1.0,2.4e-05,0.0,2.4e-05,161.0,0.0,161.0,,False,,rule_pattern_cheap,Revenue and costs rose; margin improved.,"{""cached_input_tokens"": 0, ""input_tokens"": 60, ""output_tokens"": 10}"
+20260919T165033Z,fixture,rule,demo-011,test,en,general_qa,cheap,gpt-5.6-luna,0.0,1.6800000000000002e-05,0.0,1.6800000000000002e-05,122.0,0.0,122.0,,False,,rule_pattern_cheap,Ursula Le Guin,"{""cached_input_tokens"": 0, ""input_tokens"": 66, ""output_tokens"": 3}"
+20260919T165033Z,fixture,rule,demo-012,test,en,general_qa,cheap,gpt-5.6-luna,0.0,1.72e-05,0.0,1.72e-05,139.0,0.0,139.0,,False,,rule_pattern_cheap,volt,"{""cached_input_tokens"": 0, ""input_tokens"": 68, ""output_tokens"": 3}"
+20260919T165033Z,fixture,rule,demo-015,test,en,multi_step_reasoning,cheap,gpt-5.6-luna,0.0,1.84e-05,0.0,1.84e-05,190.0,0.0,190.0,,False,,rule_pattern_cheap,50,"{""cached_input_tokens"": 0, ""input_tokens"": 74, ""output_tokens"": 3}"
+20260919T165033Z,fixture,rule,demo-016,test,en,multi_step_reasoning,cheap,gpt-5.6-luna,1.0,1.88e-05,0.0,1.88e-05,117.0,0.0,117.0,,False,,rule_pattern_cheap,42,"{""cached_input_tokens"": 0, ""input_tokens"": 76, ""output_tokens"": 3}"
+20260919T165033Z,fixture,rule,demo-019,test,en,coding,cheap,gpt-5.6-luna,1.0,4.28e-05,0.0,4.28e-05,168.0,0.0,168.0,,False,,rule_pattern_cheap,"def raises(fn):
+    try:
+        fn()
+    except ValueError:
+        return True
+    return False
+
+def chunks(items, size):
+    return [items[i:i+size] for i in range(0, len(items), size)]","{""cached_input_tokens"": 0, ""input_tokens"": 82, ""output_tokens"": 22}"
+20260919T165033Z,fixture,rule,demo-020,test,en,coding,cheap,gpt-5.6-luna,0.0,3.3600000000000004e-05,0.0,3.3600000000000004e-05,185.0,0.0,185.0,,False,,rule_pattern_cheap,"def dedupe(items):
+    return list(dict.fromkeys(items))","{""cached_input_tokens"": 0, ""input_tokens"": 84, ""output_tokens"": 14}"
+20260919T165033Z,fixture,rule,demo-023,test,tr,extraction_classification,cheap,gpt-5.6-luna,0.5,2.88e-05,0.0,2.88e-05,146.0,0.0,146.0,,False,,rule_pattern_cheap,"{""şehir"":""Eskişehir"",""plaka"":""26""}","{""cached_input_tokens"": 0, ""input_tokens"": 90, ""output_tokens"": 9}"
+20260919T165033Z,fixture,rule,demo-024,test,tr,extraction_classification,cheap,gpt-5.6-luna,0.0,2.2e-05,0.0,2.2e-05,163.0,0.0,163.0,,False,,rule_pattern_cheap,olumsuz,"{""cached_input_tokens"": 0, ""input_tokens"": 92, ""output_tokens"": 3}"
+20260919T165033Z,fixture,rule,demo-027,test,tr,translation_summary,cheap,gpt-5.6-luna,1.0,2.92e-05,0.0,2.92e-05,124.0,0.0,124.0,,False,,rule_pattern_cheap,Lütfen dosyayı hemen gönderin.,"{""cached_input_tokens"": 0, ""input_tokens"": 98, ""output_tokens"": 8}"
+20260919T165033Z,fixture,rule,demo-028,test,tr,translation_summary,cheap,gpt-5.6-luna,1.0,3.2e-05,0.0,3.2e-05,141.0,0.0,141.0,,False,,rule_pattern_cheap,"Gelir ve maliyet arttı, marj iyileşti.","{""cached_input_tokens"": 0, ""input_tokens"": 100, ""output_tokens"": 10}"
+20260919T165033Z,fixture,rule,demo-031,test,tr,general_qa,cheap,gpt-5.6-luna,0.0,2.4800000000000003e-05,0.0,2.4800000000000003e-05,192.0,0.0,192.0,,False,,rule_pattern_cheap,Ursula Le Guin,"{""cached_input_tokens"": 0, ""input_tokens"": 106, ""output_tokens"": 3}"
+20260919T165033Z,fixture,rule,demo-032,test,tr,general_qa,cheap,gpt-5.6-luna,0.0,2.5200000000000003e-05,0.0,2.5200000000000003e-05,119.0,0.0,119.0,,False,,rule_pattern_cheap,volt,"{""cached_input_tokens"": 0, ""input_tokens"": 108, ""output_tokens"": 3}"
+20260919T165033Z,fixture,rule,demo-035,test,tr,multi_step_reasoning,cheap,gpt-5.6-luna,0.0,2.6399999999999998e-05,0.0,2.6399999999999998e-05,170.0,0.0,170.0,,False,,rule_pattern_cheap,50,"{""cached_input_tokens"": 0, ""input_tokens"": 114, ""output_tokens"": 3}"
+20260919T165033Z,fixture,rule,demo-036,test,tr,multi_step_reasoning,cheap,gpt-5.6-luna,1.0,2.6800000000000004e-05,0.0,2.6800000000000004e-05,187.0,0.0,187.0,,False,,rule_pattern_cheap,42,"{""cached_input_tokens"": 0, ""input_tokens"": 116, ""output_tokens"": 3}"
+20260919T165033Z,fixture,rule,demo-039,test,tr,coding,cheap,gpt-5.6-luna,1.0,5.0799999999999995e-05,0.0,5.0799999999999995e-05,148.0,0.0,148.0,,False,,rule_pattern_cheap,"def raises(fn):
+    try:
+        fn()
+    except ValueError:
+        return True
+    return False
+
+def chunks(items, size):
+    return [items[i:i+size] for i in range(0, len(items), size)]","{""cached_input_tokens"": 0, ""input_tokens"": 122, ""output_tokens"": 22}"
+20260919T165033Z,fixture,rule,demo-040,test,tr,coding,cheap,gpt-5.6-luna,0.0,4.16e-05,0.0,4.16e-05,165.0,0.0,165.0,,False,,rule_pattern_cheap,"def dedupe(items):
+    return list(dict.fromkeys(items))","{""cached_input_tokens"": 0, ""input_tokens"": 124, ""output_tokens"": 14}"
+20260919T165033Z,fixture,random_matched,demo-003,test,en,extraction_classification,cheap,gpt-5.6-luna,0.5,1.84e-05,0.0,1.84e-05,166.0,0.0,166.0,,False,,seeded_random_at_0.300,"{""city"":""Izmir"",""country"":""TR""}","{""cached_input_tokens"": 0, ""input_tokens"": 50, ""output_tokens"": 7}"
+20260919T165033Z,fixture,random_matched,demo-004,test,en,extraction_classification,strong,gpt-5.6-sol,1.0,0.000268,0.0,0.000268,328.0,0.0,328.0,,False,,seeded_random_at_0.300,neutral,"{""cached_input_tokens"": 0, ""input_tokens"": 52, ""output_tokens"": 3}"
+20260919T165033Z,fixture,random_matched,demo-007,test,en,translation_summary,cheap,gpt-5.6-luna,1.0,1.88e-05,0.0,1.88e-05,144.0,0.0,144.0,,False,,seeded_random_at_0.300,Please send the report now.,"{""cached_input_tokens"": 0, ""input_tokens"": 58, ""output_tokens"": 6}"
+20260919T165033Z,fixture,random_matched,demo-008,test,en,translation_summary,cheap,gpt-5.6-luna,1.0,2.4e-05,0.0,2.4e-05,161.0,0.0,161.0,,False,,seeded_random_at_0.300,Revenue and costs rose; margin improved.,"{""cached_input_tokens"": 0, ""input_tokens"": 60, ""output_tokens"": 10}"
+20260919T165033Z,fixture,random_matched,demo-011,test,en,general_qa,strong,gpt-5.6-sol,1.0,0.000344,0.0,0.000344,267.0,0.0,267.0,,False,,seeded_random_at_0.300,Ursula K. Le Guin,"{""cached_input_tokens"": 0, ""input_tokens"": 66, ""output_tokens"": 4}"
+20260919T165033Z,fixture,random_matched,demo-012,test,en,general_qa,cheap,gpt-5.6-luna,0.0,1.72e-05,0.0,1.72e-05,139.0,0.0,139.0,,False,,seeded_random_at_0.300,volt,"{""cached_input_tokens"": 0, ""input_tokens"": 68, ""output_tokens"": 3}"
+20260919T165033Z,fixture,random_matched,demo-015,test,en,multi_step_reasoning,cheap,gpt-5.6-luna,0.0,1.84e-05,0.0,1.84e-05,190.0,0.0,190.0,,False,,seeded_random_at_0.300,50,"{""cached_input_tokens"": 0, ""input_tokens"": 74, ""output_tokens"": 3}"
+20260919T165033Z,fixture,random_matched,demo-016,test,en,multi_step_reasoning,strong,gpt-5.6-sol,1.0,0.000364,0.0,0.000364,262.0,0.0,262.0,,False,,seeded_random_at_0.300,42,"{""cached_input_tokens"": 0, ""input_tokens"": 76, ""output_tokens"": 3}"
+20260919T165033Z,fixture,random_matched,demo-019,test,en,coding,cheap,gpt-5.6-luna,1.0,4.28e-05,0.0,4.28e-05,168.0,0.0,168.0,,False,,seeded_random_at_0.300,"def raises(fn):
+    try:
+        fn()
+    except ValueError:
+        return True
+    return False
+
+def chunks(items, size):
+    return [items[i:i+size] for i in range(0, len(items), size)]","{""cached_input_tokens"": 0, ""input_tokens"": 82, ""output_tokens"": 22}"
+20260919T165033Z,fixture,random_matched,demo-020,test,en,coding,cheap,gpt-5.6-luna,0.0,3.3600000000000004e-05,0.0,3.3600000000000004e-05,185.0,0.0,185.0,,False,,seeded_random_at_0.300,"def dedupe(items):
+    return list(dict.fromkeys(items))","{""cached_input_tokens"": 0, ""input_tokens"": 84, ""output_tokens"": 14}"
+20260919T165033Z,fixture,random_matched,demo-023,test,tr,extraction_classification,cheap,gpt-5.6-luna,0.5,2.88e-05,0.0,2.88e-05,146.0,0.0,146.0,,False,,seeded_random_at_0.300,"{""şehir"":""Eskişehir"",""plaka"":""26""}","{""cached_input_tokens"": 0, ""input_tokens"": 90, ""output_tokens"": 9}"
+20260919T165033Z,fixture,random_matched,demo-024,test,tr,extraction_classification,strong,gpt-5.6-sol,1.0,0.000428,0.0,0.000428,308.0,0.0,308.0,,False,,seeded_random_at_0.300,nötr,"{""cached_input_tokens"": 0, ""input_tokens"": 92, ""output_tokens"": 3}"
+20260919T165033Z,fixture,random_matched,demo-027,test,tr,translation_summary,strong,gpt-5.6-sol,1.0,0.000672,0.0,0.000672,269.0,0.0,269.0,,False,,seeded_random_at_0.300,Dosyayı lütfen en kısa sürede gönderebilir misiniz?,"{""cached_input_tokens"": 0, ""input_tokens"": 98, ""output_tokens"": 14}"
+20260919T165033Z,fixture,random_matched,demo-028,test,tr,translation_summary,cheap,gpt-5.6-luna,1.0,3.2e-05,0.0,3.2e-05,141.0,0.0,141.0,,False,,seeded_random_at_0.300,"Gelir ve maliyet arttı, marj iyileşti.","{""cached_input_tokens"": 0, ""input_tokens"": 100, ""output_tokens"": 10}"
+20260919T165033Z,fixture,random_matched,demo-031,test,tr,general_qa,cheap,gpt-5.6-luna,0.0,2.4800000000000003e-05,0.0,2.4800000000000003e-05,192.0,0.0,192.0,,False,,seeded_random_at_0.300,Ursula Le Guin,"{""cached_input_tokens"": 0, ""input_tokens"": 106, ""output_tokens"": 3}"
+20260919T165033Z,fixture,random_matched,demo-032,test,tr,general_qa,cheap,gpt-5.6-luna,0.0,2.5200000000000003e-05,0.0,2.5200000000000003e-05,119.0,0.0,119.0,,False,,seeded_random_at_0.300,volt,"{""cached_input_tokens"": 0, ""input_tokens"": 108, ""output_tokens"": 3}"
+20260919T165033Z,fixture,random_matched,demo-035,test,tr,multi_step_reasoning,cheap,gpt-5.6-luna,0.0,2.6399999999999998e-05,0.0,2.6399999999999998e-05,170.0,0.0,170.0,,False,,seeded_random_at_0.300,50,"{""cached_input_tokens"": 0, ""input_tokens"": 114, ""output_tokens"": 3}"
+20260919T165033Z,fixture,random_matched,demo-036,test,tr,multi_step_reasoning,cheap,gpt-5.6-luna,1.0,2.6800000000000004e-05,0.0,2.6800000000000004e-05,187.0,0.0,187.0,,False,,seeded_random_at_0.300,42,"{""cached_input_tokens"": 0, ""input_tokens"": 116, ""output_tokens"": 3}"
+20260919T165033Z,fixture,random_matched,demo-039,test,tr,coding,cheap,gpt-5.6-luna,1.0,5.0799999999999995e-05,0.0,5.0799999999999995e-05,148.0,0.0,148.0,,False,,seeded_random_at_0.300,"def raises(fn):
+    try:
+        fn()
+    except ValueError:
+        return True
+    return False
+
+def chunks(items, size):
+    return [items[i:i+size] for i in range(0, len(items), size)]","{""cached_input_tokens"": 0, ""input_tokens"": 122, ""output_tokens"": 22}"
+20260919T165033Z,fixture,random_matched,demo-040,test,tr,coding,cheap,gpt-5.6-luna,0.0,4.16e-05,0.0,4.16e-05,165.0,0.0,165.0,,False,,seeded_random_at_0.300,"def dedupe(items):
+    return list(dict.fromkeys(items))","{""cached_input_tokens"": 0, ""input_tokens"": 124, ""output_tokens"": 14}"
+20260919T165033Z,fixture,jev,demo-003,test,en,extraction_classification,cheap,gpt-5.6-luna,0.5,1.84e-05,9.912000000000001e-06,2.8312000000000003e-05,193.0,27.0,166.0,,False,,strong_probability_lt_0.680,"{""city"":""Izmir"",""country"":""TR""}","{""cached_input_tokens"": 0, ""input_tokens"": 50, ""output_tokens"": 7}"
+20260919T165033Z,fixture,jev,demo-004,test,en,extraction_classification,cheap,gpt-5.6-luna,0.0,1.4e-05,1.0374000000000001e-05,2.4374e-05,211.0,28.0,183.0,,False,,strong_probability_lt_0.680,negative,"{""cached_input_tokens"": 0, ""input_tokens"": 52, ""output_tokens"": 3}"
+20260919T165033Z,fixture,jev,demo-007,test,en,translation_summary,cheap,gpt-5.6-luna,1.0,1.88e-05,9.324e-06,2.8123999999999997e-05,168.0,24.0,144.0,,False,,strong_probability_lt_0.680,Please send the report now.,"{""cached_input_tokens"": 0, ""input_tokens"": 58, ""output_tokens"": 6}"
+20260919T165033Z,fixture,jev,demo-008,test,en,translation_summary,cheap,gpt-5.6-luna,1.0,2.4e-05,1.0038e-05,3.4038e-05,186.0,25.0,161.0,,False,,strong_probability_lt_0.680,Revenue and costs rose; margin improved.,"{""cached_input_tokens"": 0, ""input_tokens"": 60, ""output_tokens"": 10}"
+20260919T165033Z,fixture,jev,demo-011,test,en,general_qa,cheap,gpt-5.6-luna,0.0,1.6800000000000002e-05,9.576000000000001e-06,2.6376000000000003e-05,150.0,28.0,122.0,,False,,strong_probability_lt_0.680,Ursula Le Guin,"{""cached_input_tokens"": 0, ""input_tokens"": 66, ""output_tokens"": 3}"
+20260919T165033Z,fixture,jev,demo-012,test,en,general_qa,cheap,gpt-5.6-luna,0.0,1.72e-05,9.744e-06,2.6944e-05,168.0,29.0,139.0,,False,,strong_probability_lt_0.680,volt,"{""cached_input_tokens"": 0, ""input_tokens"": 68, ""output_tokens"": 3}"
+20260919T165033Z,fixture,jev,demo-015,test,en,multi_step_reasoning,strong,gpt-5.6-sol,1.0,0.000356,1.05e-05,0.00036649999999999996,360.0,25.0,335.0,,False,,strong_probability_gte_0.680,48,"{""cached_input_tokens"": 0, ""input_tokens"": 74, ""output_tokens"": 3}"
+20260919T165033Z,fixture,jev,demo-016,test,en,multi_step_reasoning,cheap,gpt-5.6-luna,1.0,1.88e-05,9.66e-06,2.8460000000000002e-05,143.0,26.0,117.0,,False,,strong_probability_lt_0.680,42,"{""cached_input_tokens"": 0, ""input_tokens"": 76, ""output_tokens"": 3}"
+20260919T165033Z,fixture,jev,demo-019,test,en,coding,strong,gpt-5.6-sol,1.0,0.000988,1.0416e-05,0.000998416,342.0,29.0,313.0,,False,,strong_probability_gte_0.680,"def raises(fn):
+    try:
+        fn()
+    except ValueError:
+        return True
+    return False
+
+def chunks(items, size):
+    if size <= 0: raise ValueError('size')
+    return [items[i:i+size] for i in range(0, len(items), size)]","{""cached_input_tokens"": 0, ""input_tokens"": 82, ""output_tokens"": 33}"
+20260919T165033Z,fixture,jev,demo-020,test,en,coding,strong,gpt-5.6-sol,1.0,0.000896,1.0122e-05,0.000906122,360.0,30.0,330.0,,False,,strong_probability_gte_0.680,"def dedupe(items):
+    out = []
+    for item in items:
+        if item not in out: out.append(item)
+    return out","{""cached_input_tokens"": 0, ""input_tokens"": 84, ""output_tokens"": 28}"
+20260919T165033Z,fixture,jev,demo-023,test,tr,extraction_classification,cheap,gpt-5.6-luna,0.5,2.88e-05,9.954e-06,3.8754e-05,172.0,26.0,146.0,,False,,strong_probability_lt_0.680,"{""şehir"":""Eskişehir"",""plaka"":""26""}","{""cached_input_tokens"": 0, ""input_tokens"": 90, ""output_tokens"": 9}"
+20260919T165033Z,fixture,jev,demo-024,test,tr,extraction_classification,cheap,gpt-5.6-luna,0.0,2.2e-05,1.0206000000000002e-05,3.2206e-05,190.0,27.0,163.0,,False,,strong_probability_lt_0.680,olumsuz,"{""cached_input_tokens"": 0, ""input_tokens"": 92, ""output_tokens"": 3}"
+20260919T165033Z,fixture,jev,demo-027,test,tr,translation_summary,cheap,gpt-5.6-luna,1.0,2.92e-05,9.408000000000002e-06,3.860800000000001e-05,154.0,30.0,124.0,,False,,strong_probability_lt_0.680,Lütfen dosyayı hemen gönderin.,"{""cached_input_tokens"": 0, ""input_tokens"": 98, ""output_tokens"": 8}"
+20260919T165033Z,fixture,jev,demo-028,test,tr,translation_summary,cheap,gpt-5.6-luna,1.0,3.2e-05,1.0038e-05,4.2038e-05,165.0,24.0,141.0,,False,,strong_probability_lt_0.680,"Gelir ve maliyet arttı, marj iyileşti.","{""cached_input_tokens"": 0, ""input_tokens"": 100, ""output_tokens"": 10}"
+20260919T165033Z,fixture,jev,demo-031,test,tr,general_qa,cheap,gpt-5.6-luna,0.0,2.4800000000000003e-05,9.576000000000001e-06,3.4376000000000004e-05,219.0,27.0,192.0,,False,,strong_probability_lt_0.680,Ursula Le Guin,"{""cached_input_tokens"": 0, ""input_tokens"": 106, ""output_tokens"": 3}"
+20260919T165033Z,fixture,jev,demo-032,test,tr,general_qa,cheap,gpt-5.6-luna,0.0,2.5200000000000003e-05,9.576000000000001e-06,3.477600000000001e-05,147.0,28.0,119.0,,False,,strong_probability_lt_0.680,volt,"{""cached_input_tokens"": 0, ""input_tokens"": 108, ""output_tokens"": 3}"
+20260919T165033Z,fixture,jev,demo-035,test,tr,multi_step_reasoning,strong,gpt-5.6-sol,1.0,0.000516,1.0458e-05,0.0005264579999999999,339.0,24.0,315.0,,False,,strong_probability_gte_0.680,48,"{""cached_input_tokens"": 0, ""input_tokens"": 114, ""output_tokens"": 3}"
+20260919T165033Z,fixture,jev,demo-036,test,tr,multi_step_reasoning,cheap,gpt-5.6-luna,1.0,2.6800000000000004e-05,9.744e-06,3.654400000000001e-05,212.0,25.0,187.0,,False,,strong_probability_lt_0.680,42,"{""cached_input_tokens"": 0, ""input_tokens"": 116, ""output_tokens"": 3}"
+20260919T165033Z,fixture,jev,demo-039,test,tr,coding,strong,gpt-5.6-sol,1.0,0.001148,1.0626000000000001e-05,0.0011586259999999998,321.0,28.0,293.0,,False,,strong_probability_gte_0.680,"def raises(fn):
+    try:
+        fn()
+    except ValueError:
+        return True
+    return False
+
+def chunks(items, size):
+    if size <= 0: raise ValueError('size')
+    return [items[i:i+size] for i in range(0, len(items), size)]","{""cached_input_tokens"": 0, ""input_tokens"": 122, ""output_tokens"": 33}"
+20260919T165033Z,fixture,jev,demo-040,test,tr,coding,strong,gpt-5.6-sol,1.0,0.001056,1.0332e-05,0.0010663320000000001,339.0,29.0,310.0,,False,,strong_probability_gte_0.680,"def dedupe(items):
+    out = []
+    for item in items:
+        if item not in out: out.append(item)
+    return out","{""cached_input_tokens"": 0, ""input_tokens"": 124, ""output_tokens"": 28}"

@@ -1,0 +1,118 @@
+{
+  "selected": {
+    "threshold": 0.68,
+    "quality": 1.0,
+    "quality_loss_pp": 0.0,
+    "strong_rate": 0.2
+  },
+  "curve": [
+    {
+      "threshold": 0.0,
+      "quality": 1.0,
+      "quality_loss_pp": 0.0,
+      "strong_rate": 1.0
+    },
+    {
+      "threshold": 0.1,
+      "quality": 1.0,
+      "quality_loss_pp": 0.0,
+      "strong_rate": 1.0
+    },
+    {
+      "threshold": 0.12,
+      "quality": 1.0,
+      "quality_loss_pp": 0.0,
+      "strong_rate": 0.95
+    },
+    {
+      "threshold": 0.14,
+      "quality": 1.0,
+      "quality_loss_pp": 0.0,
+      "strong_rate": 0.85
+    },
+    {
+      "threshold": 0.15,
+      "quality": 1.0,
+      "quality_loss_pp": 0.0,
+      "strong_rate": 0.8
+    },
+    {
+      "threshold": 0.16,
+      "quality": 1.0,
+      "quality_loss_pp": 0.0,
+      "strong_rate": 0.75
+    },
+    {
+      "threshold": 0.17,
+      "quality": 1.0,
+      "quality_loss_pp": 0.0,
+      "strong_rate": 0.65
+    },
+    {
+      "threshold": 0.18,
+      "quality": 1.0,
+      "quality_loss_pp": 0.0,
+      "strong_rate": 0.6
+    },
+    {
+      "threshold": 0.2,
+      "quality": 1.0,
+      "quality_loss_pp": 0.0,
+      "strong_rate": 0.5
+    },
+    {
+      "threshold": 0.21,
+      "quality": 1.0,
+      "quality_loss_pp": 0.0,
+      "strong_rate": 0.45
+    },
+    {
+      "threshold": 0.42,
+      "quality": 1.0,
+      "quality_loss_pp": 0.0,
+      "strong_rate": 0.4
+    },
+    {
+      "threshold": 0.46,
+      "quality": 1.0,
+      "quality_loss_pp": 0.0,
+      "strong_rate": 0.35
+    },
+    {
+      "threshold": 0.61,
+      "quality": 1.0,
+      "quality_loss_pp": 0.0,
+      "strong_rate": 0.3
+    },
+    {
+      "threshold": 0.64,
+      "quality": 1.0,
+      "quality_loss_pp": 0.0,
+      "strong_rate": 0.25
+    },
+    {
+      "threshold": 0.68,
+      "quality": 1.0,
+      "quality_loss_pp": 0.0,
+      "strong_rate": 0.2
+    },
+    {
+      "threshold": 0.72,
+      "quality": 0.95,
+      "quality_loss_pp": 5.000000000000004,
+      "strong_rate": 0.15
+    },
+    {
+      "threshold": 0.75,
+      "quality": 0.85,
+      "quality_loss_pp": 15.000000000000002,
+      "strong_rate": 0.05
+    },
+    {
+      "threshold": 1.0,
+      "quality": 0.8,
+      "quality_loss_pp": 19.999999999999996,
+      "strong_rate": 0.0
+    }
+  ]
+}

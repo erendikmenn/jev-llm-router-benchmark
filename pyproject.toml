@@ -1,0 +1,27 @@
+[build-system]
+requires = ["hatchling==1.27.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "jev-llm-router-benchmark"
+version = "0.1.0"
+description = "Honest, reproducible Jev pre-routing benchmark for two generative LLMs"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { file = "LICENSE" }
+authors = [{ name = "ErenAILab" }]
+dependencies = []
+
+[project.scripts]
+jev-router = "jev_router.cli:main"
+
+[project.optional-dependencies]
+dev = ["pytest==8.4.2"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/jev_router"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
