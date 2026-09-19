@@ -1,0 +1,43 @@
+{
+  "name": "public-benchmark-en-v1",
+  "seed": 20260919,
+  "task_count": 1200,
+  "dev_count": 200,
+  "test_count": 1000,
+  "tasks_sha256": "7cc566cc3ac5a04e684b1bacda0dbf3e18993d62c702cc6e32a560afd07375af",
+  "sources": {
+    "global_mmlu": {
+      "dataset": "CohereLabs/Global-MMLU",
+      "revision": "0e619dbeb34206cd48705a1a0ea7fb21cae09993",
+      "license": "Apache-2.0",
+      "config": "en",
+      "dev_split": "dev",
+      "test_split": "test"
+    },
+    "belebele": {
+      "dataset": "facebook/belebele",
+      "revision": "7899cdfa4e1e0d733fd77c848e2c273cb1d32be2",
+      "license": "CC-BY-SA-4.0",
+      "config": "eng_Latn",
+      "dev_split": "test",
+      "test_split": "test"
+    },
+    "gsm8k": {
+      "dataset": "openai/gsm8k",
+      "revision": "740312add88f781978c0658806c59bc2815b9866",
+      "license": "MIT",
+      "config": "main",
+      "dev_split": "train",
+      "test_split": "test"
+    },
+    "arc_challenge": {
+      "dataset": "allenai/ai2_arc",
+      "revision": "210d026faf9955653af8916fad021475a3f00453",
+      "license": "CC-BY-SA-4.0",
+      "config": "ARC-Challenge",
+      "dev_split": "validation",
+      "test_split": "test"
+    }
+  },
+  "sampling": "50 calibration and 250 locked test rows per source; Global-MMLU stratified by subject_category; all other sampling deterministic without replacement"
+}

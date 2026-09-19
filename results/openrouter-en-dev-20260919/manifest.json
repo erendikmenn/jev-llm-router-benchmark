@@ -1,0 +1,56 @@
+{
+  "created_at": "2026-09-19T17:55:15.717608+00:00",
+  "repository_commit": "1bb0838a2d206196c41d8eaf4702fabfd37f3e93",
+  "mode": "live",
+  "credential": {
+    "environment_variable": "OPENROUTER_API_KEY",
+    "value_recorded": false,
+    "local_source_note": "Loaded by the invoking shell; secrets are never written to artifacts."
+  },
+  "provider_endpoints": {
+    "generation": "https://openrouter.ai/api/v1/chat/completions",
+    "decisions": "https://openrouter.ai/api/alpha/decisions",
+    "catalog": "https://openrouter.ai/api/v1/models"
+  },
+  "models": {
+    "cheap": "openai/gpt-5.6-luna",
+    "strong": "openai/gpt-5.6-sol",
+    "router": "typesafe/jev-1.13"
+  },
+  "dataset": {
+    "path": "data/public_benchmark_en_v1.jsonl",
+    "sha256": "5a4e9ecb8563c0b22714902f493c45491f90d4df05e9cafb86c8a634327c9dc3"
+  },
+  "prompt_version": "router-questions-v1",
+  "generation_prompt_version": "direct-answer-v1",
+  "pricing": {
+    "jev": {
+      "input_usd_per_million": 0.042,
+      "output_usd_per_million": 0.0,
+      "source_checked_at": "2026-09-19",
+      "source_url": "https://openrouter.ai/typesafe/jev-1.13"
+    },
+    "openrouter": {
+      "source_checked_at": "2026-09-19",
+      "luna_source_url": "https://openrouter.ai/openai/gpt-5.6-luna",
+      "sol_source_url": "https://openrouter.ai/openai/gpt-5.6-sol",
+      "catalog_endpoint": "https://openrouter.ai/api/v1/models",
+      "jev_endpoint_catalog": "https://openrouter.ai/api/v1/models/typesafe/jev-1.13/endpoints",
+      "note": "Prices were read from the authenticated OpenRouter catalog immediately before the live run."
+    }
+  },
+  "seed": 20260919,
+  "threshold": 0.58,
+  "retry": {
+    "max_retries": 1,
+    "timeout_seconds": 90.0
+  },
+  "cache": false,
+  "concurrency": 1,
+  "stream": true,
+  "uncapped_live_safeguards": {
+    "max_tasks": 12,
+    "max_output_tokens_per_task": 256
+  },
+  "code_sandbox_backend": "sandbox-exec"
+}

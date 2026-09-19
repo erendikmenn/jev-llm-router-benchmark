@@ -1,0 +1,212 @@
+{
+  "baselines": {
+    "always_strong": {
+      "n": 200,
+      "quality_mean": 0.91,
+      "quality_delta_vs_strong": 0.0,
+      "quality_delta_95ci": [
+        0.0,
+        0.0
+      ],
+      "success_rate": 0.91,
+      "strong_selection_rate": 1.0,
+      "fallback_rate": 0.0,
+      "error_rate": 0.0,
+      "total_cost_usd": 0.065218,
+      "usd_per_request": 0.00032609,
+      "usd_per_1000_requests": 0.32609,
+      "usd_per_success": 0.00035834065934065934,
+      "savings_vs_always_strong": 0.0,
+      "latency_p50_ms": 1469.176749498729,
+      "latency_p95_ms": 3426.7918455505414,
+      "router_latency_p50_ms": 0.0,
+      "target_latency_p50_ms": 1469.176749498729,
+      "ttft_p50_ms": 1342.1545420023904,
+      "ttft_p95_ms": 2742.029070553679
+    },
+    "always_cheap": {
+      "n": 200,
+      "quality_mean": 0.835,
+      "quality_delta_vs_strong": -0.07500000000000007,
+      "quality_delta_95ci": [
+        -0.125,
+        -0.03
+      ],
+      "success_rate": 0.835,
+      "strong_selection_rate": 0.0,
+      "fallback_rate": 0.0,
+      "error_rate": 0.0,
+      "total_cost_usd": 0.0067696,
+      "usd_per_request": 3.3848e-05,
+      "usd_per_1000_requests": 0.033847999999999996,
+      "usd_per_success": 4.053652694610778e-05,
+      "savings_vs_always_strong": 0.8962004354626023,
+      "latency_p50_ms": 953.9905000019644,
+      "latency_p95_ms": 1457.1945437521204,
+      "router_latency_p50_ms": 0.0,
+      "target_latency_p50_ms": 953.9905000019644,
+      "ttft_p50_ms": 885.2809794989298,
+      "ttft_p95_ms": 1407.6675309035636
+    },
+    "rule": {
+      "n": 200,
+      "quality_mean": 0.835,
+      "quality_delta_vs_strong": -0.07500000000000007,
+      "quality_delta_95ci": [
+        -0.125,
+        -0.03
+      ],
+      "success_rate": 0.835,
+      "strong_selection_rate": 0.005,
+      "fallback_rate": 0.0,
+      "error_rate": 0.0,
+      "total_cost_usd": 0.0078396,
+      "usd_per_request": 3.9198e-05,
+      "usd_per_1000_requests": 0.039198,
+      "usd_per_success": 4.69437125748503e-05,
+      "savings_vs_always_strong": 0.8797939219233953,
+      "latency_p50_ms": 956.2402705014392,
+      "latency_p95_ms": 1457.1945437521204,
+      "router_latency_p50_ms": 0.0,
+      "target_latency_p50_ms": 956.2402705014392,
+      "ttft_p50_ms": 889.4497289948049,
+      "ttft_p95_ms": 1407.6675309035636
+    },
+    "random_matched": {
+      "n": 200,
+      "quality_mean": 0.835,
+      "quality_delta_vs_strong": -0.07500000000000007,
+      "quality_delta_95ci": [
+        -0.125,
+        -0.03
+      ],
+      "success_rate": 0.835,
+      "strong_selection_rate": 0.005,
+      "fallback_rate": 0.0,
+      "error_rate": 0.0,
+      "total_cost_usd": 0.007251,
+      "usd_per_request": 3.6255e-05,
+      "usd_per_1000_requests": 0.036254999999999996,
+      "usd_per_success": 4.3419161676646706e-05,
+      "savings_vs_always_strong": 0.8888190376889815,
+      "latency_p50_ms": 956.2402705014392,
+      "latency_p95_ms": 1457.1945437521204,
+      "router_latency_p50_ms": 0.0,
+      "target_latency_p50_ms": 956.2402705014392,
+      "ttft_p50_ms": 889.4497289948049,
+      "ttft_p95_ms": 1407.6675309035636
+    },
+    "jev": {
+      "n": 200,
+      "quality_mean": 0.83,
+      "quality_delta_vs_strong": -0.08000000000000007,
+      "quality_delta_95ci": [
+        -0.13,
+        -0.035
+      ],
+      "success_rate": 0.83,
+      "strong_selection_rate": 0.01,
+      "fallback_rate": 0.0,
+      "error_rate": 0.0,
+      "total_cost_usd": 0.01339226,
+      "usd_per_request": 6.696129999999999e-05,
+      "usd_per_1000_requests": 0.06696129999999999,
+      "usd_per_success": 8.067626506024097e-05,
+      "savings_vs_always_strong": 0.7946539298966543,
+      "latency_p50_ms": 1430.6855625036405,
+      "latency_p95_ms": 1942.9531318477514,
+      "router_latency_p50_ms": 462.2312290048285,
+      "target_latency_p50_ms": 956.2402705014392,
+      "ttft_p50_ms": 893.582916498417,
+      "ttft_p95_ms": 1407.6675309035636
+    }
+  },
+  "subgroups": {
+    "language": {
+      "en": {
+        "always_strong": 0.91,
+        "always_cheap": 0.835,
+        "rule": 0.835,
+        "random_matched": 0.835,
+        "jev": 0.83
+      }
+    },
+    "group": {
+      "global_mmlu_other": {
+        "always_strong": 1.0,
+        "always_cheap": 0.8888888888888888,
+        "rule": 0.8888888888888888,
+        "random_matched": 0.8888888888888888,
+        "jev": 0.8888888888888888
+      },
+      "global_mmlu_business": {
+        "always_strong": 0.6666666666666666,
+        "always_cheap": 0.7777777777777778,
+        "rule": 0.7777777777777778,
+        "random_matched": 0.7777777777777778,
+        "jev": 0.7777777777777778
+      },
+      "global_mmlu_stem": {
+        "always_strong": 1.0,
+        "always_cheap": 0.75,
+        "rule": 0.75,
+        "random_matched": 0.75,
+        "jev": 0.75
+      },
+      "global_mmlu_social_sciences": {
+        "always_strong": 1.0,
+        "always_cheap": 1.0,
+        "rule": 1.0,
+        "random_matched": 1.0,
+        "jev": 1.0
+      },
+      "global_mmlu_humanities": {
+        "always_strong": 0.875,
+        "always_cheap": 0.625,
+        "rule": 0.625,
+        "random_matched": 0.625,
+        "jev": 0.625
+      },
+      "global_mmlu_medical": {
+        "always_strong": 0.875,
+        "always_cheap": 0.875,
+        "rule": 0.875,
+        "random_matched": 0.875,
+        "jev": 0.875
+      },
+      "belebele_reading": {
+        "always_strong": 0.94,
+        "always_cheap": 0.92,
+        "rule": 0.92,
+        "random_matched": 0.92,
+        "jev": 0.92
+      },
+      "gsm8k_math": {
+        "always_strong": 0.88,
+        "always_cheap": 0.66,
+        "rule": 0.66,
+        "random_matched": 0.66,
+        "jev": 0.64
+      },
+      "arc_challenge_science": {
+        "always_strong": 0.92,
+        "always_cheap": 0.94,
+        "rule": 0.94,
+        "random_matched": 0.94,
+        "jev": 0.94
+      }
+    }
+  },
+  "run": {
+    "run_id": "20260919T174448Z",
+    "mode": "live",
+    "task_count": 200,
+    "threshold": 0.58,
+    "jev_strong_rate": 0.01,
+    "budget_limit_usd": 1.0,
+    "ledger_spend_usd": 0.07801165999999998,
+    "cost_kind": "provider_reported_when_available_else_calculated_from_usage",
+    "unique_live_target_calls": 400,
+    "unique_live_jev_calls": 200
+  }
+}
