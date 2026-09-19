@@ -141,6 +141,8 @@ def analyze(directory: Path, max_loss_pp: float) -> dict:
         s = policies["always_strong"]["quality"] >= 0.999
         c = policies["always_cheap"]["quality"] >= 0.999
         selected = policies["jev"]["selected_role"]
+        if policies["jev"]["route_rule"].startswith("jev_error_fallback:"):
+            cases["router_error_fallback"] += 1
         cases["both_correct" if s and c else "only_strong_correct" if s else "only_cheap_correct" if c else "neither_correct"] += 1
         if selected == "cheap" and s and not c:
             cases["unsafe_cheap"] += 1
@@ -270,6 +272,7 @@ def report(analysis: dict, directory: Path, dev_only: bool, calibration: dict | 
         f"- Jev Luna seçti ve yalnız Sol doğruydu: {cases.get('unsafe_cheap', 0)}",
         f"- Jev Sol seçerek Luna hatasını kurtardı: {cases.get('recovered_by_strong', 0)}",
         f"- Jev Sol seçti ama Luna da doğruydu: {cases.get('needless_strong', 0)}",
+        f"- Jev servis hatası sonrası güvenli Sol fallback: {cases.get('router_error_fallback', 0)}",
         f"- Güçlü-gereksinim sınıflandırması precision/recall: {pct(analysis['routing_classifier']['precision'])} / {pct(analysis['routing_classifier']['recall'])}.",
         f"- Kusursuz karşı-olgusal seçici üst sınırı: kalite {pct(analysis['oracle']['quality'])}, hedef maliyeti ${analysis['oracle']['target_cost_usd']:.6f}; aynı Jev ek yüküyle ${analysis['oracle']['cost_with_observed_jev_overhead_usd']:.6f}.",
         "",

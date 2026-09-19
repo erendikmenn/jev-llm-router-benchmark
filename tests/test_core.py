@@ -102,6 +102,16 @@ def test_jev_parse_error_falls_back_to_strong(config, tasks):
     assert decision.rule == "jev_error_fallback:invalid_response"
 
 
+def test_router_error_fallback_is_recorded_in_measurement(config, tasks):
+    measurement = run_measurement(
+        "test", "fixture", "jev", tasks[0],
+        RouteDecision("strong", "jev", "jev_error_fallback:http_520"),
+        CheapTimeoutThenStrong(),
+        config, BudgetLedger(None),
+    )
+    assert measurement.error == "jev_error_fallback:http_520"
+
+
 class LowConfidenceJev:
     def judge(self, task):
         return JevJudgment("cheap", 0.1, 0.1, "general_qa", {"cheap": 0.9, "strong": 0.1}, Usage(10, 0, 2), 4, "jev-1.13.0")

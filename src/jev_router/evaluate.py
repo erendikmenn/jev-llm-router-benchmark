@@ -116,7 +116,9 @@ def run_measurement(
     )
     selected = decision.selected
     fallback = False
-    error: str | None = None
+    error: str | None = (
+        decision.rule if decision.rule.startswith("jev_error_fallback:") else None
+    )
     total_target_cost = 0.0
     failed_cost_to_charge = 0.0
     try:
