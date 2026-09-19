@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from .config import AppConfig
+from .scoring import sandbox_backend
 
 
 def sha256(path: str | Path) -> str:
@@ -48,6 +49,7 @@ def build_manifest(config: AppConfig, dataset_path: str | Path, mode: str, thres
         "cache": config.experiment["cache"],
         "concurrency": config.experiment["concurrency"],
         "stream": config.experiment["stream"],
+        "code_sandbox_backend": sandbox_backend(),
     }
 
 
@@ -55,4 +57,3 @@ def write_manifest(directory: str | Path, manifest: dict) -> Path:
     path = Path(directory) / "manifest.json"
     path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     return path
-

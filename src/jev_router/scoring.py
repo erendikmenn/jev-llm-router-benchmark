@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import json
 import os
+import platform
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -65,9 +67,10 @@ def _score_python(task: Task, output: str) -> float:
                         pass
 
         env = {"PATH": os.environ.get("PATH", ""), "PYTHONHASHSEED": "0"}
+        command = _sandboxed_python_command(script, Path(temp_dir))
         try:
             completed = subprocess.run(
-                [sys.executable, "-I", "-S", str(script)],
+                command,
                 stdin=subprocess.DEVNULL,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
@@ -79,3 +82,34 @@ def _score_python(task: Task, output: str) -> float:
         except subprocess.TimeoutExpired:
             return 0.0
     return float(completed.returncode == 0)
+
+
+def sandbox_backend() -> str:
+    if platform.system() == "Darwin" and shutil.which("sandbox-exec"):
+        return "sandbox-exec"
+    if platform.system() == "Linux" and shutil.which("bwrap"):
+        return "bubblewrap"
+    return "unavailable"
+
+
+def _sandboxed_python_command(script: Path, temp_dir: Path) -> list[str]:
+    backend = sandbox_backend()
+    python_command = [sys.executable, "-B", "-I", "-S", str(script)]
+    if backend == "sandbox-exec":
+        profile = "(version 1)(allow default)(deny network*)(deny file-write*)"
+        return ["sandbox-exec", "-p", profile, *python_command]
+    if backend == "bubblewrap":
+        return [
+            "bwrap",
+            "--unshare-net",
+            "--die-with-parent",
+            "--ro-bind", "/", "/",
+            "--dev", "/dev",
+            "--proc", "/proc",
+            "--tmpfs", "/tmp",
+            "--chdir", str(temp_dir),
+            *python_command,
+        ]
+    raise RuntimeError(
+        "No network-isolating code sandbox available; install bubblewrap on Linux."
+    )

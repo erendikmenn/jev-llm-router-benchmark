@@ -104,9 +104,8 @@ Kod MIT lisanslıdır. İncelenen RouteLLM commit'i `0b64fdafe049e596a3f5657c219
 
 - API anahtarları olmadığı için mevcut artefaktlar gerçek model yeteneklerini ölçmez.
 - 40 sentetik görev 2 yüzde puanlık non-inferiority iddiası için yetersizdir.
-- Yerel kod evaluator'ü process/resource sınırları uygular ama güvenilmeyen public benchmark çıktıları için container/VM düzeyinde ağsız sandbox gerekir.
+- Yerel kod evaluator'ü ayrı süreç/resource sınırları yanında macOS `sandbox-exec` veya Linux Bubblewrap ile ağı kapatır ve backend yoksa fail-closed durur. Güvenilmeyen public benchmark çıktıları için yine de tek-kullanımlık container/VM savunma katmanı önerilir.
 - Açık uçlu kalite için kör, sıra dengeli judge + insan denetimi henüz canlı veri olmadığı için koşulmamıştır.
 - Aynı makinede ağır RAG koşusu sürerken latency benchmarkı çalıştırılmamalıdır.
 
 Kısa kayıt akışı: [docs/DEMO_VIDEO_TR.md](docs/DEMO_VIDEO_TR.md).
-

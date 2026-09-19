@@ -40,7 +40,7 @@ Tek bir seçilmiş eşik dışında kalibrasyon eğrisinin tamamı saklanır. Ca
 - Extraction: JSON parse + alan/değer doğruluğu.
 - Sınıflandırma/kapalı QA/matematik: normalize exact match.
 - Çeviri/özet demo fixture: önceden tanımlı anahtar kapsama yalnız pipeline testi içindir; gerçek koşuda uygun otomatik metrik + kör insan incelemesi gerekir.
-- Kod: ağsız, ayrı süreç, `-I -S`, CPU/bellek/dosya/timeout limitleri. Bu yerel koruma tam container/VM sandbox yerine geçmez; public HumanEval canlı koşusunda ek OS sandbox zorunludur.
+- Kod: ağsız, ayrı süreç, `-I -S`, CPU/bellek/dosya/timeout limitleri. macOS'ta `sandbox-exec`, Linux'ta Bubblewrap ile ağ kapatılır; backend yoksa evaluator fail-closed durur. Bu yerel koruma tam container/VM sandbox yerine geçmez; public HumanEval canlı koşusunda ek tek-kullanımlık container/VM sandbox önerilir.
 - Açık uçlu görevler: sabit rubrik, model kimliği gizli, sıra dengeli judge ve örneklenmiş insan kontrolü. Judge üretim sırasında test cevabını göremez.
 
 Farklı metrikler doğrudan “tek skor” diye ortalanmaz. Demo agregası 0–1 normalize görev puanlarının makro ortalamasıdır ve her dil/görev alt grubu ayrıca gösterilir.
@@ -56,4 +56,3 @@ Replay kalite/maliyet eğrileri canlı routing gecikmesi değildir. Canlı laten
 ## Pilot ve ölçek
 
 İlk pilot 40 örnektir. Bu sayı pipeline, metrik ve kaba hata tiplerini doğrular; 2 yüzde puanlık non-inferiority iddiasına yetmez. Yüzlerce örnekli test boyutu, pilotta gözlenen eşleştirilmiş fark varyansı ve hedef güven aralığı genişliği ile güç analizi yapılarak seçilir. Bütçe belirlenmeden ücretli matrise başlanmaz.
-
