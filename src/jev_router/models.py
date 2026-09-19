@@ -63,6 +63,7 @@ class RouteDecision:
     confidence: float | None = None
     strong_probability: float | None = None
     jev: JevJudgment | None = None
+    router_attempts: tuple[Attempt, ...] = ()
     rejected_reason: str | None = None
 
 
@@ -108,4 +109,3 @@ class Measurement:
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
-

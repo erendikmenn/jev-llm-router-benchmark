@@ -47,7 +47,12 @@ def jev_router(task: Task, config: AppConfig, provider: JevProvider, threshold: 
     try:
         judgment = provider.judge(task)
     except ProviderError as exc:
-        return RouteDecision("strong", "jev", f"jev_error_fallback:{exc.kind}")
+        return RouteDecision(
+            "strong",
+            "jev",
+            f"jev_error_fallback:{exc.kind}",
+            router_attempts=exc.attempts,
+        )
     selected = "strong" if judgment.strong_probability >= threshold else "cheap"
     rule = f"strong_probability_gte_{threshold:.3f}" if selected == "strong" else f"strong_probability_lt_{threshold:.3f}"
     if judgment.confidence < 0.20:

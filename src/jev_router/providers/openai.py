@@ -78,12 +78,12 @@ class OpenAIResponsesProvider:
                 attempts.append(Attempt(usage, latency, f"http_{exc.code}"))
                 retryable = exc.code in {408, 429, 500, 502, 503, 504, 529}
                 if not retryable or attempt_index == max_retries:
-                    raise ProviderError(f"http_{exc.code}", str(exc), retryable) from exc
+                    raise ProviderError(f"http_{exc.code}", str(exc), retryable, tuple(attempts)) from exc
             except (TimeoutError, URLError) as exc:
                 latency = (time.perf_counter() - started) * 1000
                 attempts.append(Attempt(usage, latency, "network"))
                 if attempt_index == max_retries:
-                    raise ProviderError("timeout_or_network", str(exc), True) from exc
+                    raise ProviderError("timeout_or_network", str(exc), True, tuple(attempts)) from exc
             time.sleep(min(4.0, 0.5 * (2**attempt_index)) * (0.75 + random.random() * 0.25))
         raise AssertionError("retry loop exhausted")
 
@@ -97,4 +97,3 @@ def _extract_output_text(payload: dict) -> str:
     if not chunks:
         raise ProviderError("invalid_response", "Responses API returned no output text")
     return "".join(chunks)
-

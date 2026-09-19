@@ -11,7 +11,7 @@ from pathlib import Path
 
 from .config import AppConfig
 from .models import GenerationRequest, Measurement, RouteDecision, Task, Usage
-from .pricing import jev_cost, usage_cost
+from .pricing import estimate_request_cost, estimate_tokens, jev_cost, usage_cost
 from .providers.base import GeneratorProvider, JevProvider, ProviderError
 from .routers import fixed_router, jev_router, random_router, rule_router
 from .scoring import score_output
@@ -64,6 +64,20 @@ def run_measurement(
         router_cost = jev_cost(jev_usage, config)
         router_latency = decision.jev.latency_ms
         ledger.add(router_cost)
+    elif decision.router_attempts:
+        # A failed/timeout response may have been processed and billed even when
+        # no usage body reached us. Use reported usage when present; otherwise
+        # account conservatively with a clearly flagged input estimate.
+        estimated_jev_input = estimate_tokens(
+            task.prompt + config.cheap.profile + config.strong.profile
+        ) + 180
+        for attempt in decision.router_attempts:
+            attempt_usage = attempt.usage
+            if attempt_usage.input_tokens == 0 and attempt_usage.output_tokens == 0:
+                attempt_usage = Usage(input_tokens=estimated_jev_input)
+            router_cost += jev_cost(attempt_usage, config)
+            router_latency += attempt.latency_ms
+        ledger.add(router_cost)
     if decision.selected is None:
         return Measurement(
             run_id, mode, baseline, task.id, task.split, task.language, task.group,
@@ -89,7 +103,17 @@ def run_measurement(
         if selected != "cheap":
             raise
         fallback = True
-        error = f"cheap_{exc.kind}_fallback"
+        failed_attempts = exc.attempts or (None,)
+        for attempt in failed_attempts:
+            if attempt is not None and (
+                attempt.usage.input_tokens > 0 or attempt.usage.output_tokens > 0
+            ):
+                total_target_cost += usage_cost(attempt.usage, config.cheap)
+            else:
+                total_target_cost += estimate_request_cost(
+                    task.prompt, request.max_output_tokens, config.cheap
+                )
+        error = f"cheap_{exc.kind}_fallback;failed_attempt_cost_estimated_if_usage_missing"
         selected = "strong"
         result = generator.generate(request, selected)
     model_config = getattr(config, selected)

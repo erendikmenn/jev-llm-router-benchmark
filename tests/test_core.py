@@ -121,7 +121,8 @@ def test_target_timeout_fallback_is_recorded(config, tasks):
     )
     assert measurement.fallback is True
     assert measurement.selected_role == "strong"
-    assert measurement.error == "cheap_timeout_fallback"
+    assert measurement.error.startswith("cheap_timeout_fallback")
+    assert measurement.target_cost_usd > usage_cost(Usage(10, 0, 2), config.strong)
 
 
 def test_budget_limit_is_hard():
