@@ -10,7 +10,7 @@ results/swebench-generation/
 results/swebench-gold-smoke-*/
 results/terminal-bench-2/
 results/*-route-*/
-results/livecodebench-codex-smoke-*/
+results/livecodebench-codex-*/
 results/swebench-pro-official-smoke-*/router-only/
 logs/
 data/public_benchmark_*.jsonl

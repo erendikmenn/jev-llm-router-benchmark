@@ -1,0 +1,45 @@
+{
+  "tasks_routed": 2375,
+  "provider_fallbacks": 0,
+  "jev_route_cost_usd": 0.123703062,
+  "route_latency_ms": {
+    "mean": 480.53678653395957,
+    "p50": 455.2225419902243,
+    "p95": 676.0165830055485
+  },
+  "route_distribution": {
+    "luna": 848,
+    "terra": 797,
+    "sol": 568,
+    "astra": 162
+  },
+  "suites": {
+    "livecodebench": {
+      "tasks": 1055,
+      "cost_usd": 0.057840972,
+      "distribution": {"luna": 734, "terra": 186, "sol": 135, "astra": 0}
+    },
+    "swebench-verified": {
+      "tasks": 500,
+      "cost_usd": 0.027944952,
+      "distribution": {"luna": 76, "terra": 334, "sol": 38, "astra": 52}
+    },
+    "swebench-pro-public": {
+      "tasks": 731,
+      "cost_usd": 0.033956412,
+      "distribution": {"luna": 20, "terra": 264, "sol": 344, "astra": 103}
+    },
+    "terminal-bench-2": {
+      "tasks": 89,
+      "cost_usd": 0.003960726,
+      "distribution": {"luna": 18, "terra": 13, "sol": 51, "astra": 7}
+    }
+  },
+  "livecodebench_repeatability": {
+    "final_tier_agreement": 0.8815165876777251,
+    "raw_jev_choice_agreement": 0.9042654028436019,
+    "rule_agreement": 0.9421800947867298,
+    "critical_keyword_false_positives_found_and_fixed": 2
+  },
+  "quality_outcomes_included": false
+}
