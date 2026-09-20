@@ -30,6 +30,7 @@ from .providers import (
 )
 from .report import generate_report
 from .routers import jev_router, rule_router
+from .tiered_routing import OpenRouterTieredJevProvider, decide_tiered_route
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -55,7 +56,9 @@ def parser() -> argparse.ArgumentParser:
     )
     codex_route.add_argument("--task", required=True)
     codex_route.add_argument("--repo", default=".")
-    codex_route.add_argument("--mode", choices=["rule", "live-jev"], default="rule")
+    codex_route.add_argument(
+        "--mode", choices=["rule", "live-jev", "live-jev-tiered"], default="rule"
+    )
     codex_route.add_argument(
         "--role",
         choices=["auto", "cheap", "strong", "luna", "terra", "sol", "astra"],
@@ -180,15 +183,21 @@ def main(argv: list[str] | None = None) -> None:
             else float(config.experiment["default_threshold"])
         )
         decision = None
+        tiered_decision = None
         if args.role == "auto":
-            decision = (
-                rule_router(task, config)
-                if args.mode == "rule"
-                else jev_router(task, config, OpenRouterJevProvider(config), threshold)
-            )
-            if decision.selected is None:
-                raise SystemExit(f"task rejected before dispatch: {decision.rejected_reason}")
-            selected_role = decision.selected
+            if args.mode == "live-jev-tiered":
+                tiered_provider = OpenRouterTieredJevProvider(config)
+                tiered_decision = decide_tiered_route(task, tiered_provider.judge(task))
+                selected_role = tiered_decision.selected
+            else:
+                decision = (
+                    rule_router(task, config)
+                    if args.mode == "rule"
+                    else jev_router(task, config, OpenRouterJevProvider(config), threshold)
+                )
+                if decision.selected is None:
+                    raise SystemExit(f"task rejected before dispatch: {decision.rejected_reason}")
+                selected_role = decision.selected
         else:
             selected_role = args.role
         plan = build_codex_dispatch_plan(args.repo, selected_role, sandbox=args.sandbox)
@@ -198,11 +207,27 @@ def main(argv: list[str] | None = None) -> None:
                 "codex_role": plan.role.name,
                 "codex_model": plan.role.model,
                 "reasoning_effort": plan.role.reasoning_effort,
-                "rule": decision.rule if decision is not None else "forced_baseline",
+                "rule": (
+                    tiered_decision.rule
+                    if tiered_decision is not None
+                    else decision.rule if decision is not None else "forced_baseline"
+                ),
                 "task_type": decision.task_type if decision is not None else None,
-                "confidence": decision.confidence if decision is not None else None,
+                "confidence": (
+                    tiered_decision.judgment.confidence
+                    if tiered_decision is not None
+                    else decision.confidence if decision is not None else None
+                ),
                 "strong_probability": (
                     decision.strong_probability if decision is not None else None
+                ),
+                "tier_probabilities": (
+                    tiered_decision.judgment.probabilities
+                    if tiered_decision is not None
+                    else None
+                ),
+                "hard_guards": (
+                    tiered_decision.hard_guards if tiered_decision is not None else ()
                 ),
             },
             "executed": args.execute,
