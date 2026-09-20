@@ -43,6 +43,11 @@ uv run jev-router smoke
 uv run jev-router benchmark --mode fixture
 uv run jev-router report
 uv run jev-router judge-benchmark --mode fixture --split all
+
+# Resmî kodlama planı ve güvenli kuru çalışma
+uv run jev-router benchmark-catalog
+uv run jev-router benchmark-plan --suite swebench-verified --dev 20 --test 100
+uv run jev-router swebench-generate --arm always-luna --limit 1
 ```
 
 Üretilen ana rapor: `results/fixture-test/REPORT_TR.md`.
@@ -139,6 +144,8 @@ Eşikler yalnız 12 vakalık dev split'inde ayarlandı ve 28 vakalık sentetik t
 Bu sonuç üretim doğruluğu veya SWE-bench başarısı değildir. Sentetik set politika ve tesisatı doğrular. Ham held-out ölçümler [`results/judge-openrouter-test-20260920/`](results/judge-openrouter-test-20260920/) altında; deney sözleşmesi ve dürüst yorum [docs/JUDGE_PROTOCOL_TR.md](docs/JUDGE_PROTOCOL_TR.md) içindedir.
 
 Codex-native dispatch de gerçek Luna ve Sol oturumlarıyla smoke-test edildi. Aynı kolay salt-okunur görevde ikisi de doğru cevap verdi; Luna `12.65 s`, Sol `15.87 s` sürdü. Bu çağrılar OpenRouter'a gitmedi ve API USD maliyeti üretmedi; mevcut Codex oturumu/kullanım hakkını kullandı. Ayrıntı: [`results/codex-native-smoke-20260920/REPORT_TR.md`](results/codex-native-smoke-20260920/REPORT_TR.md).
+
+Repository düzeyi kod benchmark hattı artık SWE-bench Verified görevlerini dört sabit Codex tier'i, router-only ve router+judge kollarında çalıştırır. Worker'a gold/test patch veya gizli test kimliği verilmez; skor yalnız resmî evaluator çıktısından alınır. Sekiz iş paketi, başarı kapıları ve tam komutlar [docs/OFFICIAL_CODING_BENCHMARK_PROTOCOL_TR.md](docs/OFFICIAL_CODING_BENCHMARK_PROTOCOL_TR.md) içindedir.
 
 ## Anahtar ve gizlilik
 
