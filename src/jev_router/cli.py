@@ -6,6 +6,7 @@ import os
 from pathlib import Path
 
 from .calibrate import calibration_curve, select_threshold
+from .benchmark_catalog import load_benchmark_registry, write_benchmark_plan
 from .codex_dispatch import build_codex_dispatch_plan, run_codex_dispatch
 from .config import AppConfig, load_config
 from .control import run_control
@@ -45,6 +46,19 @@ def parser() -> argparse.ArgumentParser:
     sub = root.add_subparsers(dest="command", required=True)
 
     sub.add_parser("environment", help="Show key presence without revealing values")
+
+    sub.add_parser("benchmark-catalog", help="List pinned official coding benchmarks")
+    benchmark_plan = sub.add_parser(
+        "benchmark-plan", help="Create a deterministic dev/test plan from an official dataset"
+    )
+    benchmark_plan.add_argument("--suite", default="swebench-verified")
+    benchmark_plan.add_argument("--dev", type=int, default=20)
+    benchmark_plan.add_argument("--test", type=int, default=100)
+    benchmark_plan.add_argument("--seed", type=int, default=20260920)
+    benchmark_plan.add_argument(
+        "--output",
+        default=str(ROOT / "results" / "benchmark-plans" / "swebench-verified.json"),
+    )
 
     route = sub.add_parser("route", help="Route one request without generating an answer")
     route.add_argument("--prompt", required=True)
@@ -160,6 +174,32 @@ def main(argv: list[str] | None = None) -> None:
             "OPENROUTER_API_KEY": bool(os.getenv("OPENROUTER_API_KEY")),
             "TYPESAFE_API_KEY": bool(os.getenv("TYPESAFE_API_KEY")),
         }, indent=2))
+        return
+    if args.command == "benchmark-catalog":
+        print(json.dumps(load_benchmark_registry(), ensure_ascii=False, indent=2))
+        return
+    if args.command == "benchmark-plan":
+        manifest = write_benchmark_plan(
+            args.suite,
+            args.output,
+            dev_count=args.dev,
+            test_count=args.test,
+            seed=args.seed,
+        )
+        print(
+            json.dumps(
+                {
+                    "suite": manifest["suite"],
+                    "source_rows": manifest["source_rows"],
+                    "dev": len(manifest["dev"]),
+                    "test": len(manifest["test"]),
+                    "selection_sha256": manifest["selection_sha256"],
+                    "output": str(Path(args.output).resolve()),
+                },
+                ensure_ascii=False,
+                indent=2,
+            )
+        )
         return
     if args.command == "route":
         task = _anonymous_task(args.prompt)

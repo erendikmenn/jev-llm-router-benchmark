@@ -1,0 +1,53 @@
+{
+  "registry_version": 1,
+  "checked_at": "2026-09-20",
+  "suites": {
+    "swebench-verified": {
+      "kind": "repository_patch",
+      "dataset": "SWE-bench/SWE-bench_Verified",
+      "dataset_revision": "78f471bf655a3137b2e8a75af1501690ec009ec3",
+      "split": "test",
+      "instances": 500,
+      "harness": "https://github.com/SWE-bench/SWE-bench",
+      "harness_revision": "02e7a74ffd0b707aab73d203fe87bdc7c76afc8e",
+      "evaluation": "Docker fail-to-pass plus pass-to-pass tests",
+      "license_note": "Benchmark metadata and source repositories retain their upstream terms.",
+      "status": "primary"
+    },
+    "terminal-bench-2": {
+      "kind": "terminal_agent",
+      "dataset": "terminal-bench@2.0",
+      "dataset_revision": "2fd12b88aafdd04a52c298e3940bcb189f9766d6",
+      "instances": 89,
+      "harness": "https://github.com/laude-institute/harbor",
+      "harness_revision": "71c77fdd119df12eb6ab56e5bc0f29bf62fad338",
+      "evaluation": "Harbor container task tests",
+      "license_note": "Terminal-Bench 2 repository is Apache-2.0; task assets may retain upstream terms.",
+      "status": "secondary"
+    },
+    "livecodebench": {
+      "kind": "isolated_code",
+      "dataset": "livecodebench/code_generation_lite",
+      "dataset_revision": "0fe84c3912ea0c4d4a78037083943e8f0c4dd505",
+      "release": "release_v6",
+      "instances": 1055,
+      "harness": "https://github.com/LiveCodeBench/LiveCodeBench",
+      "harness_revision": "28fef95ea8c9f7a547c8329f2cd3d32b92c1fa24",
+      "evaluation": "Official execution checker, pass@1",
+      "license_note": "Harness is MIT; dataset card reports a Creative Commons license tag.",
+      "status": "fast_filter"
+    },
+    "swebench-pro-public": {
+      "kind": "repository_patch",
+      "dataset": "ScaleAI/SWE-bench_Pro",
+      "dataset_revision": "7ab5114912baf22bb098818e604c02fe7ad2c11f",
+      "split": "test",
+      "instances": 731,
+      "harness": "https://github.com/scaleapi/SWE-bench_Pro-os",
+      "harness_revision": "ca10a60a5fcae51e6948ffe1485d4153d421e6c5",
+      "evaluation": "Official Docker/Modal fail-to-pass plus pass-to-pass tests",
+      "license_note": "Harness is MIT; public tasks come from copyleft repositories and retain upstream terms.",
+      "status": "advanced"
+    }
+  }
+}
