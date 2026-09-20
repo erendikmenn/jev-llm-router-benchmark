@@ -126,7 +126,23 @@ def infer_risk_flags(changed_files: Iterable[str], diff: str) -> tuple[str, ...]
         flags.add("security_boundary")
     if re.search(r"(?im)^\+.*\b(drop\s+table|rm\s+-rf|truncate\s+table)\b", diff_folded):
         flags.add("destructive")
-    if "[redacted]" in diff_folded:
+    added_lines = "\n".join(
+        line[1:]
+        for line in diff.splitlines()
+        if line.startswith("+") and not line.startswith("+++")
+    )
+    known_token = re.search(
+        r"\b(?:sk|ghp|gho|github_pat)_[A-Za-z0-9_\-]{12,}\b", added_lines
+    )
+    bearer = re.search(
+        r"(?i)authorization\s*:\s*bearer\s+[A-Za-z0-9._~+/=-]{12,}", added_lines
+    )
+    assignment = re.search(
+        r"(?im)^\s*(?:api[_-]?key|secret|token|password)\s*[=:]\s*"
+        r"['\"]?[A-Za-z0-9._~+/=-]{16,}['\"]?\s*$",
+        added_lines,
+    )
+    if known_token or bearer or assignment:
         flags.add("secret_exposure")
     return tuple(sorted(flags))
 
@@ -201,8 +217,10 @@ def collect_git_review_packet(
         if requested_paths is None or path in requested_paths
     )
     if changed_files:
-        raw_diff = redact_secrets(_git(repository, *diff_args, *changed_files))
+        unredacted_diff = _git(repository, *diff_args, *changed_files)
+        raw_diff = redact_secrets(unredacted_diff)
     else:
+        unredacted_diff = ""
         raw_diff = ""
     diff_budget = min(max_diff_chars, max_context_chars // 2)
     diff = _truncate(raw_diff, diff_budget, "diff")
@@ -229,7 +247,7 @@ def collect_git_review_packet(
         relevant_code[path] = content
         remaining -= len(content)
 
-    inferred = set(infer_risk_flags(changed_files, diff))
+    inferred = set(infer_risk_flags(changed_files, unredacted_diff))
     inferred.update(risk_flags)
     collected_evidence = dict(evidence or {})
     collected_evidence["git_numstat"] = (
