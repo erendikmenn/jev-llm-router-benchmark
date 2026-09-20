@@ -79,9 +79,9 @@ def test_bubblewrap_mounts_candidate_outside_hidden_tmp(monkeypatch, tmp_path):
 
     command = scoring._sandboxed_python_command(script, tmp_path)
 
-    assert command[-1] == "/workspace/candidate.py"
+    assert command[-1] == "/tmp/workspace/candidate.py"
     mount_index = command.index(str(script))
-    assert ["--ro-bind", str(script), "/workspace/candidate.py"] == command[
+    assert ["--ro-bind", str(script), "/tmp/workspace/candidate.py"] == command[
         mount_index - 1 : mount_index + 2
     ]
     assert command.index("--tmpfs") < command.index("--dir")

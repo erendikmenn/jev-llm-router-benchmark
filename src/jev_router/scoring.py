@@ -127,7 +127,7 @@ def _sandboxed_python_command(script: Path, temp_dir: Path) -> list[str]:
         profile = "(version 1)(allow default)(deny network*)(deny file-write*)"
         return ["sandbox-exec", "-p", profile, *python_command]
     if backend == "bubblewrap":
-        sandbox_dir = "/workspace"
+        sandbox_dir = "/tmp/workspace"
         sandbox_script = f"{sandbox_dir}/candidate.py"
         return [
             "bwrap",
