@@ -1,0 +1,101 @@
+{
+  "date": "2026-09-20",
+  "worker_transport": "local_codex_subscription_auth",
+  "worker_openrouter_api_calls": 0,
+  "external_api_scope": "Jev routing and judging only",
+  "jev_model": "typesafe/jev-1.13-20260917",
+  "livecodebench_full": {
+    "release": "release_v6",
+    "selection_sha256": "6108435b7b39af8ffaf11dc6c206adb6fa2ae92d6f01ea58ae0134ba345fd47a",
+    "tasks": 1055,
+    "dispatch_completed": 1055,
+    "nonempty_code": 1055,
+    "passed": 913,
+    "pass_at_1": 0.8654028436018958,
+    "pass_at_1_95ci_wilson": [
+      0.8434774682988581,
+      0.884676868289659
+    ],
+    "selected_roles": {
+      "luna": 733,
+      "terra": 191,
+      "sol": 130,
+      "astra": 1
+    },
+    "pass_at_1_by_difficulty": {
+      "easy": 0.9751552795031055,
+      "medium": 0.8772845953002611,
+      "hard": 0.7514285714285714
+    },
+    "latency_ms": {
+      "route_p50": 457.9932920023566,
+      "route_p95": 663.7048916963977,
+      "execution_p50": 12778.130291990237,
+      "execution_p95": 128998.79224570011
+    },
+    "codex_tokens": {
+      "input": 20419767,
+      "cached_input": 17984512,
+      "output": 957091,
+      "reasoning_output": 711044
+    },
+    "accepted_rows_jev_cost_usd": 0.057785028,
+    "all_recorded_attempts_jev_cost_usd": 0.057890616,
+    "provider_fallbacks": 1,
+    "timeout_attempts_retried": 1
+  },
+  "paired_first_100": {
+    "difficulty_counts": {
+      "easy": 35,
+      "medium": 47,
+      "hard": 18
+    },
+    "router": {
+      "passed": 94,
+      "selected_roles": {
+        "luna": 83,
+        "terra": 6,
+        "sol": 11
+      },
+      "execution_p50_ms": 10410.04439551034
+    },
+    "always_luna": {
+      "passed": 94,
+      "execution_p50_ms": 10560.299729499093
+    },
+    "always_sol": {
+      "passed": 98,
+      "execution_p50_ms": 8877.513978994102
+    },
+    "router_vs_luna_discordance": {
+      "router_only_passed": 3,
+      "luna_only_passed": 3,
+      "mcnemar_exact_two_sided_p": 1.0
+    },
+    "router_vs_sol_discordance": {
+      "router_only_passed": 1,
+      "sol_only_passed": 5,
+      "mcnemar_exact_two_sided_p": 0.21875
+    }
+  },
+  "all_suite_routing": {
+    "tasks": 2375,
+    "jev_cost_usd": 0.123703062,
+    "provider_fallbacks": 0
+  },
+  "routing_repeatability": {
+    "two_route_only_runs_final_tier_agreement": 0.8815165876777251,
+    "accepted_route_run_vs_generation_run_agreement": 0.9393364928909953
+  },
+  "official_coding_campaign_cost": {
+    "audited_recorded_jev_usd": 0.243785556,
+    "conservative_total_including_unrecorded_interrupted_routes_lt_usd": 0.245,
+    "hard_cap_usd": 5.0
+  },
+  "verdict": {
+    "infrastructure": "pass",
+    "minimum_1000_official_evaluations": "pass",
+    "quality_speed_advantage_over_always_sol": "not_demonstrated",
+    "production_autonomous_routing": "not_ready"
+  }
+}

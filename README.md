@@ -179,6 +179,13 @@ entegrasyonu kanıtlarıdır: [LiveCodeBench](results/livecodebench-official-smo
 [Terminal-Bench 2](results/terminalbench-official-smoke-20260920/REPORT_TR.md),
 [SWE-bench Pro](results/swebench-pro-official-smoke-20260920/REPORT_TR.md).
 
+LiveCodeBench `release_v6` setinin **1.055 görevinin tamamı** daha sonra gerçek
+Jev→yerel Codex zincirinde çalıştırıldı ve resmî gizli testlerle puanlandı: 913/1.055,
+`%86,54 pass@1` (`%95` GA `%84,35–%88,47`). Aynı ilk 100 görevde router ve
+always-Luna `%94`, always-Sol `%98` verdi; bu nedenle altyapı başarılı olsa da mevcut
+routing politikasının kalite/hız üstünlüğü henüz kanıtlanmış değildir. Tam, eleştirel
+yorum ve maliyet hesabı [1.055 görev raporundadır](results/livecodebench-official-1055-20260920/REPORT_TR.md).
+
 ## Anahtar ve gizlilik
 
 `.env.example` yalnız değişken adını gösterir. Uygulama `OPENROUTER_API_KEY` değerini yalnız process environment'tan okur; `.env` dosyasını kendi başına yüklemez, değeri loglamaz. `environment` komutu yalnız boolean var/yok sonucu verir. Yerel `~/.config/openrouter.env` kaynağı çağıran shell tarafından yüklenebilir.
