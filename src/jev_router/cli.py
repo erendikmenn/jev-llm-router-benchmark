@@ -33,6 +33,7 @@ from .providers import (
 )
 from .report import generate_report
 from .routers import jev_router, rule_router
+from .swebench_runner import ARMS, generate_swebench_arm, load_swebench_plan
 from .tiered_routing import OpenRouterTieredJevProvider, decide_tiered_route
 
 
@@ -61,6 +62,27 @@ def parser() -> argparse.ArgumentParser:
         "--output",
         default=str(ROOT / "results" / "benchmark-plans" / "swebench-verified.json"),
     )
+
+    swebench = sub.add_parser(
+        "swebench-generate",
+        help="Generate patches for a pinned official SWE-bench plan",
+    )
+    swebench.add_argument(
+        "--plan",
+        default=str(ROOT / "results" / "benchmark-plans" / "swebench-verified.json"),
+    )
+    swebench.add_argument("--split", choices=["dev", "test"], default="dev")
+    swebench.add_argument("--limit", type=int, default=1)
+    swebench.add_argument("--arm", choices=ARMS, required=True)
+    swebench.add_argument(
+        "--workspace-root",
+        default=str(ROOT / "results" / "tmp" / "swebench-workspaces"),
+    )
+    swebench.add_argument("--output")
+    swebench.add_argument("--max-rounds", type=int, default=3)
+    swebench.add_argument("--max-review-usd", type=float, default=0.05)
+    swebench.add_argument("--timeout-seconds", type=float, default=900.0)
+    swebench.add_argument("--execute", action="store_true")
 
     route = sub.add_parser("route", help="Route one request without generating an answer")
     route.add_argument("--prompt", required=True)
@@ -225,6 +247,41 @@ def main(argv: list[str] | None = None) -> None:
                 indent=2,
             )
         )
+        return
+    if args.command == "swebench-generate":
+        tasks = load_swebench_plan(args.plan, args.split, args.limit)
+        output = Path(
+            args.output or ROOT / "results" / "swebench-generation" / args.arm
+        ).resolve()
+        preview = {
+            "executed": args.execute,
+            "arm": args.arm,
+            "split": args.split,
+            "tasks": [task.instance_id for task in tasks],
+            "workspace_root": str(Path(args.workspace_root).resolve()),
+            "output": str(output),
+            "gold_fields_exposed_to_codex": False,
+        }
+        if not args.execute:
+            print(json.dumps(preview, ensure_ascii=False, indent=2))
+            return
+        review_provider = (
+            OpenRouterReviewJudgeProvider(config)
+            if args.arm == "router-judge"
+            else None
+        )
+        result = generate_swebench_arm(
+            tasks,
+            arm=args.arm,
+            workspace_root=args.workspace_root,
+            output_dir=output,
+            config=config,
+            review_provider=review_provider,
+            max_rounds=args.max_rounds,
+            max_review_usd=args.max_review_usd,
+            timeout_seconds=args.timeout_seconds,
+        )
+        print(json.dumps({**preview, **result}, ensure_ascii=False, indent=2))
         return
     if args.command == "route":
         task = _anonymous_task(args.prompt)

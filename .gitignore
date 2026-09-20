@@ -6,5 +6,8 @@ __pycache__/
 results/live-*/
 results/tmp/
 results/benchmark-plans/
+results/swebench-generation/
+results/swebench-gold-smoke-*/
+logs/
 data/public_benchmark_*.jsonl
 data/public_benchmark_*.manifest.json
