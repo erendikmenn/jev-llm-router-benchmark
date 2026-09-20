@@ -203,7 +203,38 @@ def generate_swebench_arm(
                 }
         route_latency_ms = (time.perf_counter() - route_started) * 1000
         prompt = _task_prompt(task)
+        round_measurements: list[dict] = []
         if arm == "router-judge":
+            def observe_round(round_) -> None:
+                round_patch = _git_diff(workspace)
+                prediction_path = receipts_dir / (
+                    f"{task.instance_id}.round-{round_.number}.prediction.jsonl"
+                )
+                prediction_path.write_text(
+                    json.dumps(
+                        {
+                            "instance_id": task.instance_id,
+                            "model_name_or_path": (
+                                f"jev-router/{arm}/round-{round_.number}-{round_.role}"
+                            ),
+                            "model_patch": round_patch,
+                        },
+                        ensure_ascii=False,
+                    )
+                    + "\n",
+                    encoding="utf-8",
+                )
+                round_measurements.append(
+                    {
+                        "round": round_.number,
+                        "role": round_.role,
+                        "judge_action": round_.review.decision.action,
+                        "outcome": round_.outcome,
+                        "patch_bytes": len(round_patch.encode("utf-8")),
+                        "prediction": str(prediction_path),
+                    }
+                )
+
             pipeline = run_coding_pipeline(
                 workspace,
                 task=prompt,
@@ -213,6 +244,7 @@ def generate_swebench_arm(
                 config=config,
                 max_rounds=max_rounds,
                 max_review_usd=max_review_usd,
+                round_observer=observe_round,
             )
             execution = pipeline.to_dict()
             model_name = "+".join(round_.role for round_ in pipeline.rounds)
@@ -247,6 +279,7 @@ def generate_swebench_arm(
             "status": status,
             "patch_bytes": len(patch.encode("utf-8")),
             "empty_patch": not bool(patch.strip()),
+            "rounds": round_measurements,
         }
         measurements.append(measurement)
         (receipts_dir / f"{task.instance_id}.json").write_text(

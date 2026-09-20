@@ -49,6 +49,7 @@ def test_pipeline_dispatches_verifies_and_accepts(tmp_path):
         (tmp_path / "value.txt").write_text("after\n", encoding="utf-8")
         return CodexDispatchReceipt(plan, "0" * 64, 0, 10, {}, "done", "", 0, 2)
 
+    observed = []
     result = run_coding_pipeline(
         tmp_path,
         task="Change before to after.",
@@ -58,9 +59,11 @@ def test_pipeline_dispatches_verifies_and_accepts(tmp_path):
         config=load_config("configs/default.toml"),
         verifier_commands=(("sh", "-c", "test $(cat value.txt) = after"),),
         dispatch_fn=dispatch,
+        round_observer=observed.append,
     )
 
     assert result.status == "accepted"
     assert result.final_role == "luna"
     assert result.rounds[0].verifiers[0].passed
     assert result.rounds[0].outcome == "accepted"
+    assert observed == [result.rounds[0]]

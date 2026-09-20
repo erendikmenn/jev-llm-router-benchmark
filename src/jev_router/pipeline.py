@@ -147,6 +147,7 @@ def run_coding_pipeline(
     max_review_usd: float = 0.05,
     sandbox: str = "workspace-write",
     dispatch_fn: Callable[..., CodexDispatchReceipt] = run_codex_dispatch,
+    round_observer: Callable[[PipelineRound], None] | None = None,
 ) -> PipelineResult:
     if max_rounds < 1:
         raise ValueError("max_rounds must be positive")
@@ -237,7 +238,10 @@ def run_coding_pipeline(
                 outcome = "promote" if next_role != role else "revise_same_role"
                 status = "continue"
 
-        rounds.append(PipelineRound(number, role, dispatch, verifiers, review, outcome))
+        completed_round = PipelineRound(number, role, dispatch, verifiers, review, outcome)
+        rounds.append(completed_round)
+        if round_observer is not None:
+            round_observer(completed_round)
         if status != "continue":
             break
         role = next_role
