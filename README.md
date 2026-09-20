@@ -1,6 +1,6 @@
 # jev-llm-router-benchmark
 
-Jev ile iki üretici LLM arasında **yanıt üretilmeden önce** seçim yapan, kalite–maliyet–gecikme değişimini aynı görevler üzerinde ölçen bağımsız açık kaynak proje.
+Jev ile üretimden önce model rotası seçen ve üretimden sonra kod değişikliğini `accept`, `revise`, `escalate` veya `block` olarak değerlendiren bağımsız açık kaynak proje. Router ve judge karar verir; uygulamayı yapan model değildir.
 
 Bu repo bir RAG projesi değildir ve başka ErenAILab projelerinden bağımsızdır. Ana sonuç ilkesi: “ucuzladı” tek başına başarı değildir; kalite farkı, eşleştirilmiş belirsizlik, hata/fallback oranı ve mutlak USD ile birlikte raporlanır.
 
@@ -8,23 +8,27 @@ Repo 40 görevlik fixture pilotuna ek olarak OpenRouter üzerinden `typesafe/jev
 
 Ayrıca dört resmî İngilizce benchmark ailesinden 200 dev + 1.000 kilitli test örneği hazırlayan yeniden üretilebilir veri betiği ve ayrıntılı canlı analiz akışı vardır. Üçüncü taraf sorular repoya commitlenmez; kaynak revision'ları, örnekleme tohumu ve veri hash'i kaydedilir.
 
-## Mimari
+## Router + judge mimarisi
 
 ```text
-istek + izinli bağlam + kısıtlar
-                │
-        deterministik uygunluk
-        (text / tools / context)
-                │
-   OpenRouter Jev 1.13 Choice
-       görev türü + model uygunluğu
-                │
-     kodda threshold / fallback / bütçe
-          ┌─────┴─────┐
- openai/gpt-5.6-luna   openai/gpt-5.6-sol
+görev ──> hard guard + Jev router ──> uygun worker rolü
+                                         │
+                                  kod değişikliği
+                                         │
+                       yerel Git diff + ilgili kod + kanıt
+                                         │
+                           Jev atomik judge sinyalleri
+                                         │
+                           deterministik risk politikası
+                              │       │         │       │
+                           accept   revise   escalate  block
 ```
 
-Jev yanıt yazmaz, fiyat toplamaz ve doğruluk yüzdesi iddia etmez. Maliyet hesabı, eligibility, retry, threshold ve fallback deterministik koddadır.
+Jev yanıt veya kod yazmaz. Dar olasılık sinyalleri üretir; maliyet hesabı, eşikler, risk guard'ları, retry ve fail-safe davranış deterministik koddadır. Agent'ın kendi yazdığı testler bağımsız başarı kanıtı sayılmaz; judge doğrudan görev, kabul kriterleri, diff, ilgili kod ve mevcut kanıtları görür.
+
+`route` yalnız görev metnini gönderir. `review` ve `control`, judge kararı için temizlenmiş ve boyutu sınırlanmış diff/ilgili kodu Jev sağlayıcısına gönderir; `.env`, credential/key dosyaları dışlanır ve bilinen secret biçimleri redakte edilir. Dolayısıyla judge modu “yalnız karar dışarı gider” değildir. Hassas repository'lerde fixture/native politika kullanılmalı veya bu dış aktarım açıkça kabul edilmelidir.
+
+Mevcut sürüm karar motoru ve ölçüm tesisatıdır. Codex Luna/Terra/Sol/Astra worker'ını otomatik başlatan native dispatcher henüz bu sürümde yoktur; `control` önerilen rolü ve sonraki adımı döndürür.
 
 ## Hızlı başlangıç
 
@@ -38,6 +42,7 @@ uv run jev-router calibrate
 uv run jev-router smoke
 uv run jev-router benchmark --mode fixture
 uv run jev-router report
+uv run jev-router judge-benchmark --mode fixture --split all
 ```
 
 Üretilen ana rapor: `results/fixture-test/REPORT_TR.md`.
@@ -50,6 +55,24 @@ uv run jev-router route --mode rule --prompt "Bu mesajı üç sınıftan birine 
 
 # Jev ile canlı route (OPENROUTER_API_KEY gerekir)
 uv run jev-router route --mode live-jev --threshold 0.58 --prompt "..."
+
+# Bir yerel Git değişikliğini Jev ile incele
+uv run jev-router review --repo . --base HEAD~1 --head HEAD \
+  --task "Cache anahtarındaki tenant izolasyonunu düzelt" \
+  --criterion "Tenant'lar birbirinin verisini okuyamaz" --max-usd 0.01
+
+# Pre-route ve post-change judge kararını tek kontrol çıktısında birleştir
+uv run jev-router control --repo . --base HEAD~1 --head HEAD \
+  --task "İstenen değişikliği uygula" --criterion "Testler ve kabul kriterleri sağlanır"
+
+# 40 sentetik vaka; canlı test yalnız dondurulmuş test split'inde
+uv run jev-router judge-benchmark --mode fixture --split all \
+  --output results/judge-fixture
+uv run jev-router judge-benchmark --mode live --split test --max-usd 0.01 \
+  --output results/judge-live-test
+
+# Kayıtlı measurement'lardan API çağrısı yapmadan raporu yeniden üret
+uv run jev-router judge-report --results results/judge-live-test
 
 # Bir aday modeli doğrudan fixture üzerinde çalıştır
 uv run jev-router run-model --task-id demo-003 --role cheap
@@ -99,6 +122,12 @@ Tam Türkçe rapor ve ham artefaktlar: [`results/openrouter-smoke-20260919/REPOR
 200 ayrı dev sorusunda eşik `0.02` olarak seçilip testten önce donduruldu. 1.000 kilitli testte Sol %94.2, Luna %83.9 ve Jev yolu %89.7 doğruluk verdi. Jev %19.2 Sol kullandı ve Sol politikasına göre %62.3 maliyet tasarrufu gösterdi; ancak 4.5 yüzde puan kalite kaybıyla önceden tanımlı 2 puan hedefini geçemedi. Jev, aynı Sol kullanım oranındaki rastgele router'dan 3.9 puan daha iyi olsa da p50 uçtan uca gecikmesi routing ek yükü nedeniyle Sol'dan daha yüksekti. Kalibrasyon + test için 3.600 çağrının gerçek ledger harcaması `$0.458076` oldu.
 
 Ayrıntılı rapor: [`results/openrouter-en-test-1000-20260919/DETAILED_REPORT_TR.md`](results/openrouter-en-test-1000-20260919/DETAILED_REPORT_TR.md).
+
+## İlk Jev code-judge benchmarkı — 2026-09-20
+
+Eşikler yalnız 12 vakalık dev split'inde ayarlandı ve 28 vakalık sentetik testten önce donduruldu. Held-out testte dört sınıflı karar doğruluğu `%71.4` oldu. Hatalı/riskli 21 vakanın hiçbiri yanlışlıkla `accept` edilmedi (`unsafe detection recall %100`, `accept precision %100`); yedi geçerli değişikliğin ise yalnız ikisi kabul edildi (`valid accept recall %28.6`). Yani ilk sürüm güvenli tarafta fakat belirgin biçimde fazla muhafazakâr. Toplam canlı test maliyeti `$0.001196`, vaka başı `$0.000043`; ortalama gecikme `513 ms`, p95 `648 ms` oldu.
+
+Bu sonuç üretim doğruluğu veya SWE-bench başarısı değildir. Sentetik set politika ve tesisatı doğrular. Ham held-out ölçümler [`results/judge-openrouter-test-20260920/`](results/judge-openrouter-test-20260920/) altında; deney sözleşmesi ve dürüst yorum [docs/JUDGE_PROTOCOL_TR.md](docs/JUDGE_PROTOCOL_TR.md) içindedir.
 
 ## Anahtar ve gizlilik
 
