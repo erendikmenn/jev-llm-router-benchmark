@@ -7,6 +7,7 @@ from pathlib import Path
 
 from .calibrate import calibration_curve, select_threshold
 from .config import AppConfig, load_config
+from .control import run_control
 from .dataset import find_cross_split_duplicates, load_tasks, split_tasks
 from .demo import serve
 from .evidence import collect_git_review_packet
@@ -59,6 +60,18 @@ def parser() -> argparse.ArgumentParser:
     review.add_argument("--evidence-json")
     review.add_argument("--provider", choices=["openrouter", "typesafe"], default="openrouter")
     review.add_argument("--max-usd", type=float, default=0.01)
+
+    control = sub.add_parser("control", help="Run Jev routing and post-change judging together")
+    control.add_argument("--repo", default=".")
+    control.add_argument("--task", required=True)
+    control.add_argument("--criterion", action="append", default=[])
+    control.add_argument("--forbid", action="append", default=[])
+    control.add_argument("--risk-flag", action="append", default=[])
+    control.add_argument("--base", default="HEAD")
+    control.add_argument("--head", default="WORKTREE")
+    control.add_argument("--evidence-json")
+    control.add_argument("--threshold", type=float, default=None)
+    control.add_argument("--max-usd", type=float, default=0.02)
 
     judge_benchmark = sub.add_parser("judge-benchmark", help="Measure Jev code-judge decisions")
     judge_benchmark.add_argument("--data", default=str(DEFAULT_JUDGE_DATA))
@@ -199,6 +212,57 @@ def main(argv: list[str] | None = None) -> None:
             max_budget_usd=args.max_usd,
         )
         print(json.dumps(summary, ensure_ascii=False, indent=2))
+        return
+    if args.command == "control":
+        evidence = {}
+        if args.evidence_json:
+            evidence = json.loads(Path(args.evidence_json).read_text(encoding="utf-8"))
+            if not isinstance(evidence, dict):
+                raise SystemExit("--evidence-json must contain a JSON object")
+        packet = collect_git_review_packet(
+            args.repo,
+            packet_id="local-control",
+            task=args.task,
+            acceptance_criteria=args.criterion or [args.task],
+            base=args.base,
+            head=args.head,
+            evidence=evidence,
+            risk_flags=args.risk_flag,
+            forbidden_changes=args.forbid,
+            max_diff_chars=int(config.judge["max_diff_chars"]),
+            max_file_chars=int(config.judge["max_file_chars"]),
+            max_context_chars=int(config.judge["max_context_chars"]),
+        )
+        review_estimate = estimate_review_cost(packet, config)
+        if review_estimate > args.max_usd:
+            raise SystemExit(
+                f"estimated review cost ${review_estimate:.6f} exceeds --max-usd ${args.max_usd:.6f}"
+            )
+        threshold = (
+            args.threshold
+            if args.threshold is not None
+            else float(config.experiment["default_threshold"])
+        )
+        result = run_control(
+            _anonymous_task(args.task),
+            packet,
+            OpenRouterJevProvider(config),
+            OpenRouterReviewJudgeProvider(config),
+            config,
+            threshold,
+        )
+        if result.total_control_cost_usd > args.max_usd:
+            raise SystemExit(
+                f"control spend ${result.total_control_cost_usd:.6f} exceeded --max-usd ${args.max_usd:.6f}"
+            )
+        print(json.dumps({
+            "packet": {
+                "changed_files": packet.changed_files,
+                "risk_flags": packet.risk_flags,
+                "context_truncated": packet.metadata["context_truncated"],
+            },
+            **result.to_dict(),
+        }, ensure_ascii=False, indent=2))
         return
     if args.command == "run-model":
         tasks = load_tasks(DEFAULT_DATA)
