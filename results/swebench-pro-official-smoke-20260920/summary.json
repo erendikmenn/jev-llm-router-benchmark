@@ -1,0 +1,20 @@
+{
+  "suite": "swebench-pro-public",
+  "instance_id": "instance_ansible__ansible-29aea9ff3466e4cd2ed00524b9e56738d568ce8b-vba6da65a0f3baefda7a058ebbd0a8dcafb8512f5",
+  "worker_model": "gpt-5.6-sol",
+  "worker_auth": "local_codex_subscription_auth",
+  "worker_openrouter_api_calls": 0,
+  "jev_raw_selection": "terra",
+  "jev_final_selection": "sol",
+  "jev_guard": "ambiguity_minimum_sol",
+  "jev_route_cost_usd": 0.000058842,
+  "official_resolved": true,
+  "generation_elapsed_ms": 485990.2426660119,
+  "patch_bytes": 6303,
+  "codex_usage": {
+    "input_tokens": 1990503,
+    "cached_input_tokens": 1914880,
+    "output_tokens": 16858,
+    "reasoning_output_tokens": 5872
+  }
+}
