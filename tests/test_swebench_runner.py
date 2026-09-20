@@ -77,3 +77,19 @@ def test_all_four_fixed_tiers_and_router_arms_are_available():
         "router-only",
         "router-judge",
     )
+
+
+def test_plan_loader_supports_deterministic_offset(tmp_path):
+    rows = [
+        {
+            "instance_id": f"owner__repo-{index}",
+            "repo": "owner/repo",
+            "base_commit": "a" * 40,
+            "problem_statement": f"Fix {index}",
+        }
+        for index in range(3)
+    ]
+    path = tmp_path / "plan.json"
+    path.write_text(json.dumps({"dev": rows, "test": []}), encoding="utf-8")
+
+    assert load_swebench_plan(path, "dev", 1, 1)[0].instance_id == "owner__repo-1"

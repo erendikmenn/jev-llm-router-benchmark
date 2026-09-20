@@ -49,11 +49,18 @@ class SWEbenchTask:
         return task
 
 
-def load_swebench_plan(path: str | Path, split: str, limit: int | None) -> list[SWEbenchTask]:
+def load_swebench_plan(
+    path: str | Path,
+    split: str,
+    limit: int | None,
+    offset: int = 0,
+) -> list[SWEbenchTask]:
     payload = json.loads(Path(path).read_text(encoding="utf-8"))
     if split not in {"dev", "test"}:
         raise ValueError("split must be dev or test")
-    rows = payload.get(split) or []
+    if offset < 0:
+        raise ValueError("offset must be non-negative")
+    rows = (payload.get(split) or [])[offset:]
     if limit is not None:
         rows = rows[:limit]
     return [SWEbenchTask.from_dict(row) for row in rows]

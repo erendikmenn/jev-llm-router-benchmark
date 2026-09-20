@@ -74,6 +74,7 @@ def parser() -> argparse.ArgumentParser:
     )
     swebench.add_argument("--split", choices=["dev", "test"], default="dev")
     swebench.add_argument("--limit", type=int, default=1)
+    swebench.add_argument("--offset", type=int, default=0)
     swebench.add_argument("--arm", choices=ARMS, required=True)
     swebench.add_argument(
         "--workspace-root",
@@ -274,7 +275,7 @@ def main(argv: list[str] | None = None) -> None:
         )
         return
     if args.command == "swebench-generate":
-        tasks = load_swebench_plan(args.plan, args.split, args.limit)
+        tasks = load_swebench_plan(args.plan, args.split, args.limit, args.offset)
         output = Path(
             args.output or ROOT / "results" / "swebench-generation" / args.arm
         ).resolve()
@@ -282,6 +283,7 @@ def main(argv: list[str] | None = None) -> None:
             "executed": args.execute,
             "arm": args.arm,
             "split": args.split,
+            "offset": args.offset,
             "tasks": [task.instance_id for task in tasks],
             "workspace_root": str(Path(args.workspace_root).resolve()),
             "output": str(output),
