@@ -34,7 +34,11 @@ from .providers import (
 from .report import generate_report
 from .routers import jev_router, rule_router
 from .swebench_runner import ARMS, generate_swebench_arm, load_swebench_plan
-from .swebench_analysis import write_swebench_analysis
+from .swebench_analysis import (
+    merge_evaluation_reports,
+    merge_generation_summaries,
+    write_swebench_analysis,
+)
 from .tiered_routing import OpenRouterTieredJevProvider, decide_tiered_route
 
 
@@ -97,6 +101,13 @@ def parser() -> argparse.ArgumentParser:
         "--evaluation", action="append", required=True, metavar="ARM=PATH"
     )
     swebench_report.add_argument("--output", required=True)
+
+    swebench_merge = sub.add_parser(
+        "swebench-merge", help="Merge resumable SWE-bench run segments"
+    )
+    swebench_merge.add_argument("--kind", choices=["generation", "evaluation"], required=True)
+    swebench_merge.add_argument("--input", action="append", required=True)
+    swebench_merge.add_argument("--output", required=True)
 
     route = sub.add_parser("route", help="Route one request without generating an answer")
     route.add_argument("--prompt", required=True)
@@ -317,6 +328,14 @@ def main(argv: list[str] | None = None) -> None:
             args.output,
         )
         print(json.dumps(report, ensure_ascii=False, indent=2))
+        return
+    if args.command == "swebench-merge":
+        merger = (
+            merge_generation_summaries
+            if args.kind == "generation"
+            else merge_evaluation_reports
+        )
+        print(json.dumps(merger(args.input, args.output), ensure_ascii=False, indent=2))
         return
     if args.command == "route":
         task = _anonymous_task(args.prompt)

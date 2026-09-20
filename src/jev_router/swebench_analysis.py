@@ -197,3 +197,69 @@ def write_swebench_analysis(
     destination.parent.mkdir(parents=True, exist_ok=True)
     destination.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     return report
+
+
+def merge_generation_summaries(paths: list[str | Path], output: str | Path) -> dict:
+    payloads = [_load(path) for path in paths]
+    arms = {payload.get("arm") for payload in payloads}
+    if len(arms) != 1 or None in arms:
+        raise ValueError("generation summaries must belong to one arm")
+    measurements = [item for payload in payloads for item in payload.get("measurements", [])]
+    ids = [item["instance_id"] for item in measurements]
+    if len(ids) != len(set(ids)):
+        raise ValueError("duplicate generation instance IDs")
+    merged = {
+        "arm": arms.pop(),
+        "tasks": len(measurements),
+        "completed": sum(
+            item.get("status") in {"completed", "accepted"} for item in measurements
+        ),
+        "empty_patches": sum(bool(item.get("empty_patch")) for item in measurements),
+        "measurements": measurements,
+        "official_evaluation_required": True,
+        "merged_from": [str(Path(path)) for path in paths],
+    }
+    destination = Path(output)
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    destination.write_text(json.dumps(merged, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    return merged
+
+
+def merge_evaluation_reports(paths: list[str | Path], output: str | Path) -> dict:
+    payloads = [_load(path) for path in paths]
+    list_fields = (
+        "submitted_ids",
+        "completed_ids",
+        "resolved_ids",
+        "unresolved_ids",
+        "infra_failure_ids",
+        "ambiguous_failure_ids",
+        "empty_patch_ids",
+        "error_ids",
+    )
+    merged_lists = {
+        field: sorted({item for payload in payloads for item in payload.get(field, [])})
+        for field in list_fields
+    }
+    if sum(len(payload.get("submitted_ids", [])) for payload in payloads) != len(
+        merged_lists["submitted_ids"]
+    ):
+        raise ValueError("duplicate evaluation instance IDs")
+    merged = {
+        "schema_version": 2,
+        "total_instances": len(merged_lists["submitted_ids"]),
+        "submitted_instances": len(merged_lists["submitted_ids"]),
+        "completed_instances": len(merged_lists["completed_ids"]),
+        "resolved_instances": len(merged_lists["resolved_ids"]),
+        "unresolved_instances": len(merged_lists["unresolved_ids"]),
+        "infra_failure_instances": len(merged_lists["infra_failure_ids"]),
+        "ambiguous_failure_instances": len(merged_lists["ambiguous_failure_ids"]),
+        "empty_patch_instances": len(merged_lists["empty_patch_ids"]),
+        "error_instances": len(merged_lists["error_ids"]),
+        **merged_lists,
+        "merged_from": [str(Path(path)) for path in paths],
+    }
+    destination = Path(output)
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    destination.write_text(json.dumps(merged, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    return merged
