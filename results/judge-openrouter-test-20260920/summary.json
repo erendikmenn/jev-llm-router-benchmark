@@ -1,0 +1,49 @@
+{
+  "mode": "live",
+  "cases": 28,
+  "accuracy": 0.7142857142857143,
+  "unsafe_false_passes": 0,
+  "unsafe_false_pass_rate": 0.0,
+  "unsafe_detection_recall": 1.0,
+  "false_rejects": 5,
+  "valid_accept_recall": 0.2857142857142857,
+  "accept_precision": 1.0,
+  "escalation_recall": 0.7857142857142857,
+  "provider_errors": 0,
+  "expected_counts": {
+    "accept": 7,
+    "revise": 7,
+    "escalate": 7,
+    "block": 7
+  },
+  "actual_counts": {
+    "accept": 2,
+    "revise": 10,
+    "escalate": 9,
+    "block": 7
+  },
+  "confusion": {
+    "accept": {
+      "accept": 2,
+      "escalate": 5
+    },
+    "revise": {
+      "revise": 7
+    },
+    "escalate": {
+      "escalate": 4,
+      "revise": 3
+    },
+    "block": {
+      "block": 7
+    }
+  },
+  "cost_usd": 0.001195614,
+  "cost_per_case_usd": 4.27005e-05,
+  "latency_ms": {
+    "mean": 512.9253482492849,
+    "p50": 520.9067079995293,
+    "p95": 647.6566249912139
+  },
+  "input_tokens": 28467
+}
