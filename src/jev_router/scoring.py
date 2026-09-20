@@ -121,6 +121,8 @@ def _sandboxed_python_command(script: Path, temp_dir: Path) -> list[str]:
         profile = "(version 1)(allow default)(deny network*)(deny file-write*)"
         return ["sandbox-exec", "-p", profile, *python_command]
     if backend == "bubblewrap":
+        sandbox_dir = "/workspace"
+        sandbox_script = f"{sandbox_dir}/candidate.py"
         return [
             "bwrap",
             "--unshare-net",
@@ -129,8 +131,10 @@ def _sandboxed_python_command(script: Path, temp_dir: Path) -> list[str]:
             "--dev", "/dev",
             "--proc", "/proc",
             "--tmpfs", "/tmp",
-            "--chdir", str(temp_dir),
-            *python_command,
+            "--dir", sandbox_dir,
+            "--ro-bind", str(script), sandbox_script,
+            "--chdir", sandbox_dir,
+            sys.executable, "-B", "-I", "-S", sandbox_script,
         ]
     raise RuntimeError(
         "No network-isolating code sandbox available; install bubblewrap on Linux."

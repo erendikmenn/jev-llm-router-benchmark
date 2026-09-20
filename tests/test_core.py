@@ -17,6 +17,7 @@ from jev_router.pricing import jev_cost, usage_cost
 from jev_router.routers import jev_router
 from jev_router.routers import rule_router
 from jev_router.scoring import score_output
+from jev_router import scoring
 
 
 @pytest.fixture()
@@ -69,6 +70,21 @@ def test_code_sandbox_blocks_network_socket(tasks):
         "        return True\n"
     )
     assert score_output(probe, source) == 1
+
+
+def test_bubblewrap_mounts_candidate_outside_hidden_tmp(monkeypatch, tmp_path):
+    script = tmp_path / "candidate.py"
+    script.write_text("print('ok')\n", encoding="utf-8")
+    monkeypatch.setattr(scoring, "sandbox_backend", lambda: "bubblewrap")
+
+    command = scoring._sandboxed_python_command(script, tmp_path)
+
+    assert command[-1] == "/workspace/candidate.py"
+    mount_index = command.index(str(script))
+    assert ["--ro-bind", str(script), "/workspace/candidate.py"] == command[
+        mount_index - 1 : mount_index + 2
+    ]
+    assert command.index("--tmpfs") < command.index("--dir")
 
 
 def test_deterministic_filter_rejects_non_text(config, tasks):
