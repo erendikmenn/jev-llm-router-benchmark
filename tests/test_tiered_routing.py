@@ -40,6 +40,25 @@ def test_critical_domain_promotes_to_astra_without_model_discretion():
     assert decision.rule == "critical_domain_to_astra"
 
 
+def test_isolated_algorithm_does_not_treat_payment_word_as_real_world_risk():
+    isolated = Task(
+        "x",
+        "test",
+        "en",
+        "coding",
+        "Print the minimum payment for this toy restaurant problem.",
+        "official_harness",
+        [],
+        {"isolated_code": True, "requires_tools": False},
+        {},
+        {},
+    )
+    decision = decide_tiered_route(isolated, judgment())
+
+    assert decision.selected == "luna"
+    assert decision.rule == "jev_least_sufficient_profile"
+
+
 def test_ambiguity_and_low_confidence_promote_to_sol():
     decision = decide_tiered_route(
         task("Improve this module."), judgment(ambiguity=0.8, confidence=0.1)

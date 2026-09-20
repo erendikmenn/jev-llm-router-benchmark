@@ -180,7 +180,8 @@ def _promote(current: str, minimum: str) -> str:
 def decide_tiered_route(task: Task, judgment: TieredJudgment) -> TieredRouteDecision:
     selected = judgment.selected if judgment.selected in TIERS else "sol"
     guards: list[str] = []
-    if _CRITICAL_PATTERNS.search(task.prompt):
+    isolated_code = bool(task.constraints.get("isolated_code"))
+    if _CRITICAL_PATTERNS.search(task.prompt) and not isolated_code:
         selected = _promote(selected, "astra")
         guards.append("critical_domain_to_astra")
     elif judgment.risk in {"high", "critical"}:

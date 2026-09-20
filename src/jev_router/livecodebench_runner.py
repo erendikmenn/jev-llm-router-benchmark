@@ -232,7 +232,11 @@ def run_livecodebench(
                 task.question_content,
                 "official_harness",
                 None,
-                {"platform": task.platform, "requires_tools": False},
+                {
+                    "platform": task.platform,
+                    "requires_tools": False,
+                    "isolated_code": True,
+                },
                 {},
                 {},
             )
