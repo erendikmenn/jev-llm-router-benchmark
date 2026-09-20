@@ -6,6 +6,7 @@ import os
 from pathlib import Path
 
 from .calibrate import calibration_curve, select_threshold
+from .codex_dispatch import build_codex_dispatch_plan, run_codex_dispatch
 from .config import AppConfig, load_config
 from .control import run_control
 from .dataset import find_cross_split_duplicates, load_tasks, split_tasks
@@ -48,6 +49,26 @@ def parser() -> argparse.ArgumentParser:
     route.add_argument("--prompt", required=True)
     route.add_argument("--mode", choices=["rule", "live-jev"], default="rule")
     route.add_argument("--threshold", type=float, default=None)
+
+    codex_route = sub.add_parser(
+        "codex-route", help="Route a task and optionally dispatch it through local Codex auth"
+    )
+    codex_route.add_argument("--task", required=True)
+    codex_route.add_argument("--repo", default=".")
+    codex_route.add_argument("--mode", choices=["rule", "live-jev"], default="rule")
+    codex_route.add_argument(
+        "--role",
+        choices=["auto", "cheap", "strong", "luna", "terra", "sol", "astra"],
+        default="auto",
+        help="Use auto routing or force one Codex role for a baseline",
+    )
+    codex_route.add_argument("--threshold", type=float, default=None)
+    codex_route.add_argument(
+        "--sandbox", choices=["read-only", "workspace-write"], default="workspace-write"
+    )
+    codex_route.add_argument("--execute", action="store_true")
+    codex_route.add_argument("--timeout-seconds", type=float, default=900.0)
+    codex_route.add_argument("--receipt")
 
     review = sub.add_parser("review", help="Judge a local Git change using task, diff, code, and evidence")
     review.add_argument("--repo", default=".")
@@ -150,6 +171,59 @@ def main(argv: list[str] | None = None) -> None:
             "applied_rule": decision.rule,
             "rejected_reason": decision.rejected_reason,
         }, ensure_ascii=False, indent=2))
+        return
+    if args.command == "codex-route":
+        task = _anonymous_task(args.task)
+        threshold = (
+            args.threshold
+            if args.threshold is not None
+            else float(config.experiment["default_threshold"])
+        )
+        decision = None
+        if args.role == "auto":
+            decision = (
+                rule_router(task, config)
+                if args.mode == "rule"
+                else jev_router(task, config, OpenRouterJevProvider(config), threshold)
+            )
+            if decision.selected is None:
+                raise SystemExit(f"task rejected before dispatch: {decision.rejected_reason}")
+            selected_role = decision.selected
+        else:
+            selected_role = args.role
+        plan = build_codex_dispatch_plan(args.repo, selected_role, sandbox=args.sandbox)
+        payload = {
+            "route": {
+                "selected_role": selected_role,
+                "codex_role": plan.role.name,
+                "codex_model": plan.role.model,
+                "reasoning_effort": plan.role.reasoning_effort,
+                "rule": decision.rule if decision is not None else "forced_baseline",
+                "task_type": decision.task_type if decision is not None else None,
+                "confidence": decision.confidence if decision is not None else None,
+                "strong_probability": (
+                    decision.strong_probability if decision is not None else None
+                ),
+            },
+            "executed": args.execute,
+            "plan": plan.to_dict(),
+        }
+        if args.execute:
+            receipt = run_codex_dispatch(
+                plan,
+                args.task,
+                timeout_seconds=args.timeout_seconds,
+            )
+            payload["receipt"] = receipt.to_dict()
+            if args.receipt:
+                Path(args.receipt).write_text(
+                    json.dumps(payload, ensure_ascii=False, indent=2) + "\n",
+                    encoding="utf-8",
+                )
+            if receipt.returncode != 0:
+                print(json.dumps(payload, ensure_ascii=False, indent=2))
+                raise SystemExit(receipt.returncode)
+        print(json.dumps(payload, ensure_ascii=False, indent=2))
         return
     if args.command == "review":
         evidence = {}
