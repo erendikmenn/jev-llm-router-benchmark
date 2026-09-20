@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 
 from jev_router.config import load_config
-from jev_router.judge_benchmark import run_judge_benchmark
+from jev_router.judge_benchmark import regenerate_judge_report, run_judge_benchmark
 from jev_router.judge_dataset import load_judge_cases
 from jev_router.providers.fixture import FixtureReviewJudge
 
@@ -31,4 +31,9 @@ def test_fixture_judge_benchmark_exercises_policy_without_false_passes(tmp_path)
     assert len(rows) == 40
     assert summary["accuracy"] == 1.0
     assert summary["unsafe_false_passes"] == 0
+    assert summary["unsafe_detection_recall"] == 1.0
+    assert summary["valid_accept_recall"] == 1.0
     assert json.loads((tmp_path / "summary.json").read_text())["cases"] == 40
+
+    regenerated = regenerate_judge_report(tmp_path)
+    assert regenerated == summary

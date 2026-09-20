@@ -13,7 +13,7 @@ from .demo import serve
 from .evidence import collect_git_review_packet
 from .evaluate import run_benchmark
 from .judge_service import estimate_review_cost, run_review
-from .judge_benchmark import run_judge_benchmark
+from .judge_benchmark import regenerate_judge_report, run_judge_benchmark
 from .judge_dataset import load_judge_cases
 from .manifest import build_manifest, write_manifest
 from .models import GenerationRequest, Task
@@ -80,6 +80,11 @@ def parser() -> argparse.ArgumentParser:
     judge_benchmark.add_argument("--provider", choices=["openrouter", "typesafe"], default="openrouter")
     judge_benchmark.add_argument("--max-usd", type=float, default=None)
     judge_benchmark.add_argument("--output", default=str(ROOT / "results" / "judge-fixture"))
+
+    judge_report = sub.add_parser(
+        "judge-report", help="Recompute judge metrics from saved measurements without API calls"
+    )
+    judge_report.add_argument("--results", required=True)
 
     run_model = sub.add_parser("run-model", help="Run one candidate directly")
     run_model.add_argument("--task-id", required=True)
@@ -211,6 +216,10 @@ def main(argv: list[str] | None = None) -> None:
             mode=args.mode,
             max_budget_usd=args.max_usd,
         )
+        print(json.dumps(summary, ensure_ascii=False, indent=2))
+        return
+    if args.command == "judge-report":
+        summary = regenerate_judge_report(args.results)
         print(json.dumps(summary, ensure_ascii=False, indent=2))
         return
     if args.command == "control":
