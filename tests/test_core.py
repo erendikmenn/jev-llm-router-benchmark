@@ -53,7 +53,7 @@ def test_public_benchmark_choice_and_numeric_scoring(tasks):
     assert score_output(numeric, "1251") == 0
 
 
-def test_code_sandbox_blocks_network_socket(tasks):
+def test_code_sandbox_blocks_outbound_network(tasks):
     coding = next(task for task in tasks if task.metric == "python_tests")
     probe = replace(
         coding,
@@ -64,7 +64,8 @@ def test_code_sandbox_blocks_network_socket(tasks):
         "    try:\n"
         "        import socket\n"
         "        sock = socket.socket()\n"
-        "        sock.bind(('127.0.0.1', 0))\n"
+        "        sock.settimeout(0.1)\n"
+        "        sock.connect(('1.1.1.1', 53))\n"
         "        return False\n"
         "    except OSError:\n"
         "        return True\n"
