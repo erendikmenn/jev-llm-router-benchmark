@@ -104,6 +104,7 @@ def run_terminalbench(
     forced_role: str | None = None,
     execute: bool = True,
     timeout_seconds: float = 3600.0,
+    max_jev_usd: float = 5.0,
     runner: Callable[..., subprocess.CompletedProcess[str]] = subprocess.run,
 ) -> dict:
     """Route tasks through Jev and run official Harbor with the user's Codex auth."""
@@ -111,11 +112,27 @@ def run_terminalbench(
     output.mkdir(parents=True, exist_ok=True)
     receipts = output / "receipts"
     receipts.mkdir(exist_ok=True)
-    rows: list[dict] = []
+    summary_path = output / "generation-summary.json"
+    rows = (
+        list(json.loads(summary_path.read_text(encoding="utf-8")).get("measurements") or [])
+        if summary_path.is_file()
+        else []
+    )
+    completed = {
+        row["task_name"]
+        for row in rows
+        if row.get("status") == "completed" or (not execute and row.get("status") == "routed")
+    }
+    spent = sum(float(row.get("jev_route_cost_usd", 0.0)) for row in rows)
     environment = os.environ.copy()
     environment["CODEX_FORCE_AUTH_JSON"] = "1"
 
     for index, task in enumerate(tasks, 1):
+        if task.name in completed:
+            print(f"[resume] terminal-bench-2 {index}/{len(tasks)} {task.name}", flush=True)
+            continue
+        if spent >= max_jev_usd:
+            raise RuntimeError(f"Jev cost cap reached: ${spent:.6f} >= ${max_jev_usd:.6f}")
         route_started = time.perf_counter()
         if forced_role:
             role = forced_role
@@ -203,6 +220,7 @@ def run_terminalbench(
             "stderr_tail": stderr,
         }
         rows.append(row)
+        spent += float(row["jev_route_cost_usd"])
         (receipts / f"{task.name}.json").write_text(
             json.dumps(row, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
         )

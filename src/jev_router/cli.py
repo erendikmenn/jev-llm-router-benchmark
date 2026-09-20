@@ -207,6 +207,7 @@ def parser() -> argparse.ArgumentParser:
     tb_run.add_argument("--limit", type=int)
     tb_run.add_argument("--role", choices=["luna", "terra", "sol", "astra"])
     tb_run.add_argument("--timeout-seconds", type=float, default=3600.0)
+    tb_run.add_argument("--max-jev-usd", type=float, default=5.0)
     tb_run.add_argument("--route-only", action="store_true")
     tb_run.add_argument(
         "--output", default=str(ROOT / "results" / "terminalbench-generation")
@@ -550,6 +551,7 @@ def main(argv: list[str] | None = None) -> None:
             forced_role=args.role,
             execute=not args.route_only,
             timeout_seconds=args.timeout_seconds,
+            max_jev_usd=args.max_jev_usd,
         )
         print(json.dumps(summary, ensure_ascii=False, indent=2))
         return
