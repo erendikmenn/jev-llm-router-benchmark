@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import re
 import subprocess
+from fnmatch import fnmatch
 from pathlib import Path
 from typing import Any, Iterable
 
@@ -90,6 +91,12 @@ def _is_sensitive_path(path: str) -> bool:
     return bool(lowered & _SENSITIVE_PATH_PARTS) or candidate.suffix.casefold() in _SENSITIVE_SUFFIXES
 
 
+def _path_allowed(path: str, allow_paths: tuple[str, ...], deny_paths: tuple[str, ...]) -> bool:
+    if _is_sensitive_path(path) or any(fnmatch(path, pattern) for pattern in deny_paths):
+        return False
+    return not allow_paths or any(fnmatch(path, pattern) for pattern in allow_paths)
+
+
 def _is_text_path(path: str) -> bool:
     return Path(path).suffix.casefold() not in _BINARY_SUFFIXES
 
@@ -161,6 +168,8 @@ def collect_git_review_packet(
     max_file_chars: int = 20_000,
     max_context_chars: int = 100_000,
     include_paths: Iterable[str] | None = None,
+    allow_paths: Iterable[str] = (),
+    deny_paths: Iterable[str] = (),
 ) -> ReviewPacket:
     repository = Path(repo).resolve()
     if not (repository / ".git").exists():
@@ -175,10 +184,15 @@ def collect_git_review_packet(
         names_args = ("diff", "--name-only", "--diff-filter=ACMRT", base, head, "--")
         stats_args = ("diff", "--numstat", base, head, "--")
 
+    allow_patterns = tuple(allow_paths)
+    deny_patterns = tuple(deny_paths)
+    raw_changed_files = tuple(
+        path for path in _git(repository, *names_args).splitlines() if path
+    )
     all_changed_files = tuple(
         path
-        for path in _git(repository, *names_args).splitlines()
-        if path and not _is_sensitive_path(path)
+        for path in raw_changed_files
+        if _path_allowed(path, allow_patterns, deny_patterns)
     )
     requested_paths = set(include_paths) if include_paths is not None else None
     changed_files = tuple(
@@ -244,6 +258,12 @@ def collect_git_review_packet(
             "omitted_changed_files": tuple(
                 path for path in all_changed_files if path not in changed_files
             ),
+            "privacy_excluded_files": tuple(
+                path for path in raw_changed_files if path not in all_changed_files
+            ),
+            "redactions_applied": diff.count("[REDACTED]")
+            + sum(content.count("[REDACTED]") for content in relevant_code.values()),
+            "state_characters": len(diff) + sum(map(len, relevant_code.values())),
         },
     )
 
@@ -263,6 +283,8 @@ def collect_git_review_packet_chunks(
     max_file_chars: int = 20_000,
     max_context_chars: int = 72_000,
     max_files_per_packet: int = 8,
+    allow_paths: Iterable[str] = (),
+    deny_paths: Iterable[str] = (),
 ) -> tuple[ReviewPacket, ...]:
     if max_files_per_packet < 1:
         raise ValueError("max_files_per_packet must be positive")
@@ -279,6 +301,8 @@ def collect_git_review_packet_chunks(
         max_diff_chars=max_diff_chars,
         max_file_chars=max_file_chars,
         max_context_chars=max_context_chars,
+        allow_paths=allow_paths,
+        deny_paths=deny_paths,
     )
     files = initial.changed_files
     if len(files) <= max_files_per_packet and not initial.metadata["context_truncated"]:
@@ -306,6 +330,8 @@ def collect_git_review_packet_chunks(
                 max_file_chars=max_file_chars,
                 max_context_chars=max_context_chars,
                 include_paths=selected,
+                allow_paths=allow_paths,
+                deny_paths=deny_paths,
             )
         )
     return tuple(chunks) or (initial,)

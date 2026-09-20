@@ -120,6 +120,9 @@ def parser() -> argparse.ArgumentParser:
     review.add_argument("--evidence-json")
     review.add_argument("--provider", choices=["openrouter", "typesafe"], default="openrouter")
     review.add_argument("--max-usd", type=float, default=0.01)
+    review.add_argument("--allow-path", action="append", default=[])
+    review.add_argument("--deny-path", action="append", default=[])
+    review.add_argument("--dry-run", action="store_true")
 
     control = sub.add_parser("control", help="Run Jev routing and post-change judging together")
     control.add_argument("--repo", default=".")
@@ -389,8 +392,33 @@ def main(argv: list[str] | None = None) -> None:
             max_diff_chars=int(config.judge["max_diff_chars"]),
             max_file_chars=int(config.judge["max_file_chars"]),
             max_context_chars=int(config.judge["max_context_chars"]),
+            allow_paths=args.allow_path,
+            deny_paths=args.deny_path,
         )
         estimated_cost = estimate_review_cost(packet, config)
+        if args.dry_run:
+            print(
+                json.dumps(
+                    {
+                        "provider_called": False,
+                        "packet": {
+                            "changed_files": packet.changed_files,
+                            "privacy_excluded_files": packet.metadata[
+                                "privacy_excluded_files"
+                            ],
+                            "risk_flags": packet.risk_flags,
+                            "context_truncated": packet.metadata["context_truncated"],
+                            "state_characters": packet.metadata["state_characters"],
+                            "redactions_applied": packet.metadata["redactions_applied"],
+                        },
+                        "estimated_cost_usd": estimated_cost,
+                        "within_budget": estimated_cost <= args.max_usd,
+                    },
+                    ensure_ascii=False,
+                    indent=2,
+                )
+            )
+            return
         if estimated_cost > args.max_usd:
             raise SystemExit(
                 f"estimated Jev review cost ${estimated_cost:.6f} exceeds --max-usd ${args.max_usd:.6f}"

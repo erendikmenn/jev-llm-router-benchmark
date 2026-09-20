@@ -131,3 +131,34 @@ def test_large_change_is_split_without_omitting_files(tmp_path):
         f"file_{index}.py" for index in range(5)
     }
     assert all(len(packet.changed_files) <= 2 for packet in packets)
+
+
+def test_repository_privacy_allow_and_deny_patterns(tmp_path):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    git(repo, "init", "-q")
+    git(repo, "config", "user.name", "Test")
+    git(repo, "config", "user.email", "test@example.com")
+    for path in ("src/app.py", "src/private.py", "docs/note.md"):
+        target = repo / path
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text("before\n", encoding="utf-8")
+    git(repo, "add", ".")
+    git(repo, "commit", "-qm", "initial")
+    for path in ("src/app.py", "src/private.py", "docs/note.md"):
+        (repo / path).write_text("after\n", encoding="utf-8")
+
+    packet = collect_git_review_packet(
+        repo,
+        packet_id="privacy",
+        task="Update app.",
+        acceptance_criteria=["App updated."],
+        allow_paths=["src/**"],
+        deny_paths=["**/private.py"],
+    )
+
+    assert packet.changed_files == ("src/app.py",)
+    assert set(packet.metadata["privacy_excluded_files"]) == {
+        "docs/note.md",
+        "src/private.py",
+    }
