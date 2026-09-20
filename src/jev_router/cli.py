@@ -34,6 +34,7 @@ from .providers import (
 from .report import generate_report
 from .routers import jev_router, rule_router
 from .swebench_runner import ARMS, generate_swebench_arm, load_swebench_plan
+from .swebench_analysis import write_swebench_analysis
 from .tiered_routing import OpenRouterTieredJevProvider, decide_tiered_route
 
 
@@ -83,6 +84,18 @@ def parser() -> argparse.ArgumentParser:
     swebench.add_argument("--max-review-usd", type=float, default=0.05)
     swebench.add_argument("--timeout-seconds", type=float, default=900.0)
     swebench.add_argument("--execute", action="store_true")
+
+    swebench_report = sub.add_parser(
+        "swebench-report",
+        help="Join generation receipts with official SWE-bench evaluator reports",
+    )
+    swebench_report.add_argument(
+        "--generation", action="append", required=True, metavar="ARM=PATH"
+    )
+    swebench_report.add_argument(
+        "--evaluation", action="append", required=True, metavar="ARM=PATH"
+    )
+    swebench_report.add_argument("--output", required=True)
 
     route = sub.add_parser("route", help="Route one request without generating an answer")
     route.add_argument("--prompt", required=True)
@@ -207,6 +220,18 @@ def _anonymous_task(prompt: str) -> Task:
     return Task("adhoc", "adhoc", "unknown", "unknown", prompt, "contains_all", [], {"modality": "text", "requires_tools": False}, {}, {})
 
 
+def _arm_paths(values: list[str]) -> dict[str, str]:
+    parsed: dict[str, str] = {}
+    for value in values:
+        arm, separator, path = value.partition("=")
+        if not separator or arm not in ARMS or not path:
+            raise SystemExit(f"expected ARM=PATH with an official arm, got: {value}")
+        if arm in parsed:
+            raise SystemExit(f"duplicate arm: {arm}")
+        parsed[arm] = path
+    return parsed
+
+
 def _calibrated_threshold(config: AppConfig, tasks: list[Task]) -> float:
     points = calibration_curve(split_tasks(tasks, "dev"))
     chosen = select_threshold(points, float(config.experiment["quality_loss_limit_pp"]))
@@ -282,6 +307,14 @@ def main(argv: list[str] | None = None) -> None:
             timeout_seconds=args.timeout_seconds,
         )
         print(json.dumps({**preview, **result}, ensure_ascii=False, indent=2))
+        return
+    if args.command == "swebench-report":
+        report = write_swebench_analysis(
+            _arm_paths(args.generation),
+            _arm_paths(args.evaluation),
+            args.output,
+        )
+        print(json.dumps(report, ensure_ascii=False, indent=2))
         return
     if args.command == "route":
         task = _anonymous_task(args.prompt)

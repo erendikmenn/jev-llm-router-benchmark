@@ -123,6 +123,18 @@ def _task_prompt(task: SWEbenchTask) -> str:
     )
 
 
+def _usage_totals(execution: dict) -> dict[str, int]:
+    usages: list[dict] = []
+    if isinstance(execution.get("usage"), dict):
+        usages.append(execution["usage"])
+    for round_ in execution.get("rounds", []):
+        usage = round_.get("dispatch", {}).get("usage", {})
+        if isinstance(usage, dict):
+            usages.append(usage)
+    keys = {key for usage in usages for key in usage if isinstance(usage.get(key), int)}
+    return {key: sum(int(usage.get(key, 0)) for usage in usages) for key in sorted(keys)}
+
+
 def generate_swebench_arm(
     tasks: list[SWEbenchTask],
     *,
@@ -219,6 +231,11 @@ def generate_swebench_arm(
             "route": route,
             "route_latency_ms": route_latency_ms,
             "execution_elapsed_ms": elapsed_ms,
+            "codex_usage": _usage_totals(execution),
+            "jev_route_cost_usd": (
+                route.get("judgment", {}).get("provider_cost_usd") or 0.0
+            ),
+            "jev_review_cost_usd": execution.get("review_cost_usd", 0.0),
             "status": status,
             "patch_bytes": len(patch.encode("utf-8")),
             "empty_patch": not bool(patch.strip()),
