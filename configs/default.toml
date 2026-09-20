@@ -14,6 +14,7 @@ max_live_output_tokens_without_usd_cap = 256
 
 [router]
 jev_model = "typesafe/jev-1.13"
+typesafe_model = "jev-1.13.0"
 jev_context_tokens = 32000
 jev_state_plus_longest_question_tokens = 32000
 low_confidence_fallback = "strong"

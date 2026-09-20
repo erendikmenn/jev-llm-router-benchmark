@@ -26,7 +26,7 @@ class TypeSafeJevProvider:
         max_retries = int(self.config.experiment["max_retries"])
         timeout = float(self.config.experiment["request_timeout_seconds"])
         body = {
-            "model": self.config.router["jev_model"],
+            "model": self.config.router["typesafe_model"],
             "state": {
                 "request": task.prompt,
                 "conversation_context": task.constraints.get("history", []),

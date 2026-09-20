@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import replace
 from typing import Protocol
 
+from ..judge_models import ReviewJudgment, ReviewPacket
 from ..models import Attempt, GenerationRequest, GenerationResult, JevJudgment, Task
 
 
@@ -28,6 +29,10 @@ class GeneratorProvider(Protocol):
 
 class JevProvider(Protocol):
     def judge(self, task: Task) -> JevJudgment: ...
+
+
+class ReviewJudgeProvider(Protocol):
+    def judge(self, packet: ReviewPacket) -> ReviewJudgment: ...
 
 
 class CachedGeneratorProvider:
