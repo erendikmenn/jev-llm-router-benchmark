@@ -48,6 +48,16 @@ uv run jev-router judge-benchmark --mode fixture --split all
 uv run jev-router benchmark-catalog
 uv run jev-router benchmark-plan --suite swebench-verified --dev 20 --test 100
 uv run jev-router swebench-generate --arm always-luna --limit 1
+
+# Diğer resmî harness'lar: veri dizinleri upstream revision'lara pinlenmelidir
+uv run jev-router livecodebench-plan --dataset-dir /path/to/livecodebench-jsonl
+uv run jev-router livecodebench-run --plan results/benchmark-plans/livecodebench-release-v6.json \
+  --repo . --offset 0 --limit 20 --output results/livecodebench-segment
+uv run jev-router terminalbench-plan --dataset-root /path/to/terminal-bench-2
+uv run jev-router terminalbench-run --plan results/benchmark-plans/terminal-bench-2.json \
+  --dataset-root /path/to/terminal-bench-2 --route-only
+uv run jev-router swebench-pro-generate --plan /path/to/swebench-pro-plan.json \
+  --arm router-only --limit 1 --execute
 ```
 
 Üretilen ana rapor: `results/fixture-test/REPORT_TR.md`.
@@ -148,6 +158,26 @@ Codex-native dispatch de gerçek Luna ve Sol oturumlarıyla smoke-test edildi. A
 Repository düzeyi kod benchmark hattı artık SWE-bench Verified görevlerini dört sabit Codex tier'i, router-only ve router+judge kollarında çalıştırır. Worker'a gold/test patch veya gizli test kimliği verilmez; skor yalnız resmî evaluator çıktısından alınır. Sekiz iş paketi, başarı kapıları ve tam komutlar [docs/OFFICIAL_CODING_BENCHMARK_PROTOCOL_TR.md](docs/OFFICIAL_CODING_BENCHMARK_PROTOCOL_TR.md) içindedir.
 
 İlk resmî iki-görev smoke matrisinde Luna 0/2, Terra 2/2, Sol 1/2, Astra 2/2, router-only 1/2 ve router+judge 2/2 sonuç verdi. Jev seçimleri bir exact ve bir over-route üretti; under-route yoktu. Judge her iki geçen sonucu da gereksiz biçimde insan incelemesine bıraktı. Bu bir ürün başarı oranı değil, `n=2` tesisat/behavior smoke'udur. Ayrıntılı ve sınırlamaları açık rapor: [`results/swebench-official-smoke-20260920/REPORT_TR.md`](results/swebench-official-smoke-20260920/REPORT_TR.md).
+
+## 2.375 görevlik resmî routing kampanyası — 2026-09-20
+
+LiveCodeBench `release_v6` (1.055), SWE-bench Verified (500), SWE-bench Pro public
+(731) ve Terminal-Bench 2 (89) setlerinin tamamında Jev kararı alındı. Toplam maliyet
+`$0.123703`; dağılım Luna 848, Terra 797, Sol 568 ve Astra 162 oldu. Provider
+fallback'i yoktu; ortalama karar süresi `480,54 ms`, p95 `676,02 ms` idi.
+
+Bu sayı çözüm başarısı değildir. Yönlendirme kapsamasını gösterir. Aynı 1.055
+LiveCodeBench sorusunun iki koşusunda nihai tier anlaşması yalnız `%88,15` oldu;
+router sınır örneklerinde tam kararlı değildir. Ayrıca iki kritik-keyword false positive'i
+bulunup düzeltildi. Ayrıntılı rapor:
+[`results/official-routing-2375-20260920/REPORT_TR.md`](results/official-routing-2375-20260920/REPORT_TR.md).
+
+Üç ayrı harness'taki ilk gerçek uçtan uca denemeler başarılı oldu: LiveCodeBench'te
+Luna 5/5 gizli testi, Terminal-Bench 2'de Sol `1.0` reward'u ve SWE-bench Pro'da
+Sol resmî resolved kapısını geçti. Bunlar genel başarı oranı değil, harness
+entegrasyonu kanıtlarıdır: [LiveCodeBench](results/livecodebench-official-smoke-20260920/REPORT_TR.md),
+[Terminal-Bench 2](results/terminalbench-official-smoke-20260920/REPORT_TR.md),
+[SWE-bench Pro](results/swebench-pro-official-smoke-20260920/REPORT_TR.md).
 
 ## Anahtar ve gizlilik
 
