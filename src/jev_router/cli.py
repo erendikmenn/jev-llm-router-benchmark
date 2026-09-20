@@ -38,6 +38,7 @@ from .providers import (
     TypeSafeReviewJudgeProvider,
 )
 from .report import generate_report
+from .routing_campaign import route_swebench_tasks
 from .routers import jev_router, rule_router
 from .swebench_runner import ARMS, generate_swebench_arm, load_swebench_plan
 from .swebench_pro_runner import generate_swebench_pro_arm
@@ -142,6 +143,18 @@ def parser() -> argparse.ArgumentParser:
     swebench_merge.add_argument("--kind", choices=["generation", "evaluation"], required=True)
     swebench_merge.add_argument("--input", action="append", required=True)
     swebench_merge.add_argument("--output", required=True)
+
+    swebench_route = sub.add_parser(
+        "swebench-route-plan",
+        help="Route every task in a locked SWE-bench or SWE-bench Pro plan",
+    )
+    swebench_route.add_argument("--plan", required=True)
+    swebench_route.add_argument("--suite", required=True)
+    swebench_route.add_argument("--split", choices=["dev", "test"], default="test")
+    swebench_route.add_argument("--offset", type=int, default=0)
+    swebench_route.add_argument("--limit", type=int)
+    swebench_route.add_argument("--max-jev-usd", type=float, default=5.0)
+    swebench_route.add_argument("--output", required=True)
 
     lcb_plan = sub.add_parser(
         "livecodebench-plan",
@@ -462,6 +475,17 @@ def main(argv: list[str] | None = None) -> None:
             else merge_evaluation_reports
         )
         print(json.dumps(merger(args.input, args.output), ensure_ascii=False, indent=2))
+        return
+    if args.command == "swebench-route-plan":
+        tasks = load_swebench_plan(args.plan, args.split, args.limit, args.offset)
+        summary = route_swebench_tasks(
+            tasks,
+            suite=args.suite,
+            output_dir=args.output,
+            config=config,
+            max_jev_usd=args.max_jev_usd,
+        )
+        print(json.dumps(summary, ensure_ascii=False, indent=2))
         return
     if args.command == "livecodebench-plan":
         tasks = load_livecodebench_tasks(args.dataset_dir, release=args.release)
