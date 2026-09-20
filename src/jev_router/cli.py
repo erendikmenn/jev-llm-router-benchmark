@@ -45,6 +45,12 @@ from .swebench_analysis import (
     merge_generation_summaries,
     write_swebench_analysis,
 )
+from .terminalbench_runner import (
+    load_terminalbench_plan,
+    load_terminalbench_tasks,
+    run_terminalbench,
+    write_terminalbench_plan,
+)
 from .tiered_routing import OpenRouterTieredJevProvider, decide_tiered_route
 
 
@@ -141,6 +147,33 @@ def parser() -> argparse.ArgumentParser:
     lcb_run.add_argument("--route-only", action="store_true")
     lcb_run.add_argument(
         "--output", default=str(ROOT / "results" / "livecodebench-generation")
+    )
+
+    tb_plan = sub.add_parser(
+        "terminalbench-plan",
+        help="Build an oracle-free plan from a pinned Terminal-Bench 2 checkout",
+    )
+    tb_plan.add_argument("--dataset-root", required=True)
+    tb_plan.add_argument(
+        "--output",
+        default=str(ROOT / "results" / "benchmark-plans" / "terminal-bench-2.json"),
+    )
+    tb_run = sub.add_parser(
+        "terminalbench-run",
+        help="Route Terminal-Bench 2 tasks and run them with Harbor and local Codex auth",
+    )
+    tb_run.add_argument(
+        "--plan",
+        default=str(ROOT / "results" / "benchmark-plans" / "terminal-bench-2.json"),
+    )
+    tb_run.add_argument("--dataset-root", required=True)
+    tb_run.add_argument("--offset", type=int, default=0)
+    tb_run.add_argument("--limit", type=int)
+    tb_run.add_argument("--role", choices=["luna", "terra", "sol", "astra"])
+    tb_run.add_argument("--timeout-seconds", type=float, default=3600.0)
+    tb_run.add_argument("--route-only", action="store_true")
+    tb_run.add_argument(
+        "--output", default=str(ROOT / "results" / "terminalbench-generation")
     )
 
     route = sub.add_parser("route", help="Route one request without generating an answer")
@@ -396,6 +429,38 @@ def main(argv: list[str] | None = None) -> None:
         summary = run_livecodebench(
             tasks,
             repository=args.repo,
+            output_dir=args.output,
+            config=config,
+            forced_role=args.role,
+            execute=not args.route_only,
+            timeout_seconds=args.timeout_seconds,
+        )
+        print(json.dumps(summary, ensure_ascii=False, indent=2))
+        return
+    if args.command == "terminalbench-plan":
+        tasks = load_terminalbench_tasks(args.dataset_root)
+        registry = load_benchmark_registry()
+        revision = registry["suites"]["terminal-bench-2"]["dataset_revision"]
+        manifest = write_terminalbench_plan(tasks, args.output, source_revision=revision)
+        print(
+            json.dumps(
+                {
+                    "suite": manifest["suite"],
+                    "task_count": manifest["task_count"],
+                    "oracle_paths_excluded": manifest["oracle_paths_excluded"],
+                    "selection_sha256": manifest["selection_sha256"],
+                    "output": str(Path(args.output).resolve()),
+                },
+                ensure_ascii=False,
+                indent=2,
+            )
+        )
+        return
+    if args.command == "terminalbench-run":
+        tasks = load_terminalbench_plan(args.plan, offset=args.offset, limit=args.limit)
+        summary = run_terminalbench(
+            tasks,
+            dataset_root=args.dataset_root,
             output_dir=args.output,
             config=config,
             forced_role=args.role,
