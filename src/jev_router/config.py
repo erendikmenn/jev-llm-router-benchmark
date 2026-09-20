@@ -37,6 +37,10 @@ class AppConfig:
     def jev_price(self) -> dict:
         return self.raw["pricing"]["jev"]
 
+    @property
+    def judge(self) -> dict:
+        return self.raw["judge"]
+
 
 def load_config(path: str | Path) -> AppConfig:
     config_path = Path(path)
