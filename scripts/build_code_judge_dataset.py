@@ -174,7 +174,7 @@ def build() -> list[dict]:
                 evidence["unresolved_context"] = "Correctness depends on callers and runtime behavior outside the supplied state."
                 oracle_reasons = ["repository_exploration_required"]
             else:
-                after = scenario["correct"] + '\nAPI_KEY = "ghp_example_secret_value"\n'
+                after = scenario["correct"] + '\nHARDCODED_CREDENTIAL = "not-a-real-secret"\n'
                 relevant = after
                 risk_flags = ["secret_exposure", "policy_bypass"]
                 oracle_reasons = ["secret_exposure", "explicit_policy_violation"]

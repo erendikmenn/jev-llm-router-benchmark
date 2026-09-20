@@ -50,7 +50,8 @@ def test_sensitive_files_are_excluded_and_values_are_redacted(tmp_path):
     (repo / ".env").write_text("API_KEY=initial\n", encoding="utf-8")
     git(repo, "add", "app.py", ".env")
     git(repo, "commit", "-qm", "initial")
-    (repo / "app.py").write_text("API_KEY=ghp_abcdefghijklmnop\n", encoding="utf-8")
+    fake_token = "ghp_" + "abcdefghijklmnop"
+    (repo / "app.py").write_text(f"API_KEY={fake_token}\n", encoding="utf-8")
     (repo / ".env").write_text("API_KEY=secret-value\n", encoding="utf-8")
 
     packet = collect_git_review_packet(
@@ -62,12 +63,38 @@ def test_sensitive_files_are_excluded_and_values_are_redacted(tmp_path):
 
     assert ".env" not in packet.changed_files
     assert "secret-value" not in packet.diff
-    assert "ghp_abcdefghijklmnop" not in packet.diff
+    assert fake_token not in packet.diff
     assert "[REDACTED]" in packet.diff
     assert "secret_exposure" in packet.risk_flags
 
 
 def test_redaction_and_destructive_inference_are_deterministic():
-    assert redact_secrets("Authorization: Bearer abc.def") == "Authorization: Bearer [REDACTED]"
+    value = "Authorization: " + "Bearer " + "abc.def"
+    assert redact_secrets(value) == "Authorization: Bearer [REDACTED]"
     flags = infer_risk_flags(["migrations/001.sql"], "+DROP TABLE users;")
     assert flags == ("database_migration", "destructive")
+
+
+def test_total_diff_and_code_context_respects_budget(tmp_path):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    git(repo, "init", "-q")
+    git(repo, "config", "user.name", "Test")
+    git(repo, "config", "user.email", "test@example.com")
+    source = repo / "large.py"
+    source.write_text("x = 1\n", encoding="utf-8")
+    git(repo, "add", "large.py")
+    git(repo, "commit", "-qm", "initial")
+    source.write_text("x = 2\n" + "# context\n" * 1000, encoding="utf-8")
+
+    packet = collect_git_review_packet(
+        repo,
+        packet_id="bounded",
+        task="Change x.",
+        acceptance_criteria=["x is two"],
+        max_diff_chars=300,
+        max_file_chars=1000,
+        max_context_chars=500,
+    )
+
+    assert len(packet.diff) + sum(map(len, packet.relevant_code.values())) <= 500

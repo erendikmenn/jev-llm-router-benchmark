@@ -44,9 +44,26 @@ _BINARY_SUFFIXES = {
     ".zip",
 }
 _SECRET_PATTERNS = (
-    re.compile(r"(?i)(authorization\s*:\s*bearer\s+)[A-Za-z0-9._~+/=-]+"),
-    re.compile(r"(?i)((?:api[_-]?key|secret|token|password)\s*[=:]\s*)[^\s,;]+"),
-    re.compile(r"\b(?:sk|ghp|gho|github_pat)_[A-Za-z0-9_\-]{12,}\b"),
+    (
+        re.compile(r"(?i)(authorization\s*:\s*bearer\s+)[A-Za-z0-9._~+/=-]+"),
+        r"\1[REDACTED]",
+    ),
+    (
+        re.compile(
+            r"(?i)((?:api[_-]?key|secret|token|password)\s*[=:]\s*)(['\"])[^'\"]{6,}\2"
+        ),
+        r"\1\2[REDACTED]\2",
+    ),
+    (
+        re.compile(
+            r"(?im)^(\s*(?:api[_-]?key|secret|token|password)\s*=\s*)[^\s#'\"]{6,}\s*$"
+        ),
+        r"\1[REDACTED]",
+    ),
+    (
+        re.compile(r"\b(?:sk|ghp|gho|github_pat)_[A-Za-z0-9_\-]{12,}\b"),
+        "[REDACTED]",
+    ),
 )
 
 
@@ -79,11 +96,8 @@ def _is_text_path(path: str) -> bool:
 
 def redact_secrets(text: str) -> str:
     redacted = text
-    for pattern in _SECRET_PATTERNS:
-        if pattern.groups:
-            redacted = pattern.sub(r"\1[REDACTED]", redacted)
-        else:
-            redacted = pattern.sub("[REDACTED]", redacted)
+    for pattern, replacement in _SECRET_PATTERNS:
+        redacted = pattern.sub(replacement, redacted)
     return redacted
 
 
@@ -160,16 +174,20 @@ def collect_git_review_packet(
         names_args = ("diff", "--name-only", "--diff-filter=ACMRT", base, head, "--")
         stats_args = ("diff", "--numstat", base, head, "--")
 
-    raw_diff = redact_secrets(_git(repository, *diff_args))
     changed_files = tuple(
         path
         for path in _git(repository, *names_args).splitlines()
         if path and not _is_sensitive_path(path)
     )
-    diff = _truncate(raw_diff, max_diff_chars, "diff")
+    if changed_files:
+        raw_diff = redact_secrets(_git(repository, *diff_args, *changed_files))
+    else:
+        raw_diff = ""
+    diff_budget = min(max_diff_chars, max_context_chars // 2)
+    diff = _truncate(raw_diff, diff_budget, "diff")
 
     relevant_code: dict[str, str] = {}
-    remaining = max_context_chars
+    remaining = max(0, max_context_chars - len(diff))
     for path in changed_files:
         if remaining <= 0:
             break
@@ -193,7 +211,9 @@ def collect_git_review_packet(
     inferred = set(infer_risk_flags(changed_files, diff))
     inferred.update(risk_flags)
     collected_evidence = dict(evidence or {})
-    collected_evidence["git_numstat"] = _git(repository, *stats_args).strip()
+    collected_evidence["git_numstat"] = (
+        _git(repository, *stats_args, *changed_files).strip() if changed_files else ""
+    )
     collected_evidence["evidence_source"] = "local_git"
     collected_evidence["agent_authored_tests_are_independent"] = False
 
@@ -211,6 +231,6 @@ def collect_git_review_packet(
             "repository": repository.name,
             "base": base,
             "head": head,
-            "context_truncated": remaining <= 0 or len(raw_diff) > max_diff_chars,
+            "context_truncated": remaining <= 0 or len(raw_diff) > diff_budget,
         },
     )
