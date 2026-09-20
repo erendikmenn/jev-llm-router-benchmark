@@ -166,6 +166,7 @@ def parser() -> argparse.ArgumentParser:
     lcb_run.add_argument("--limit", type=int)
     lcb_run.add_argument("--role", choices=["luna", "terra", "sol", "astra"])
     lcb_run.add_argument("--timeout-seconds", type=float, default=900.0)
+    lcb_run.add_argument("--max-jev-usd", type=float, default=5.0)
     lcb_run.add_argument("--route-only", action="store_true")
     lcb_run.add_argument(
         "--output", default=str(ROOT / "results" / "livecodebench-generation")
@@ -492,6 +493,7 @@ def main(argv: list[str] | None = None) -> None:
             forced_role=args.role,
             execute=not args.route_only,
             timeout_seconds=args.timeout_seconds,
+            max_jev_usd=args.max_jev_usd,
         )
         print(json.dumps(summary, ensure_ascii=False, indent=2))
         return

@@ -189,15 +189,35 @@ def run_livecodebench(
     forced_role: str | None = None,
     execute: bool = True,
     timeout_seconds: float = 900.0,
+    max_jev_usd: float = 5.0,
 ) -> dict:
     """Route and checkpoint independent pass@1 generations using local Codex auth."""
     output = Path(output_dir).resolve()
     output.mkdir(parents=True, exist_ok=True)
     receipts = output / "receipts"
     receipts.mkdir(exist_ok=True)
-    measurements: list[dict] = []
+    summary_path = output / "generation-summary.json"
+    if summary_path.is_file():
+        previous = json.loads(summary_path.read_text(encoding="utf-8"))
+        measurements = list(previous.get("measurements") or [])
+    else:
+        measurements = []
+    completed_ids = {
+        row["question_id"]
+        for row in measurements
+        if row.get("status") == "completed" or (not execute and row.get("status") == "routed")
+    }
+    spent = sum(float(row.get("jev_route_cost_usd", 0.0)) for row in measurements)
 
     for index, task in enumerate(tasks, 1):
+        if task.question_id in completed_ids:
+            print(
+                f"[resume] livecodebench {index}/{len(tasks)} {task.question_id}",
+                flush=True,
+            )
+            continue
+        if spent >= max_jev_usd:
+            raise RuntimeError(f"Jev cost cap reached: ${spent:.6f} >= ${max_jev_usd:.6f}")
         prompt = livecodebench_prompt(task)
         route_started = time.perf_counter()
         if forced_role:
@@ -260,6 +280,7 @@ def run_livecodebench(
             "code": code,
         }
         measurements.append(row)
+        spent += float(row["jev_route_cost_usd"])
         (receipts / f"{task.question_id}.json").write_text(
             json.dumps({"measurement": row, "dispatch": receipt}, ensure_ascii=False, indent=2)
             + "\n",

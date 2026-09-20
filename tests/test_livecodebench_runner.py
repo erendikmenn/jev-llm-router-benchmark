@@ -9,6 +9,7 @@ from jev_router.livecodebench_runner import (
     extract_livecodebench_code,
     livecodebench_prompt,
     load_livecodebench_tasks,
+    run_livecodebench,
     write_livecodebench_plan,
 )
 
@@ -68,3 +69,26 @@ def test_duplicate_ids_are_rejected(tmp_path):
         (tmp_path / name).write_text(json.dumps(_row()) + "\n")
     with pytest.raises(ValueError, match="duplicate"):
         load_livecodebench_tasks(tmp_path)
+
+
+def test_route_only_run_resumes_without_duplicate_rows(tmp_path):
+    task = LiveCodeBenchTask.from_dict(_row())
+    first = run_livecodebench(
+        [task],
+        repository=tmp_path,
+        output_dir=tmp_path / "out",
+        config=object(),
+        forced_role="luna",
+        execute=False,
+    )
+    second = run_livecodebench(
+        [task],
+        repository=tmp_path,
+        output_dir=tmp_path / "out",
+        config=object(),
+        forced_role="luna",
+        execute=False,
+    )
+
+    assert first["tasks_attempted"] == 1
+    assert second["tasks_attempted"] == 1
