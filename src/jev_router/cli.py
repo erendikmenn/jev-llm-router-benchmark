@@ -9,11 +9,20 @@ from .calibrate import calibration_curve, select_threshold
 from .config import AppConfig, load_config
 from .dataset import find_cross_split_duplicates, load_tasks, split_tasks
 from .demo import serve
+from .evidence import collect_git_review_packet
 from .evaluate import run_benchmark
+from .judge_service import estimate_review_cost, run_review
 from .manifest import build_manifest, write_manifest
 from .models import GenerationRequest, Task
 from .pricing import estimate_request_cost
-from .providers import FixtureGenerator, FixtureJev, OpenRouterChatProvider, OpenRouterJevProvider
+from .providers import (
+    FixtureGenerator,
+    FixtureJev,
+    OpenRouterChatProvider,
+    OpenRouterJevProvider,
+    OpenRouterReviewJudgeProvider,
+    TypeSafeReviewJudgeProvider,
+)
 from .report import generate_report
 from .routers import jev_router, rule_router
 
@@ -34,6 +43,18 @@ def parser() -> argparse.ArgumentParser:
     route.add_argument("--prompt", required=True)
     route.add_argument("--mode", choices=["rule", "live-jev"], default="rule")
     route.add_argument("--threshold", type=float, default=None)
+
+    review = sub.add_parser("review", help="Judge a local Git change using task, diff, code, and evidence")
+    review.add_argument("--repo", default=".")
+    review.add_argument("--task", required=True)
+    review.add_argument("--criterion", action="append", default=[])
+    review.add_argument("--forbid", action="append", default=[])
+    review.add_argument("--risk-flag", action="append", default=[])
+    review.add_argument("--base", default="HEAD")
+    review.add_argument("--head", default="WORKTREE")
+    review.add_argument("--evidence-json")
+    review.add_argument("--provider", choices=["openrouter", "typesafe"], default="openrouter")
+    review.add_argument("--max-usd", type=float, default=0.01)
 
     run_model = sub.add_parser("run-model", help="Run one candidate directly")
     run_model.add_argument("--task-id", required=True)
@@ -81,7 +102,10 @@ def main(argv: list[str] | None = None) -> None:
     args = parser().parse_args(argv)
     config = load_config(args.config)
     if args.command == "environment":
-        print(json.dumps({"OPENROUTER_API_KEY": bool(os.getenv("OPENROUTER_API_KEY"))}, indent=2))
+        print(json.dumps({
+            "OPENROUTER_API_KEY": bool(os.getenv("OPENROUTER_API_KEY")),
+            "TYPESAFE_API_KEY": bool(os.getenv("TYPESAFE_API_KEY")),
+        }, indent=2))
         return
     if args.command == "route":
         task = _anonymous_task(args.prompt)
@@ -95,6 +119,48 @@ def main(argv: list[str] | None = None) -> None:
             "strong_probability": decision.strong_probability,
             "applied_rule": decision.rule,
             "rejected_reason": decision.rejected_reason,
+        }, ensure_ascii=False, indent=2))
+        return
+    if args.command == "review":
+        evidence = {}
+        if args.evidence_json:
+            evidence = json.loads(Path(args.evidence_json).read_text(encoding="utf-8"))
+            if not isinstance(evidence, dict):
+                raise SystemExit("--evidence-json must contain a JSON object")
+        packet = collect_git_review_packet(
+            args.repo,
+            packet_id="local-review",
+            task=args.task,
+            acceptance_criteria=args.criterion or [args.task],
+            base=args.base,
+            head=args.head,
+            evidence=evidence,
+            risk_flags=args.risk_flag,
+            forbidden_changes=args.forbid,
+            max_diff_chars=int(config.judge["max_diff_chars"]),
+            max_file_chars=int(config.judge["max_file_chars"]),
+            max_context_chars=int(config.judge["max_context_chars"]),
+        )
+        estimated_cost = estimate_review_cost(packet, config)
+        if estimated_cost > args.max_usd:
+            raise SystemExit(
+                f"estimated Jev review cost ${estimated_cost:.6f} exceeds --max-usd ${args.max_usd:.6f}"
+            )
+        provider = (
+            OpenRouterReviewJudgeProvider(config)
+            if args.provider == "openrouter"
+            else TypeSafeReviewJudgeProvider(config)
+        )
+        result = run_review(packet, provider, config)
+        print(json.dumps({
+            "packet": {
+                "id": packet.id,
+                "changed_files": packet.changed_files,
+                "risk_flags": packet.risk_flags,
+                "context_truncated": packet.metadata["context_truncated"],
+            },
+            "estimated_cost_usd": estimated_cost,
+            **result.to_dict(),
         }, ensure_ascii=False, indent=2))
         return
     if args.command == "run-model":
