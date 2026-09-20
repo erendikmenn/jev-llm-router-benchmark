@@ -1,0 +1,22 @@
+{
+  "suite": "terminal-bench-2",
+  "task": "adaptive-rejection-sampler",
+  "harness": "harbor",
+  "worker_model": "gpt-5.6-sol",
+  "worker_auth": "local_codex_subscription_auth",
+  "worker_openrouter_api_calls": 0,
+  "jev_raw_selection": "terra",
+  "jev_final_selection": "sol",
+  "jev_guard": "ambiguity_minimum_sol",
+  "jev_route_cost_usd": 0.000058758,
+  "official_reward": 1.0,
+  "passed": true,
+  "exceptions": 0,
+  "runtime_seconds": 602,
+  "codex_usage": {
+    "input_tokens": 513628,
+    "cached_input_tokens": 480000,
+    "output_tokens": 15455
+  },
+  "harbor_comparison_cost_usd_not_billed_api_cost": 0.635612
+}

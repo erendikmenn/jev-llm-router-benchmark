@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "campaign": "official-coding-router-20260920",
+  "minimum_requested_tasks": 1000,
+  "total_locked_tasks": 2375,
+  "worker_transport": "local_codex_subscription_auth",
+  "external_api_scope": "Jev routing and optional Jev judging only",
+  "jev_cost_cap_usd": 5.0,
+  "suites": [
+    {
+      "name": "livecodebench",
+      "tasks": 1055,
+      "selection_sha256": "6108435b7b39af8ffaf11dc6c206adb6fa2ae92d6f01ea58ae0134ba345fd47a",
+      "metric": "official pass@1",
+      "oracle_policy": "public and private tests plus metadata excluded from model input"
+    },
+    {
+      "name": "swebench-verified",
+      "tasks": 500,
+      "selection_sha256": "d66a2f41256680ecababae50763e996052b71fe72d5197dbc0abb99060e284f2",
+      "metric": "official resolved rate",
+      "oracle_policy": "gold patch, test patch, FAIL_TO_PASS and PASS_TO_PASS excluded from model input"
+    },
+    {
+      "name": "swebench-pro-public",
+      "tasks": 731,
+      "selection_sha256": "a7c1d9fc4bb724d9061870329e7f033f13d8d37a6a1f145374ff3ec83ee4453a",
+      "metric": "official resolved rate",
+      "oracle_policy": "gold patch and evaluator tests excluded from model input"
+    },
+    {
+      "name": "terminal-bench-2",
+      "tasks": 89,
+      "selection_sha256": "5c7ed05c61e6768b71bebb5ffd05d9ce07e185b3cf519b06ca2ae5d476f99638",
+      "metric": "Harbor reward and success rate",
+      "oracle_policy": "tests and solution directories excluded from router input"
+    }
+  ],
+  "counting_rules": {
+    "routed": "Jev returned one tier decision for one locked task",
+    "generated": "one selected Codex tier produced one independent candidate",
+    "evaluated": "the official suite harness produced an outcome",
+    "passed": "the official suite harness accepted the candidate"
+  }
+}

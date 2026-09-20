@@ -8,6 +8,7 @@ results/tmp/
 results/benchmark-plans/
 results/swebench-generation/
 results/swebench-gold-smoke-*/
+results/terminal-bench-2/
 logs/
 data/public_benchmark_*.jsonl
 data/public_benchmark_*.manifest.json
