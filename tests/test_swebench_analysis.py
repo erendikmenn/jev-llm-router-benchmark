@@ -83,3 +83,35 @@ def test_analysis_excludes_infrastructure_errors(tmp_path):
 
     assert report["arms"]["always-luna"]["pass_rate"] is None
     assert report["arms"]["always-luna"]["infra_or_evaluator_errors"] == 1
+
+
+def test_judge_false_accept_is_measured_against_official_outcome(tmp_path):
+    generation = _write(
+        tmp_path,
+        "judge-generation.json",
+        {
+            "measurements": [
+                {
+                    "instance_id": "task",
+                    "status": "accepted",
+                    "selected_role": "terra",
+                    "execution_elapsed_ms": 10,
+                }
+            ]
+        },
+    )
+    evaluation = _write(
+        tmp_path,
+        "judge-evaluation.json",
+        {
+            "submitted_ids": ["task"],
+            "resolved_ids": [],
+            "error_ids": [],
+            "infra_failure_ids": [],
+        },
+    )
+
+    report = analyze_swebench_runs({"router-judge": generation}, {"router-judge": evaluation})
+
+    assert report["arms"]["router-judge"]["judge"]["unsafe_false_accept"] == 1
+    assert report["arms"]["router-judge"]["judge"]["accept_precision"] == 0.0

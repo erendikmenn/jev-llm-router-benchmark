@@ -67,6 +67,33 @@ def analyze_swebench_runs(
             "mean_execution_elapsed_ms": _mean(latencies),
             "jev_cost_usd": route_cost + review_cost,
         }
+        if arm == "router-judge":
+            accepted = {
+                task_id
+                for task_id, measurement in measurements.items()
+                if measurement.get("status") == "accepted"
+            }
+            accepted_evaluable = accepted & eligible
+            rejected_evaluable = eligible - accepted
+            true_accepts = accepted_evaluable & resolved
+            false_accepts = accepted_evaluable - resolved
+            false_nonaccepts = rejected_evaluable & resolved
+            by_arm[arm]["judge"] = {
+                "accepted": len(accepted_evaluable),
+                "accepted_and_resolved": len(true_accepts),
+                "unsafe_false_accept": len(false_accepts),
+                "nonaccepted_but_resolved": len(false_nonaccepts),
+                "accept_precision": (
+                    len(true_accepts) / len(accepted_evaluable)
+                    if accepted_evaluable
+                    else None
+                ),
+                "resolved_recall": (
+                    len(true_accepts) / len(resolved & eligible)
+                    if resolved & eligible
+                    else None
+                ),
+            }
         for task_id in submitted:
             task_rows.setdefault(task_id, {"instance_id": task_id, "arms": {}})["arms"][arm] = {
                 "resolved": task_id in resolved,
@@ -130,6 +157,7 @@ def analyze_swebench_runs(
             "The oracle is the cheapest fixed-tier run observed to pass; model stochasticity remains.",
             "Codex subscription usage is reported as tokens and latency, not invented API dollars.",
             "Infrastructure and evaluator errors are excluded from pass-rate denominators.",
+            "Judge labels describe the final pipeline patch, not every intermediate retry patch.",
         ],
     }
 
