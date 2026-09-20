@@ -137,14 +137,38 @@ def run_codex_dispatch(
     runner: Callable[..., subprocess.CompletedProcess[str]] = subprocess.run,
 ) -> CodexDispatchReceipt:
     started = time.perf_counter()
-    completed = runner(
-        list(plan.command),
-        input=prompt,
-        text=True,
-        capture_output=True,
-        timeout=timeout_seconds,
-        check=False,
-    )
+    try:
+        completed = runner(
+            list(plan.command),
+            input=prompt,
+            text=True,
+            capture_output=True,
+            timeout=timeout_seconds,
+            check=False,
+        )
+    except subprocess.TimeoutExpired as exc:
+        stdout = exc.stdout or ""
+        stderr = exc.stderr or ""
+        if isinstance(stdout, bytes):
+            stdout = stdout.decode(errors="replace")
+        if isinstance(stderr, bytes):
+            stderr = stderr.decode(errors="replace")
+        events, usage, final_message = _parse_events(stdout)
+        elapsed_ms = (time.perf_counter() - started) * 1000
+        message = f"Codex dispatch timed out after {timeout_seconds:.1f} seconds"
+        if stderr.strip():
+            message = f"{message}\n{stderr.strip()}"
+        return CodexDispatchReceipt(
+            plan=plan,
+            prompt_sha256=hashlib.sha256(prompt.encode("utf-8")).hexdigest(),
+            returncode=124,
+            elapsed_ms=elapsed_ms,
+            usage=usage,
+            final_message=final_message,
+            stderr=message,
+            stderr_line_count=len([line for line in message.splitlines() if line.strip()]),
+            events_seen=len(events),
+        )
     elapsed_ms = (time.perf_counter() - started) * 1000
     events, usage, final_message = _parse_events(completed.stdout)
     stderr_lines = [line for line in completed.stderr.splitlines() if line.strip()]

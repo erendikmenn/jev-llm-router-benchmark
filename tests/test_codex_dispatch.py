@@ -52,3 +52,23 @@ def test_dispatch_rejects_danger_full_access(tmp_path):
     (tmp_path / ".git").mkdir()
     with pytest.raises(ValueError, match="unsupported sandbox"):
         build_codex_dispatch_plan(tmp_path, "sol", sandbox="danger-full-access")
+
+
+def test_dispatch_records_timeout_instead_of_aborting_campaign(tmp_path):
+    (tmp_path / ".git").mkdir()
+    plan = build_codex_dispatch_plan(tmp_path, "terra")
+
+    def timeout_runner(command, **kwargs):
+        raise subprocess.TimeoutExpired(command, kwargs["timeout"])
+
+    receipt = run_codex_dispatch(
+        plan,
+        "hard task",
+        timeout_seconds=12.5,
+        runner=timeout_runner,
+    )
+
+    assert receipt.returncode == 124
+    assert receipt.final_message is None
+    assert receipt.usage == {}
+    assert "timed out after 12.5 seconds" in receipt.stderr
