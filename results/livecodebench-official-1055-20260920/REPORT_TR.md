@@ -122,8 +122,8 @@ kaydedecek ve kampanyayı sürdürecek biçimde düzeltildi.
 
 Worker modeller için OpenRouter veya OpenAI API anahtarı kullanılmadı. Worker çağrısı
 sayısı bakımından API faturası **sıfırdır**; çağrılar kullanıcının Codex Pro oturumundan
-çalıştı. Codex haftalık pencere göstergesi koşu sırasında `%22 kullanılmış`tan `%23`
-kullanılmışa çıktı.
+çalıştı. Codex haftalık pencere göstergesi koşunun başındaki `%22 kullanılmış`tan
+finalde `%25 kullanılmış`a çıktı; gözlenen fark 3 yüzde puandır.
 
 Ana 1.055 kabul satırının Jev maliyeti `$0,057785`; iki sınır tekrarı dahil kaydedilen
 üretim yönlendirme maliyeti `$0,057891` oldu. Dört setin 2.375 route-only kararı,

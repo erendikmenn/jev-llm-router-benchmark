@@ -4,6 +4,11 @@
   "worker_openrouter_api_calls": 0,
   "external_api_scope": "Jev routing and judging only",
   "jev_model": "typesafe/jev-1.13-20260917",
+  "codex_weekly_usage_window": {
+    "used_percent_before": 22,
+    "used_percent_after": 25,
+    "observed_change_percentage_points": 3
+  },
   "livecodebench_full": {
     "release": "release_v6",
     "selection_sha256": "6108435b7b39af8ffaf11dc6c206adb6fa2ae92d6f01ea58ae0134ba345fd47a",
