@@ -19,6 +19,7 @@ from .judge_benchmark import regenerate_judge_report, run_judge_benchmark
 from .judge_dataset import load_judge_cases
 from .manifest import build_manifest, write_manifest
 from .models import GenerationRequest, Task
+from .pipeline import run_coding_pipeline
 from .pricing import estimate_request_cost
 from .providers import (
     FixtureGenerator,
@@ -27,6 +28,7 @@ from .providers import (
     OpenRouterChatProvider,
     OpenRouterJevProvider,
     OpenRouterReviewJudgeProvider,
+    ProviderError,
     TypeSafeReviewJudgeProvider,
 )
 from .report import generate_report
@@ -86,6 +88,26 @@ def parser() -> argparse.ArgumentParser:
     codex_route.add_argument("--execute", action="store_true")
     codex_route.add_argument("--timeout-seconds", type=float, default=900.0)
     codex_route.add_argument("--receipt")
+
+    pipeline = sub.add_parser(
+        "pipeline", help="Route, dispatch, verify, judge, and retry or escalate a coding task"
+    )
+    pipeline.add_argument("--task", required=True)
+    pipeline.add_argument("--repo", default=".")
+    pipeline.add_argument("--criterion", action="append", default=[])
+    pipeline.add_argument(
+        "--role",
+        choices=["auto", "luna", "terra", "sol", "astra"],
+        default="auto",
+    )
+    pipeline.add_argument("--verify-json", action="append", default=[])
+    pipeline.add_argument("--max-rounds", type=int, default=3)
+    pipeline.add_argument("--max-review-usd", type=float, default=0.05)
+    pipeline.add_argument(
+        "--sandbox", choices=["read-only", "workspace-write"], default="workspace-write"
+    )
+    pipeline.add_argument("--execute", action="store_true")
+    pipeline.add_argument("--output")
 
     review = sub.add_parser("review", help="Judge a local Git change using task, diff, code, and evidence")
     review.add_argument("--repo", default=".")
@@ -288,6 +310,64 @@ def main(argv: list[str] | None = None) -> None:
             if receipt.returncode != 0:
                 print(json.dumps(payload, ensure_ascii=False, indent=2))
                 raise SystemExit(receipt.returncode)
+        print(json.dumps(payload, ensure_ascii=False, indent=2))
+        return
+    if args.command == "pipeline":
+        task = _anonymous_task(args.task)
+        route_metadata: dict = {"source": "forced"}
+        if args.role == "auto":
+            try:
+                tiered_provider = OpenRouterTieredJevProvider(config)
+                tiered = decide_tiered_route(task, tiered_provider.judge(task))
+                selected_role = tiered.selected
+                route_metadata = tiered.to_dict()
+            except ProviderError as exc:
+                selected_role = "astra"
+                route_metadata = {
+                    "selected": "astra",
+                    "rule": f"jev_error_fallback:{exc.kind}",
+                    "source": "fail_safe",
+                }
+        else:
+            selected_role = args.role
+        commands: list[tuple[str, ...]] = []
+        for raw in args.verify_json:
+            parsed = json.loads(raw)
+            if not isinstance(parsed, list) or not parsed or not all(
+                isinstance(item, str) and item for item in parsed
+            ):
+                raise SystemExit("--verify-json must be a non-empty JSON string array")
+            commands.append(tuple(parsed))
+        if not args.execute:
+            plan = build_codex_dispatch_plan(args.repo, selected_role, sandbox=args.sandbox)
+            print(
+                json.dumps(
+                    {"executed": False, "route": route_metadata, "plan": plan.to_dict()},
+                    ensure_ascii=False,
+                    indent=2,
+                )
+            )
+            return
+        result = run_coding_pipeline(
+            args.repo,
+            task=args.task,
+            acceptance_criteria=args.criterion,
+            initial_role=selected_role,
+            review_provider=OpenRouterReviewJudgeProvider(config),
+            config=config,
+            verifier_commands=commands,
+            max_rounds=args.max_rounds,
+            max_review_usd=args.max_review_usd,
+            sandbox=args.sandbox,
+        )
+        payload = {"executed": True, "route": route_metadata, "pipeline": result.to_dict()}
+        if args.output:
+            destination = Path(args.output)
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            destination.write_text(
+                json.dumps(payload, ensure_ascii=False, indent=2) + "\n",
+                encoding="utf-8",
+            )
         print(json.dumps(payload, ensure_ascii=False, indent=2))
         return
     if args.command == "review":
