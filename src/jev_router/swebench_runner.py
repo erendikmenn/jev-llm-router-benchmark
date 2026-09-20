@@ -18,6 +18,7 @@ from .tiered_routing import OpenRouterTieredJevProvider, decide_tiered_route
 
 _REPO_SLUG = re.compile(r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$")
 _COMMIT = re.compile(r"^[0-9a-fA-F]{7,64}$")
+_INSTANCE_ID = re.compile(r"^[A-Za-z0-9_.-]+__[A-Za-z0-9_.-]+$")
 ARMS = (
     "always-luna",
     "always-terra",
@@ -39,7 +40,7 @@ class SWEbenchTask:
     def from_dict(cls, row: dict) -> "SWEbenchTask":
         values = {key: str(row.get(key, "")) for key in cls.__annotations__}
         task = cls(**values)
-        if not task.instance_id or not _REPO_SLUG.fullmatch(task.repo):
+        if not _INSTANCE_ID.fullmatch(task.instance_id) or not _REPO_SLUG.fullmatch(task.repo):
             raise ValueError("invalid SWE-bench task identity")
         if not _COMMIT.fullmatch(task.base_commit):
             raise ValueError("invalid SWE-bench base commit")
@@ -267,6 +268,9 @@ def _write_generation_outputs(
     with predictions_path.open("w", encoding="utf-8") as handle:
         for item in predictions:
             handle.write(json.dumps(item, ensure_ascii=False) + "\n")
+    instance_flags = " ".join(
+        f"-i {item['instance_id']}" for item in predictions
+    )
     (output / "generation-summary.json").write_text(
         json.dumps(
             {
@@ -278,7 +282,8 @@ def _write_generation_outputs(
                 "official_evaluation_required": True,
                 "evaluation_command": (
                     f"uvx --from swebench swebench eval verified -p {predictions_path} "
-                    f"--run-id {arm} -j 1"
+                    f"--run-id {arm} -j 1 {instance_flags} "
+                    "--task-repo /path/to/pinned/swe-bench-tasks"
                 ),
             },
             ensure_ascii=False,

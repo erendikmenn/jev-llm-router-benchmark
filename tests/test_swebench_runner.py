@@ -45,6 +45,15 @@ def test_task_rejects_untrusted_repo_and_commit():
                 "problem_statement": "bad",
             }
         )
+    with pytest.raises(ValueError):
+        SWEbenchTask.from_dict(
+            {
+                "instance_id": "owner/repo;touch bad",
+                "repo": "owner/repo",
+                "base_commit": "a" * 40,
+                "problem_statement": "bad",
+            }
+        )
 
 
 def test_existing_checkout_must_be_clean_and_exact(tmp_path):
