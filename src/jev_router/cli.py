@@ -20,6 +20,7 @@ from .judge_dataset import load_judge_cases
 from .livecodebench_runner import (
     load_livecodebench_plan,
     load_livecodebench_tasks,
+    merge_livecodebench_runs,
     run_livecodebench,
     write_livecodebench_plan,
 )
@@ -184,6 +185,11 @@ def parser() -> argparse.ArgumentParser:
     lcb_run.add_argument(
         "--output", default=str(ROOT / "results" / "livecodebench-generation")
     )
+    lcb_merge = sub.add_parser(
+        "livecodebench-merge", help="Merge disjoint resumable LiveCodeBench segments"
+    )
+    lcb_merge.add_argument("--input", action="append", required=True)
+    lcb_merge.add_argument("--output", required=True)
 
     tb_plan = sub.add_parser(
         "terminalbench-plan",
@@ -520,6 +526,10 @@ def main(argv: list[str] | None = None) -> None:
             timeout_seconds=args.timeout_seconds,
             max_jev_usd=args.max_jev_usd,
         )
+        print(json.dumps(summary, ensure_ascii=False, indent=2))
+        return
+    if args.command == "livecodebench-merge":
+        summary = merge_livecodebench_runs(args.input, args.output)
         print(json.dumps(summary, ensure_ascii=False, indent=2))
         return
     if args.command == "terminalbench-plan":

@@ -180,6 +180,21 @@ def _write_outputs(output: Path, measurements: list[dict]) -> dict:
     return summary
 
 
+def merge_livecodebench_runs(inputs: list[str | Path], output_dir: str | Path) -> dict:
+    output = Path(output_dir).resolve()
+    output.mkdir(parents=True, exist_ok=True)
+    merged: dict[str, dict] = {}
+    for source in inputs:
+        payload = json.loads(Path(source).read_text(encoding="utf-8"))
+        for row in payload.get("measurements") or []:
+            question_id = str(row["question_id"])
+            if question_id in merged and merged[question_id] != row:
+                raise ValueError(f"conflicting duplicate question_id: {question_id}")
+            merged[question_id] = row
+    rows = list(merged.values())
+    return _write_outputs(output, rows)
+
+
 def run_livecodebench(
     tasks: list[LiveCodeBenchTask],
     *,

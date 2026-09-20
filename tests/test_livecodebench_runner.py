@@ -9,6 +9,7 @@ from jev_router.livecodebench_runner import (
     extract_livecodebench_code,
     livecodebench_prompt,
     load_livecodebench_tasks,
+    merge_livecodebench_runs,
     run_livecodebench,
     write_livecodebench_plan,
 )
@@ -92,3 +93,30 @@ def test_route_only_run_resumes_without_duplicate_rows(tmp_path):
 
     assert first["tasks_attempted"] == 1
     assert second["tasks_attempted"] == 1
+
+
+def test_merge_combines_disjoint_segments(tmp_path):
+    inputs = []
+    for index in range(2):
+        path = tmp_path / f"segment-{index}.json"
+        path.write_text(
+            json.dumps(
+                {
+                    "measurements": [
+                        {
+                            "question_id": str(index),
+                            "status": "completed",
+                            "code": "print(1)",
+                            "jev_route_cost_usd": 0.001,
+                            "codex_usage": {},
+                        }
+                    ]
+                }
+            )
+        )
+        inputs.append(path)
+
+    merged = merge_livecodebench_runs(inputs, tmp_path / "merged")
+
+    assert merged["tasks_attempted"] == 2
+    assert merged["nonempty_code"] == 2
