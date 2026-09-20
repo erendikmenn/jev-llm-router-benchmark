@@ -11,6 +11,7 @@ results/swebench-gold-smoke-*/
 results/terminal-bench-2/
 results/*-route-*/
 results/livecodebench-codex-*/
+results/livecodebench-counterfactual-*/
 results/swebench-pro-official-smoke-*/router-only/
 logs/
 data/public_benchmark_*.jsonl
