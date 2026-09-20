@@ -40,6 +40,7 @@ from .providers import (
 from .report import generate_report
 from .routers import jev_router, rule_router
 from .swebench_runner import ARMS, generate_swebench_arm, load_swebench_plan
+from .swebench_pro_runner import generate_swebench_pro_arm
 from .swebench_analysis import (
     merge_evaluation_reports,
     merge_generation_summaries,
@@ -101,6 +102,27 @@ def parser() -> argparse.ArgumentParser:
     swebench.add_argument("--max-review-usd", type=float, default=0.05)
     swebench.add_argument("--timeout-seconds", type=float, default=900.0)
     swebench.add_argument("--execute", action="store_true")
+
+    swebench_pro = sub.add_parser(
+        "swebench-pro-generate",
+        help="Generate official-format SWE-bench Pro patches with local Codex auth",
+    )
+    swebench_pro.add_argument(
+        "--plan",
+        default=str(ROOT / "results" / "benchmark-plans" / "swebench-pro-public-full.json"),
+    )
+    swebench_pro.add_argument("--limit", type=int, default=1)
+    swebench_pro.add_argument("--offset", type=int, default=0)
+    swebench_pro.add_argument("--arm", choices=ARMS, required=True)
+    swebench_pro.add_argument(
+        "--workspace-root",
+        default=str(ROOT / "results" / "tmp" / "swebench-pro-workspaces"),
+    )
+    swebench_pro.add_argument("--output")
+    swebench_pro.add_argument("--max-rounds", type=int, default=3)
+    swebench_pro.add_argument("--max-review-usd", type=float, default=0.05)
+    swebench_pro.add_argument("--timeout-seconds", type=float, default=900.0)
+    swebench_pro.add_argument("--execute", action="store_true")
 
     swebench_report = sub.add_parser(
         "swebench-report",
@@ -376,6 +398,42 @@ def main(argv: list[str] | None = None) -> None:
             else None
         )
         result = generate_swebench_arm(
+            tasks,
+            arm=args.arm,
+            workspace_root=args.workspace_root,
+            output_dir=output,
+            config=config,
+            review_provider=review_provider,
+            max_rounds=args.max_rounds,
+            max_review_usd=args.max_review_usd,
+            timeout_seconds=args.timeout_seconds,
+        )
+        print(json.dumps({**preview, **result}, ensure_ascii=False, indent=2))
+        return
+    if args.command == "swebench-pro-generate":
+        tasks = load_swebench_plan(args.plan, "test", args.limit, args.offset)
+        output = Path(
+            args.output or ROOT / "results" / "swebench-pro-generation" / args.arm
+        ).resolve()
+        preview = {
+            "executed": args.execute,
+            "suite": "swebench-pro-public",
+            "arm": args.arm,
+            "offset": args.offset,
+            "tasks": [task.instance_id for task in tasks],
+            "workspace_root": str(Path(args.workspace_root).resolve()),
+            "output": str(output),
+            "gold_fields_exposed_to_codex": False,
+        }
+        if not args.execute:
+            print(json.dumps(preview, ensure_ascii=False, indent=2))
+            return
+        review_provider = (
+            OpenRouterReviewJudgeProvider(config)
+            if args.arm == "router-judge"
+            else None
+        )
+        result = generate_swebench_pro_arm(
             tasks,
             arm=args.arm,
             workspace_root=args.workspace_root,
