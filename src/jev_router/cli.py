@@ -17,6 +17,12 @@ from .evaluate import run_benchmark
 from .judge_service import estimate_review_cost, run_review
 from .judge_benchmark import regenerate_judge_report, run_judge_benchmark
 from .judge_dataset import load_judge_cases
+from .livecodebench_runner import (
+    load_livecodebench_plan,
+    load_livecodebench_tasks,
+    run_livecodebench,
+    write_livecodebench_plan,
+)
 from .manifest import build_manifest, write_manifest
 from .models import GenerationRequest, Task
 from .pipeline import run_coding_pipeline
@@ -108,6 +114,34 @@ def parser() -> argparse.ArgumentParser:
     swebench_merge.add_argument("--kind", choices=["generation", "evaluation"], required=True)
     swebench_merge.add_argument("--input", action="append", required=True)
     swebench_merge.add_argument("--output", required=True)
+
+    lcb_plan = sub.add_parser(
+        "livecodebench-plan",
+        help="Build an oracle-free plan from pinned LiveCodeBench JSONL files",
+    )
+    lcb_plan.add_argument("--dataset-dir", required=True)
+    lcb_plan.add_argument("--release", default="release_v6")
+    lcb_plan.add_argument(
+        "--output",
+        default=str(ROOT / "results" / "benchmark-plans" / "livecodebench-release-v6.json"),
+    )
+    lcb_run = sub.add_parser(
+        "livecodebench-run",
+        help="Route and generate LiveCodeBench pass@1 candidates with local Codex auth",
+    )
+    lcb_run.add_argument(
+        "--plan",
+        default=str(ROOT / "results" / "benchmark-plans" / "livecodebench-release-v6.json"),
+    )
+    lcb_run.add_argument("--repo", default=".")
+    lcb_run.add_argument("--offset", type=int, default=0)
+    lcb_run.add_argument("--limit", type=int)
+    lcb_run.add_argument("--role", choices=["luna", "terra", "sol", "astra"])
+    lcb_run.add_argument("--timeout-seconds", type=float, default=900.0)
+    lcb_run.add_argument("--route-only", action="store_true")
+    lcb_run.add_argument(
+        "--output", default=str(ROOT / "results" / "livecodebench-generation")
+    )
 
     route = sub.add_parser("route", help="Route one request without generating an answer")
     route.add_argument("--prompt", required=True)
@@ -336,6 +370,39 @@ def main(argv: list[str] | None = None) -> None:
             else merge_evaluation_reports
         )
         print(json.dumps(merger(args.input, args.output), ensure_ascii=False, indent=2))
+        return
+    if args.command == "livecodebench-plan":
+        tasks = load_livecodebench_tasks(args.dataset_dir, release=args.release)
+        registry = load_benchmark_registry()
+        revision = registry["suites"]["livecodebench"]["dataset_revision"]
+        manifest = write_livecodebench_plan(tasks, args.output, source_revision=revision)
+        print(
+            json.dumps(
+                {
+                    "suite": manifest["suite"],
+                    "release": args.release,
+                    "task_count": manifest["task_count"],
+                    "oracle_fields_excluded": manifest["oracle_fields_excluded"],
+                    "selection_sha256": manifest["selection_sha256"],
+                    "output": str(Path(args.output).resolve()),
+                },
+                ensure_ascii=False,
+                indent=2,
+            )
+        )
+        return
+    if args.command == "livecodebench-run":
+        tasks = load_livecodebench_plan(args.plan, offset=args.offset, limit=args.limit)
+        summary = run_livecodebench(
+            tasks,
+            repository=args.repo,
+            output_dir=args.output,
+            config=config,
+            forced_role=args.role,
+            execute=not args.route_only,
+            timeout_seconds=args.timeout_seconds,
+        )
+        print(json.dumps(summary, ensure_ascii=False, indent=2))
         return
     if args.command == "route":
         task = _anonymous_task(args.prompt)
