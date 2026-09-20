@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from statistics import median
 
 
 TIERS = ("luna", "terra", "sol", "astra")
@@ -14,6 +15,14 @@ def _load(path: str | Path) -> dict:
 
 def _mean(values: list[float]) -> float | None:
     return sum(values) / len(values) if values else None
+
+
+def _percentile(values: list[float], probability: float) -> float | None:
+    if not values:
+        return None
+    ordered = sorted(values)
+    index = max(0, min(len(ordered) - 1, round((len(ordered) - 1) * probability)))
+    return ordered[index]
 
 
 def analyze_swebench_runs(
@@ -58,6 +67,19 @@ def analyze_swebench_runs(
             float(measurements[item].get("jev_review_cost_usd", 0.0))
             for item in submitted
         )
+        usage_keys = {
+            key
+            for item in submitted
+            for key, value in measurements[item].get("codex_usage", {}).items()
+            if isinstance(value, int)
+        }
+        codex_usage = {
+            key: sum(
+                int(measurements[item].get("codex_usage", {}).get(key, 0))
+                for item in submitted
+            )
+            for key in sorted(usage_keys)
+        }
         by_arm[arm] = {
             "submitted": len(submitted),
             "officially_evaluable": len(eligible),
@@ -65,6 +87,9 @@ def analyze_swebench_runs(
             "pass_rate": len(resolved & eligible) / len(eligible) if eligible else None,
             "infra_or_evaluator_errors": len((errors | infra) & submitted),
             "mean_execution_elapsed_ms": _mean(latencies),
+            "p50_execution_elapsed_ms": median(latencies) if latencies else None,
+            "p95_execution_elapsed_ms": _percentile(latencies, 0.95),
+            "codex_usage": codex_usage,
             "jev_cost_usd": route_cost + review_cost,
         }
         if arm == "router-judge":

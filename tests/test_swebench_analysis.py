@@ -38,6 +38,7 @@ def test_analysis_uses_official_results_and_classifies_routes(tmp_path):
                         "instance_id": "task",
                         "selected_role": role_by_arm[arm],
                         "execution_elapsed_ms": 100,
+                        "codex_usage": {"input_tokens": 123, "output_tokens": 7},
                         "jev_route_cost_usd": 0.001 if arm == "router-only" else 0,
                     }
                 ]
@@ -60,6 +61,8 @@ def test_analysis_uses_official_results_and_classifies_routes(tmp_path):
     assert report["tasks"][0]["arms"]["router-only"]["routing_label"] == "over_routed"
     assert report["routing"]["over_route_rate"] == 1.0
     assert report["arms"]["router-only"]["jev_cost_usd"] == 0.001
+    assert report["arms"]["router-only"]["codex_usage"]["input_tokens"] == 123
+    assert report["arms"]["router-only"]["p95_execution_elapsed_ms"] == 100
 
 
 def test_analysis_excludes_infrastructure_errors(tmp_path):
