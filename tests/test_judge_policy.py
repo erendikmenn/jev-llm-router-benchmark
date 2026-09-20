@@ -59,7 +59,7 @@ def test_revises_incomplete_change(config):
         config,
     )
     assert decision.action == "revise"
-    assert "requirements_incomplete" in decision.fired_rules
+    assert "clearly_incomplete_requirements" in decision.fired_rules
 
 
 def test_escalates_high_stakes_change_even_when_signals_pass(config):
@@ -77,8 +77,28 @@ def test_blocks_destructive_change(config):
 def test_uncertainty_routes_to_deep_review(config):
     decision = decide_review(
         packet(),
-        judgment(signals={"scope_aligned": 0.50, "behavior_supported": 0.55}),
+        judgment(signals={"regression_risk": 0.50, "self_test_bias": 0.50}),
         config,
     )
     assert decision.action == "escalate"
     assert "multiple_semantic_signals_uncertain" in decision.fired_rules
+
+
+def test_clear_low_risk_failure_revises_before_optional_deep_review(config):
+    decision = decide_review(
+        packet(),
+        judgment(
+            signals={
+                "requirements_complete": 0.20,
+                "needs_deep_review": 0.90,
+            }
+        ),
+        config,
+    )
+    assert decision.action == "revise"
+    assert "clearly_incomplete_requirements" in decision.fired_rules
+
+
+def test_low_confidence_low_risk_change_can_still_pass(config):
+    decision = decide_review(packet(), judgment(risk_confidence=0.20), config)
+    assert decision.action == "accept"

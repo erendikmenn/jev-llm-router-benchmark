@@ -63,11 +63,47 @@ def decide_review(
 
     if flags & HIGH_STAKES_FLAGS:
         fired.append("high_stakes_static_risk_flag")
-    if judgment.risk_level == "high":
+    if (
+        judgment.risk_level == "high"
+        and judgment.risk_confidence >= float(policy["risk_confidence_min"])
+    ):
         fired.append("high_semantic_risk")
+    if fired:
+        return ReviewDecision(
+            action="escalate",
+            fired_rules=tuple(fired),
+            signals=signals,
+            risk_level=judgment.risk_level,
+            risk_confidence=judgment.risk_confidence,
+            uncertain_signals=uncertain,
+            judgment=judgment,
+        )
+
+    clear_revise = float(policy["clear_revise_probability"])
+    if signals.get("requirements_complete", 1.0) < clear_revise:
+        fired.append("clearly_incomplete_requirements")
+    if (
+        signals.get("scope_aligned", 1.0) < clear_revise
+        and signals.get("behavior_supported", 1.0) < clear_revise
+    ):
+        fired.append("clearly_unsupported_change")
+    if fired:
+        return ReviewDecision(
+            action="revise",
+            fired_rules=tuple(fired),
+            signals=signals,
+            risk_level=judgment.risk_level,
+            risk_confidence=judgment.risk_confidence,
+            uncertain_signals=uncertain,
+            judgment=judgment,
+        )
+
     if signals.get("needs_deep_review", 0.0) >= float(policy["deep_review_escalate"]):
         fired.append("deep_review_requested")
-    if judgment.risk_confidence < float(policy["risk_confidence_min"]):
+    if (
+        judgment.risk_level != "low"
+        and judgment.risk_confidence < float(policy["risk_confidence_min"])
+    ):
         fired.append("risk_classification_uncertain")
     if len(uncertain) >= int(policy["max_uncertain_signals"]):
         fired.append("multiple_semantic_signals_uncertain")
