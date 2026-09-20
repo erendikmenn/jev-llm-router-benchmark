@@ -19,6 +19,8 @@ jobs:
           fi
       - run: uv sync --extra dev --locked
       - run: uv run pytest
+        env:
+          JEV_SANDBOX_DEBUG: "1"
       - run: uv run jev-router smoke --output results/ci-smoke
         env:
           TYPESAFE_API_KEY: ""

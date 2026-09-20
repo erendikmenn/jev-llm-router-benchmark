@@ -103,6 +103,12 @@ def _score_python(task: Task, output: str) -> float:
             )
         except subprocess.TimeoutExpired:
             return 0.0
+        if completed.returncode != 0 and os.getenv("JEV_SANDBOX_DEBUG") == "1":
+            stderr = completed.stderr.decode("utf-8", errors="replace")
+            print(
+                f"sandbox command failed ({completed.returncode}): {command!r}\n{stderr}",
+                file=sys.stderr,
+            )
     return float(completed.returncode == 0)
 
 
