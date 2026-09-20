@@ -1,0 +1,20 @@
+{
+  "suite": "livecodebench",
+  "release": "release_v6",
+  "question_id": "1873_A",
+  "difficulty": "easy",
+  "worker_model": "gpt-5.6-luna",
+  "worker_auth": "local_codex_subscription_auth",
+  "worker_openrouter_api_calls": 0,
+  "jev_final_selection": "luna",
+  "jev_route_cost_usd": 0.000051786,
+  "official_pass_at_1": 1.0,
+  "official_tests_passed": 5,
+  "official_tests_total": 5,
+  "generation_elapsed_ms": 9691.340207995381,
+  "codex_usage": {
+    "input_tokens": 17508,
+    "cached_input_tokens": 9984,
+    "output_tokens": 145
+  }
+}
