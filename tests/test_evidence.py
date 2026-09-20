@@ -1,0 +1,73 @@
+from __future__ import annotations
+
+import subprocess
+
+from jev_router.evidence import collect_git_review_packet, infer_risk_flags, redact_secrets
+
+
+def git(repo, *args):
+    return subprocess.run(
+        ["git", "-C", str(repo), *args],
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout
+
+
+def test_collects_diff_code_and_infers_risk(tmp_path):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    git(repo, "init", "-q")
+    git(repo, "config", "user.name", "Test")
+    git(repo, "config", "user.email", "test@example.com")
+    auth = repo / "auth.py"
+    auth.write_text("def allowed(user):\n    return True\n", encoding="utf-8")
+    git(repo, "add", "auth.py")
+    git(repo, "commit", "-qm", "initial")
+    auth.write_text("def allowed(user):\n    return user.is_admin\n", encoding="utf-8")
+
+    packet = collect_git_review_packet(
+        repo,
+        packet_id="auth-change",
+        task="Require admin access.",
+        acceptance_criteria=["Non-admin users are rejected."],
+    )
+
+    assert packet.changed_files == ("auth.py",)
+    assert "+    return user.is_admin" in packet.diff
+    assert packet.relevant_code["auth.py"].endswith("return user.is_admin\n")
+    assert "authentication" in packet.risk_flags
+    assert packet.evidence["agent_authored_tests_are_independent"] is False
+
+
+def test_sensitive_files_are_excluded_and_values_are_redacted(tmp_path):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    git(repo, "init", "-q")
+    git(repo, "config", "user.name", "Test")
+    git(repo, "config", "user.email", "test@example.com")
+    (repo / "app.py").write_text("TOKEN = 'safe-placeholder'\n", encoding="utf-8")
+    (repo / ".env").write_text("API_KEY=initial\n", encoding="utf-8")
+    git(repo, "add", "app.py", ".env")
+    git(repo, "commit", "-qm", "initial")
+    (repo / "app.py").write_text("API_KEY=ghp_abcdefghijklmnop\n", encoding="utf-8")
+    (repo / ".env").write_text("API_KEY=secret-value\n", encoding="utf-8")
+
+    packet = collect_git_review_packet(
+        repo,
+        packet_id="secret-change",
+        task="Update configuration.",
+        acceptance_criteria=["Do not expose secrets."],
+    )
+
+    assert ".env" not in packet.changed_files
+    assert "secret-value" not in packet.diff
+    assert "ghp_abcdefghijklmnop" not in packet.diff
+    assert "[REDACTED]" in packet.diff
+    assert "secret_exposure" in packet.risk_flags
+
+
+def test_redaction_and_destructive_inference_are_deterministic():
+    assert redact_secrets("Authorization: Bearer abc.def") == "Authorization: Bearer [REDACTED]"
+    flags = infer_risk_flags(["migrations/001.sql"], "+DROP TABLE users;")
+    assert flags == ("database_migration", "destructive")

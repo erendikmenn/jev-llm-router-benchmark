@@ -30,6 +30,9 @@ policy_violation_block = 0.75
 risk_confidence_min = 0.35
 uncertainty_band = 0.10
 max_uncertain_signals = 2
+max_diff_chars = 70000
+max_file_chars = 20000
+max_context_chars = 100000
 
 [models.cheap]
 provider = "openrouter"
