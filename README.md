@@ -28,7 +28,7 @@ Jev yanıt veya kod yazmaz. Dar olasılık sinyalleri üretir; maliyet hesabı, 
 
 `route` yalnız görev metnini gönderir. `review` ve `control`, judge kararı için temizlenmiş ve boyutu sınırlanmış diff/ilgili kodu Jev sağlayıcısına gönderir; `.env`, credential/key dosyaları dışlanır ve bilinen secret biçimleri redakte edilir. Dolayısıyla judge modu “yalnız karar dışarı gider” değildir. Hassas repository'lerde fixture/native politika kullanılmalı veya bu dış aktarım açıkça kabul edilmelidir.
 
-Mevcut sürüm karar motoru ve ölçüm tesisatıdır. Codex Luna/Terra/Sol/Astra worker'ını otomatik başlatan native dispatcher henüz bu sürümde yoktur; `control` önerilen rolü ve sonraki adımı döndürür.
+`codex-route`, seçilen Luna/Sol rolünü yerel `codex exec` sürecine mevcut Codex kimliğiyle teslim edebilir; Terra ve Astra forced baseline olarak da kullanılabilir. Güvenlik için varsayılan davranış dry-run'dır ve gerçek teslim `--execute` ister. `control` ise henüz worker çalıştırmaz; pre-route ve post-change judge kararını tek receipt'te birleştirir.
 
 ## Hızlı başlangıç
 
@@ -64,6 +64,15 @@ uv run jev-router review --repo . --base HEAD~1 --head HEAD \
 # Pre-route ve post-change judge kararını tek kontrol çıktısında birleştir
 uv run jev-router control --repo . --base HEAD~1 --head HEAD \
   --task "İstenen değişikliği uygula" --criterion "Testler ve kabul kriterleri sağlanır"
+
+# Router kararını mevcut Codex oturumu üzerinden Luna veya Sol'e gerçekten gönder
+# --execute verilmezse güvenli dry-run planı gösterilir
+uv run jev-router codex-route --mode live-jev --repo . --task "..."
+uv run jev-router codex-route --mode live-jev --repo . --execute --task "..."
+
+# Aynı görevde doğrudan model baseline'ı
+uv run jev-router codex-route --role luna --sandbox read-only --execute --task "..."
+uv run jev-router codex-route --role sol --sandbox read-only --execute --task "..."
 
 # 40 sentetik vaka; canlı test yalnız dondurulmuş test split'inde
 uv run jev-router judge-benchmark --mode fixture --split all \
@@ -128,6 +137,8 @@ Ayrıntılı rapor: [`results/openrouter-en-test-1000-20260919/DETAILED_REPORT_T
 Eşikler yalnız 12 vakalık dev split'inde ayarlandı ve 28 vakalık sentetik testten önce donduruldu. Held-out testte dört sınıflı karar doğruluğu `%71.4` oldu. Hatalı/riskli 21 vakanın hiçbiri yanlışlıkla `accept` edilmedi (`unsafe detection recall %100`, `accept precision %100`); yedi geçerli değişikliğin ise yalnız ikisi kabul edildi (`valid accept recall %28.6`). Yani ilk sürüm güvenli tarafta fakat belirgin biçimde fazla muhafazakâr. Toplam canlı test maliyeti `$0.001196`, vaka başı `$0.000043`; ortalama gecikme `513 ms`, p95 `648 ms` oldu.
 
 Bu sonuç üretim doğruluğu veya SWE-bench başarısı değildir. Sentetik set politika ve tesisatı doğrular. Ham held-out ölçümler [`results/judge-openrouter-test-20260920/`](results/judge-openrouter-test-20260920/) altında; deney sözleşmesi ve dürüst yorum [docs/JUDGE_PROTOCOL_TR.md](docs/JUDGE_PROTOCOL_TR.md) içindedir.
+
+Codex-native dispatch de gerçek Luna ve Sol oturumlarıyla smoke-test edildi. Aynı kolay salt-okunur görevde ikisi de doğru cevap verdi; Luna `12.65 s`, Sol `15.87 s` sürdü. Bu çağrılar OpenRouter'a gitmedi ve API USD maliyeti üretmedi; mevcut Codex oturumu/kullanım hakkını kullandı. Ayrıntı: [`results/codex-native-smoke-20260920/REPORT_TR.md`](results/codex-native-smoke-20260920/REPORT_TR.md).
 
 ## Anahtar ve gizlilik
 
