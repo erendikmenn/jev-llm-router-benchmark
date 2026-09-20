@@ -2,7 +2,12 @@ from __future__ import annotations
 
 import subprocess
 
-from jev_router.evidence import collect_git_review_packet, infer_risk_flags, redact_secrets
+from jev_router.evidence import (
+    collect_git_review_packet,
+    collect_git_review_packet_chunks,
+    infer_risk_flags,
+    redact_secrets,
+)
 
 
 def git(repo, *args):
@@ -98,3 +103,31 @@ def test_total_diff_and_code_context_respects_budget(tmp_path):
     )
 
     assert len(packet.diff) + sum(map(len, packet.relevant_code.values())) <= 500
+
+
+def test_large_change_is_split_without_omitting_files(tmp_path):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    git(repo, "init", "-q")
+    git(repo, "config", "user.name", "Test")
+    git(repo, "config", "user.email", "test@example.com")
+    for index in range(5):
+        (repo / f"file_{index}.py").write_text("value = 1\n", encoding="utf-8")
+    git(repo, "add", ".")
+    git(repo, "commit", "-qm", "initial")
+    for index in range(5):
+        (repo / f"file_{index}.py").write_text("value = 2\n", encoding="utf-8")
+
+    packets = collect_git_review_packet_chunks(
+        repo,
+        packet_id="chunked",
+        task="Change values.",
+        acceptance_criteria=["Values are two."],
+        max_files_per_packet=2,
+    )
+
+    assert len(packets) == 3
+    assert {path for packet in packets for path in packet.changed_files} == {
+        f"file_{index}.py" for index in range(5)
+    }
+    assert all(len(packet.changed_files) <= 2 for packet in packets)

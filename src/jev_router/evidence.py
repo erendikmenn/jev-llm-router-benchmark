@@ -160,6 +160,7 @@ def collect_git_review_packet(
     max_diff_chars: int = 70_000,
     max_file_chars: int = 20_000,
     max_context_chars: int = 100_000,
+    include_paths: Iterable[str] | None = None,
 ) -> ReviewPacket:
     repository = Path(repo).resolve()
     if not (repository / ".git").exists():
@@ -174,10 +175,16 @@ def collect_git_review_packet(
         names_args = ("diff", "--name-only", "--diff-filter=ACMRT", base, head, "--")
         stats_args = ("diff", "--numstat", base, head, "--")
 
-    changed_files = tuple(
+    all_changed_files = tuple(
         path
         for path in _git(repository, *names_args).splitlines()
         if path and not _is_sensitive_path(path)
+    )
+    requested_paths = set(include_paths) if include_paths is not None else None
+    changed_files = tuple(
+        path
+        for path in all_changed_files
+        if requested_paths is None or path in requested_paths
     )
     if changed_files:
         raw_diff = redact_secrets(_git(repository, *diff_args, *changed_files))
@@ -232,5 +239,73 @@ def collect_git_review_packet(
             "base": base,
             "head": head,
             "context_truncated": remaining <= 0 or len(raw_diff) > diff_budget,
+            "changed_files_total": len(all_changed_files),
+            "changed_files_in_packet": len(changed_files),
+            "omitted_changed_files": tuple(
+                path for path in all_changed_files if path not in changed_files
+            ),
         },
     )
+
+
+def collect_git_review_packet_chunks(
+    repo: str | Path,
+    *,
+    packet_id: str,
+    task: str,
+    acceptance_criteria: Iterable[str],
+    base: str = "HEAD",
+    head: str = "WORKTREE",
+    evidence: dict[str, Any] | None = None,
+    risk_flags: Iterable[str] = (),
+    forbidden_changes: Iterable[str] = (),
+    max_diff_chars: int = 40_000,
+    max_file_chars: int = 20_000,
+    max_context_chars: int = 72_000,
+    max_files_per_packet: int = 8,
+) -> tuple[ReviewPacket, ...]:
+    if max_files_per_packet < 1:
+        raise ValueError("max_files_per_packet must be positive")
+    initial = collect_git_review_packet(
+        repo,
+        packet_id=packet_id,
+        task=task,
+        acceptance_criteria=acceptance_criteria,
+        base=base,
+        head=head,
+        evidence=evidence,
+        risk_flags=risk_flags,
+        forbidden_changes=forbidden_changes,
+        max_diff_chars=max_diff_chars,
+        max_file_chars=max_file_chars,
+        max_context_chars=max_context_chars,
+    )
+    files = initial.changed_files
+    if len(files) <= max_files_per_packet and not initial.metadata["context_truncated"]:
+        return (initial,)
+    chunks: list[ReviewPacket] = []
+    for index in range(0, len(files), max_files_per_packet):
+        selected = files[index : index + max_files_per_packet]
+        chunks.append(
+            collect_git_review_packet(
+                repo,
+                packet_id=f"{packet_id}-chunk-{index // max_files_per_packet + 1}",
+                task=task,
+                acceptance_criteria=acceptance_criteria,
+                base=base,
+                head=head,
+                evidence={
+                    **(evidence or {}),
+                    "review_chunk": index // max_files_per_packet + 1,
+                    "review_chunk_count": (len(files) + max_files_per_packet - 1)
+                    // max_files_per_packet,
+                },
+                risk_flags=risk_flags,
+                forbidden_changes=forbidden_changes,
+                max_diff_chars=max_diff_chars,
+                max_file_chars=max_file_chars,
+                max_context_chars=max_context_chars,
+                include_paths=selected,
+            )
+        )
+    return tuple(chunks) or (initial,)

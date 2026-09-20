@@ -10,6 +10,9 @@ from .pricing import estimate_tokens, jev_cost
 from .providers.base import ProviderError, ReviewJudgeProvider
 
 
+_ACTION_SEVERITY = {"accept": 0, "revise": 1, "escalate": 2, "block": 3}
+
+
 @dataclass(frozen=True)
 class ReviewRun:
     decision: ReviewDecision
@@ -29,6 +32,24 @@ class ReviewRun:
             "input_tokens": self.input_tokens,
             "output_tokens": self.output_tokens,
             "provider_error": self.provider_error,
+        }
+
+
+@dataclass(frozen=True)
+class ReviewBundle:
+    decision: ReviewDecision
+    runs: tuple[ReviewRun, ...]
+    cost_usd: float
+    latency_ms: float
+    provider_errors: tuple[str, ...]
+
+    def to_dict(self) -> dict:
+        return {
+            "decision": self.decision.to_dict(),
+            "chunks": [run.to_dict() for run in self.runs],
+            "cost_usd": self.cost_usd,
+            "latency_ms": self.latency_ms,
+            "provider_errors": self.provider_errors,
         }
 
 
@@ -76,4 +97,39 @@ def run_review(
         latency_ms=judgment.latency_ms,
         input_tokens=judgment.usage.input_tokens,
         output_tokens=judgment.usage.output_tokens,
+    )
+
+
+def run_review_bundle(
+    packets: tuple[ReviewPacket, ...],
+    provider: ReviewJudgeProvider,
+    config: AppConfig,
+) -> ReviewBundle:
+    if not packets:
+        raise ValueError("review bundle requires at least one packet")
+    runs = tuple(run_review(packet, provider, config) for packet in packets)
+    worst = max(runs, key=lambda run: _ACTION_SEVERITY[run.decision.action])
+    fired_rules = tuple(
+        f"chunk_{index + 1}:{rule}"
+        for index, run in enumerate(runs)
+        for rule in run.decision.fired_rules
+        if run.decision.action != "accept" or len(runs) == 1
+    )
+    decision = ReviewDecision(
+        action=worst.decision.action,
+        fired_rules=fired_rules or worst.decision.fired_rules,
+        signals=worst.decision.signals,
+        risk_level=worst.decision.risk_level,
+        risk_confidence=worst.decision.risk_confidence,
+        uncertain_signals=worst.decision.uncertain_signals,
+        judgment=worst.decision.judgment,
+    )
+    return ReviewBundle(
+        decision=decision,
+        runs=runs,
+        cost_usd=sum(run.cost_usd for run in runs),
+        latency_ms=sum(run.latency_ms for run in runs),
+        provider_errors=tuple(
+            run.provider_error for run in runs if run.provider_error is not None
+        ),
     )

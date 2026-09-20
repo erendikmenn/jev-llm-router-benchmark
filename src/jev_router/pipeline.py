@@ -12,9 +12,9 @@ from .codex_dispatch import (
     run_codex_dispatch,
 )
 from .config import AppConfig
-from .evidence import collect_git_review_packet
+from .evidence import collect_git_review_packet_chunks
 from .judge_models import ReviewDecision
-from .judge_service import ReviewRun, estimate_review_cost, run_review
+from .judge_service import ReviewBundle, ReviewRun, estimate_review_cost, run_review_bundle
 from .providers.base import ReviewJudgeProvider
 from .tiered_routing import TIERS
 
@@ -38,7 +38,7 @@ class PipelineRound:
     role: str
     dispatch: CodexDispatchReceipt
     verifiers: tuple[VerifierReceipt, ...]
-    review: ReviewRun
+    review: ReviewBundle
     outcome: str
 
     def to_dict(self) -> dict:
@@ -117,7 +117,12 @@ def _next_tier(role: str) -> str | None:
     return TIERS[index + 1] if index + 1 < len(TIERS) else None
 
 
-def _retry_prompt(task: str, role: str, review: ReviewRun, verifiers: tuple[VerifierReceipt, ...]) -> str:
+def _retry_prompt(
+    task: str,
+    role: str,
+    review: ReviewBundle,
+    verifiers: tuple[VerifierReceipt, ...],
+) -> str:
     failed_commands = [" ".join(item.command) for item in verifiers if not item.passed]
     return (
         f"Continue the existing implementation for this task:\n\n{task}\n\n"
@@ -160,7 +165,7 @@ def run_coding_pipeline(
         plan = build_codex_dispatch_plan(repository, role, sandbox=sandbox)
         dispatch = dispatch_fn(plan, prompt)
         verifiers = run_verifiers(repository, commands)
-        packet = collect_git_review_packet(
+        packets = collect_git_review_packet_chunks(
             repository,
             packet_id=f"pipeline-round-{number}",
             task=task,
@@ -175,16 +180,12 @@ def run_coding_pipeline(
             max_file_chars=int(config.judge["max_file_chars"]),
             max_context_chars=int(config.judge["max_context_chars"]),
         )
-        estimated_review = estimate_review_cost(packet, config)
+        estimated_review = sum(estimate_review_cost(packet, config) for packet in packets)
         budget_preflight = review_spend + estimated_review > max_review_usd
         if budget_preflight:
-            review = ReviewRun(
+            budget_run = ReviewRun(
                 decision=ReviewDecision(
-                    action="escalate",
-                    fired_rules=("review_budget_preflight",),
-                    signals={},
-                    risk_level="high",
-                    risk_confidence=1.0,
+                    "escalate", ("review_budget_preflight",), {}, "high", 1.0
                 ),
                 cost_usd=0.0,
                 cost_source="not_called_budget_preflight",
@@ -193,8 +194,15 @@ def run_coding_pipeline(
                 output_tokens=0,
                 provider_error="budget_preflight",
             )
+            review = ReviewBundle(
+                budget_run.decision,
+                (budget_run,),
+                0.0,
+                0.0,
+                ("budget_preflight",),
+            )
         else:
-            review = run_review(packet, review_provider, config)
+            review = run_review_bundle(packets, review_provider, config)
         review_spend += review.cost_usd
         verifier_passed = all(item.passed for item in verifiers)
         next_role: str | None = None
