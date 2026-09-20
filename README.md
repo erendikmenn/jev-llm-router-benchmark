@@ -147,6 +147,8 @@ Codex-native dispatch de gerçek Luna ve Sol oturumlarıyla smoke-test edildi. A
 
 Repository düzeyi kod benchmark hattı artık SWE-bench Verified görevlerini dört sabit Codex tier'i, router-only ve router+judge kollarında çalıştırır. Worker'a gold/test patch veya gizli test kimliği verilmez; skor yalnız resmî evaluator çıktısından alınır. Sekiz iş paketi, başarı kapıları ve tam komutlar [docs/OFFICIAL_CODING_BENCHMARK_PROTOCOL_TR.md](docs/OFFICIAL_CODING_BENCHMARK_PROTOCOL_TR.md) içindedir.
 
+İlk resmî iki-görev smoke matrisinde Luna 0/2, Terra 2/2, Sol 1/2, Astra 2/2, router-only 1/2 ve router+judge 2/2 sonuç verdi. Jev seçimleri bir exact ve bir over-route üretti; under-route yoktu. Judge her iki geçen sonucu da gereksiz biçimde insan incelemesine bıraktı. Bu bir ürün başarı oranı değil, `n=2` tesisat/behavior smoke'udur. Ayrıntılı ve sınırlamaları açık rapor: [`results/swebench-official-smoke-20260920/REPORT_TR.md`](results/swebench-official-smoke-20260920/REPORT_TR.md).
+
 ## Anahtar ve gizlilik
 
 `.env.example` yalnız değişken adını gösterir. Uygulama `OPENROUTER_API_KEY` değerini yalnız process environment'tan okur; `.env` dosyasını kendi başına yüklemez, değeri loglamaz. `environment` komutu yalnız boolean var/yok sonucu verir. Yerel `~/.config/openrouter.env` kaynağı çağıran shell tarafından yüklenebilir.

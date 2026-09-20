@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "benchmark": "SWE-bench Verified",
+  "date": "2026-09-20",
+  "tasks": 2,
+  "gold_smoke": {
+    "submitted": 1,
+    "resolved": 1,
+    "infra_errors": 0,
+    "evaluator_errors": 0
+  },
+  "arms": {
+    "always-luna": {"resolved": 0, "submitted": 2, "mean_elapsed_ms": 240177.6667},
+    "always-terra": {"resolved": 2, "submitted": 2, "mean_elapsed_ms": 528919.1693},
+    "always-sol": {"resolved": 1, "submitted": 2, "mean_elapsed_ms": 422745.5693},
+    "always-astra": {"resolved": 2, "submitted": 2, "mean_elapsed_ms": 157003.7323},
+    "router-only": {"resolved": 1, "submitted": 2, "mean_elapsed_ms": 399373.2253, "jev_cost_usd": 0.00012873},
+    "router-judge": {"resolved": 2, "submitted": 2, "mean_elapsed_ms": 673217.0323, "jev_cost_usd": 0.00372939}
+  },
+  "routing": {
+    "oracle_covered": 2,
+    "exact": 1,
+    "under_routed": 0,
+    "over_routed": 1
+  },
+  "judge": {
+    "unsafe_false_accept": 0,
+    "automatic_accept": 0,
+    "nonaccepted_but_resolved": 2
+  },
+  "claim_scope": "infrastructure_and_behavior_smoke_only",
+  "statistical_quality_claim_allowed": false
+}
