@@ -1,5 +1,5 @@
 from .base import CachedGeneratorProvider, GeneratorProvider, JevProvider, ProviderError, ReviewJudgeProvider
-from .fixture import FixtureGenerator, FixtureJev
+from .fixture import FixtureGenerator, FixtureJev, FixtureReviewJudge
 from .openai import OpenAIResponsesProvider
 from .openrouter import OpenRouterChatProvider, OpenRouterJevProvider
 from .typesafe import TypeSafeJevProvider
@@ -13,6 +13,7 @@ __all__ = [
     "CachedGeneratorProvider",
     "FixtureGenerator",
     "FixtureJev",
+    "FixtureReviewJudge",
     "OpenAIResponsesProvider",
     "OpenRouterChatProvider",
     "OpenRouterJevProvider",

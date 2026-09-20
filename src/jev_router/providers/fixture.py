@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from ..config import AppConfig
+from ..judge_models import JudgeBenchmarkCase, ReviewJudgment
 from ..models import GenerationRequest, GenerationResult, JevJudgment, Task, Usage
 
 
@@ -39,3 +40,23 @@ class FixtureJev:
             model_id=self.config.router["jev_model"],
         )
 
+
+class FixtureReviewJudge:
+    def __init__(self, config: AppConfig, cases: list[JudgeBenchmarkCase]):
+        self.config = config
+        self.records = {case.packet.id: case.fixture for case in cases}
+
+    def judge(self, packet) -> ReviewJudgment:
+        record = self.records[packet.id]
+        return ReviewJudgment(
+            signals={key: float(value) for key, value in record["signals"].items()},
+            risk_level=record["risk_level"],
+            risk_probabilities={
+                key: float(value)
+                for key, value in record["risk_probabilities"].items()
+            },
+            risk_confidence=float(record["risk_confidence"]),
+            usage=Usage(**record["usage"]),
+            latency_ms=float(record["latency_ms"]),
+            model_id="fixture/jev-review",
+        )

@@ -12,12 +12,15 @@ from .demo import serve
 from .evidence import collect_git_review_packet
 from .evaluate import run_benchmark
 from .judge_service import estimate_review_cost, run_review
+from .judge_benchmark import run_judge_benchmark
+from .judge_dataset import load_judge_cases
 from .manifest import build_manifest, write_manifest
 from .models import GenerationRequest, Task
 from .pricing import estimate_request_cost
 from .providers import (
     FixtureGenerator,
     FixtureJev,
+    FixtureReviewJudge,
     OpenRouterChatProvider,
     OpenRouterJevProvider,
     OpenRouterReviewJudgeProvider,
@@ -30,6 +33,7 @@ from .routers import jev_router, rule_router
 ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_CONFIG = ROOT / "configs" / "default.toml"
 DEFAULT_DATA = ROOT / "data" / "demo_pilot.jsonl"
+DEFAULT_JUDGE_DATA = ROOT / "data" / "code_judge_synthetic_v1.jsonl"
 
 
 def parser() -> argparse.ArgumentParser:
@@ -55,6 +59,14 @@ def parser() -> argparse.ArgumentParser:
     review.add_argument("--evidence-json")
     review.add_argument("--provider", choices=["openrouter", "typesafe"], default="openrouter")
     review.add_argument("--max-usd", type=float, default=0.01)
+
+    judge_benchmark = sub.add_parser("judge-benchmark", help="Measure Jev code-judge decisions")
+    judge_benchmark.add_argument("--data", default=str(DEFAULT_JUDGE_DATA))
+    judge_benchmark.add_argument("--mode", choices=["fixture", "live"], default="fixture")
+    judge_benchmark.add_argument("--split", choices=["dev", "test", "all"], default="test")
+    judge_benchmark.add_argument("--provider", choices=["openrouter", "typesafe"], default="openrouter")
+    judge_benchmark.add_argument("--max-usd", type=float, default=None)
+    judge_benchmark.add_argument("--output", default=str(ROOT / "results" / "judge-fixture"))
 
     run_model = sub.add_parser("run-model", help="Run one candidate directly")
     run_model.add_argument("--task-id", required=True)
@@ -162,6 +174,31 @@ def main(argv: list[str] | None = None) -> None:
             "estimated_cost_usd": estimated_cost,
             **result.to_dict(),
         }, ensure_ascii=False, indent=2))
+        return
+    if args.command == "judge-benchmark":
+        all_cases = load_judge_cases(args.data)
+        cases = (
+            all_cases
+            if args.split == "all"
+            else [case for case in all_cases if case.split == args.split]
+        )
+        if not cases:
+            raise SystemExit(f"no judge cases for split: {args.split}")
+        if args.mode == "fixture":
+            provider = FixtureReviewJudge(config, cases)
+        elif args.provider == "openrouter":
+            provider = OpenRouterReviewJudgeProvider(config)
+        else:
+            provider = TypeSafeReviewJudgeProvider(config)
+        _, summary = run_judge_benchmark(
+            cases,
+            provider,
+            config,
+            args.output,
+            mode=args.mode,
+            max_budget_usd=args.max_usd,
+        )
+        print(json.dumps(summary, ensure_ascii=False, indent=2))
         return
     if args.command == "run-model":
         tasks = load_tasks(DEFAULT_DATA)
