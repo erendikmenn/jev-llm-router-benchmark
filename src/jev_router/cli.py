@@ -228,13 +228,18 @@ def parser() -> argparse.ArgumentParser:
 
     lcb_cascade = sub.add_parser(
         "livecodebench-cascade-report",
-        help="Calibrate on one split and evaluate a paired weak/strong cascade",
+        help="Evaluate a paired weak/strong cascade with a calibrated or fixed threshold",
     )
-    lcb_cascade.add_argument("--calibration-judgments", required=True)
-    lcb_cascade.add_argument("--calibration-evaluation", required=True)
+    lcb_cascade.add_argument("--calibration-judgments")
+    lcb_cascade.add_argument("--calibration-evaluation")
     lcb_cascade.add_argument("--heldout-judgments", required=True)
     lcb_cascade.add_argument("--weak-evaluation", required=True)
     lcb_cascade.add_argument("--strong-evaluation", required=True)
+    lcb_cascade.add_argument(
+        "--threshold",
+        type=float,
+        help="Use a threshold fixed before this held-out run instead of recalibrating",
+    )
     lcb_cascade.add_argument("--minimum-failure-recall", type=float, default=0.80)
     lcb_cascade.add_argument("--output", required=True)
 
@@ -609,17 +614,28 @@ def main(argv: list[str] | None = None) -> None:
         )
         return
     if args.command == "livecodebench-cascade-report":
-        calibration_judgments = json.loads(
-            Path(args.calibration_judgments).read_text(encoding="utf-8")
-        )["measurements"]
         heldout_judgments = json.loads(
             Path(args.heldout_judgments).read_text(encoding="utf-8")
         )["measurements"]
-        calibration = choose_escalation_threshold(
-            calibration_judgments,
-            json.loads(Path(args.calibration_evaluation).read_text(encoding="utf-8")),
-            minimum_failure_recall=args.minimum_failure_recall,
-        )
+        if args.threshold is not None:
+            calibration = {
+                "source": "fixed_before_heldout",
+                "chosen": {"threshold": args.threshold},
+            }
+        else:
+            if not args.calibration_judgments or not args.calibration_evaluation:
+                raise SystemExit(
+                    "provide --threshold or both --calibration-judgments and "
+                    "--calibration-evaluation"
+                )
+            calibration_judgments = json.loads(
+                Path(args.calibration_judgments).read_text(encoding="utf-8")
+            )["measurements"]
+            calibration = choose_escalation_threshold(
+                calibration_judgments,
+                json.loads(Path(args.calibration_evaluation).read_text(encoding="utf-8")),
+                minimum_failure_recall=args.minimum_failure_recall,
+            )
         paired = evaluate_paired_cascade(
             heldout_judgments,
             json.loads(Path(args.weak_evaluation).read_text(encoding="utf-8")),
