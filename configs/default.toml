@@ -93,3 +93,23 @@ profile = "Complex debugging, architecture-sensitive refactors, unclear failures
 model = "gpt-6-astra"
 reasoning_effort = "high"
 profile = "Critical security, data integrity, cross-system, highly ambiguous, or long-horizon work."
+
+[openrouter_tier_pricing.luna]
+input_usd_per_million = 0.20
+output_usd_per_million = 1.20
+
+[openrouter_tier_pricing.terra]
+input_usd_per_million = 2.00
+output_usd_per_million = 12.00
+
+[openrouter_tier_pricing.sol]
+input_usd_per_million = 2.00
+output_usd_per_million = 10.00
+
+[openrouter_tier_pricing.astra]
+input_usd_per_million = 10.00
+output_usd_per_million = 50.00
+
+[openrouter_tier_pricing.metadata]
+source_checked_at = "2026-09-22"
+source_url = "https://openrouter.ai/api/v1/models"

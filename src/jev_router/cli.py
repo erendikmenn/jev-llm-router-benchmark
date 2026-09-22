@@ -26,6 +26,7 @@ from .livecodebench_runner import (
 )
 from .manifest import build_manifest, write_manifest
 from .models import GenerationRequest, Task
+from .openrouter_lcb_runner import run_livecodebench_openrouter
 from .pipeline import run_coding_pipeline
 from .pricing import estimate_request_cost
 from .providers import (
@@ -190,6 +191,21 @@ def parser() -> argparse.ArgumentParser:
     )
     lcb_merge.add_argument("--input", action="append", required=True)
     lcb_merge.add_argument("--output", required=True)
+
+    lcb_openrouter = sub.add_parser(
+        "livecodebench-openrouter-run",
+        help="Route and generate LiveCodeBench candidates through OpenRouter API",
+    )
+    lcb_openrouter.add_argument(
+        "--plan",
+        default=str(ROOT / "results" / "benchmark-plans" / "livecodebench-release-v6.json"),
+    )
+    lcb_openrouter.add_argument("--offset", type=int, default=0)
+    lcb_openrouter.add_argument("--limit", type=int)
+    lcb_openrouter.add_argument("--role", choices=["luna", "terra", "sol", "astra"])
+    lcb_openrouter.add_argument("--max-usd", type=float, default=5.0)
+    lcb_openrouter.add_argument("--max-output-tokens", type=int, default=2048)
+    lcb_openrouter.add_argument("--output", required=True)
 
     tb_plan = sub.add_parser(
         "terminalbench-plan",
@@ -530,6 +546,18 @@ def main(argv: list[str] | None = None) -> None:
         return
     if args.command == "livecodebench-merge":
         summary = merge_livecodebench_runs(args.input, args.output)
+        print(json.dumps(summary, ensure_ascii=False, indent=2))
+        return
+    if args.command == "livecodebench-openrouter-run":
+        tasks = load_livecodebench_plan(args.plan, offset=args.offset, limit=args.limit)
+        summary = run_livecodebench_openrouter(
+            tasks,
+            output_dir=args.output,
+            config=config,
+            forced_role=args.role,
+            max_total_usd=args.max_usd,
+            max_output_tokens=args.max_output_tokens,
+        )
         print(json.dumps(summary, ensure_ascii=False, indent=2))
         return
     if args.command == "terminalbench-plan":
