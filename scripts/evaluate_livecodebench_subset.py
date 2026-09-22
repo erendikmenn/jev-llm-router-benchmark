@@ -2,8 +2,11 @@
 from __future__ import annotations
 
 import argparse
+import base64
 import json
+import pickle
 import sys
+import zlib
 from pathlib import Path
 
 
@@ -43,10 +46,33 @@ def _candidate_passed(results: dict, index: int) -> bool:
     return bool(candidates) and bool(candidates[0]) and all(item is True for item in candidates[0])
 
 
+def _decode_tests(value: str) -> list[dict]:
+    try:
+        return json.loads(value)
+    except json.JSONDecodeError:
+        decoded = zlib.decompress(base64.b64decode(value.encode("utf-8")))
+        return json.loads(pickle.loads(decoded))
+
+
+def _evaluation_sample(row: dict) -> dict[str, str]:
+    public_tests = _decode_tests(row["public_test_cases"])
+    private_tests = _decode_tests(row["private_test_cases"])
+    metadata = json.loads(row["metadata"])
+    tests = public_tests + private_tests
+    return {
+        "input_output": json.dumps(
+            {
+                "inputs": [test["input"] for test in tests],
+                "outputs": [test["output"] for test in tests],
+                "fn_name": metadata.get("func_name"),
+            }
+        )
+    }
+
+
 def main(argv: list[str] | None = None) -> None:
     args = parser().parse_args(argv)
     sys.path.insert(0, str(Path(args.harness_root).resolve()))
-    from lcb_runner.benchmarks.code_generation import CodeGenerationProblem
     from lcb_runner.evaluation.compute_code_generation_metrics import codegen_metrics
 
     predictions = json.loads(Path(args.predictions).read_text(encoding="utf-8"))
@@ -56,8 +82,7 @@ def main(argv: list[str] | None = None) -> None:
     if len(ids) != len(set(ids)):
         raise ValueError("duplicate prediction question ids")
     rows = _load_rows(Path(args.dataset_dir).resolve(), set(ids))
-    problems = [CodeGenerationProblem(**rows[question_id]) for question_id in ids]
-    samples = [problem.get_evaluation_sample() for problem in problems]
+    samples = [_evaluation_sample(rows[question_id]) for question_id in ids]
     generations = [item["code_list"] for item in predictions]
     metrics, results, metadata = codegen_metrics(
         samples,

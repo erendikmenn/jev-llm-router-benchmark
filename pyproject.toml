@@ -18,6 +18,7 @@ jev-router = "jev_router.cli:main"
 [project.optional-dependencies]
 dev = ["pytest==8.4.2"]
 data = ["pyarrow==25.0.1"]
+evaluation = ["numpy>=2,<3", "pandas>=2,<3", "tqdm>=4,<5"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/jev_router"]
