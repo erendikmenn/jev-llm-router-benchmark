@@ -42,6 +42,11 @@ from .providers import (
 from .report import generate_report
 from .routing_campaign import route_swebench_tasks
 from .routers import jev_router, rule_router
+from .solution_verifier import (
+    choose_escalation_threshold,
+    evaluate_paired_cascade,
+    run_solution_judgments,
+)
 from .swebench_runner import ARMS, generate_swebench_arm, load_swebench_plan
 from .swebench_pro_runner import generate_swebench_pro_arm
 from .swebench_analysis import (
@@ -206,6 +211,32 @@ def parser() -> argparse.ArgumentParser:
     lcb_openrouter.add_argument("--max-usd", type=float, default=5.0)
     lcb_openrouter.add_argument("--max-output-tokens", type=int, default=2048)
     lcb_openrouter.add_argument("--output", required=True)
+
+    lcb_judge = sub.add_parser(
+        "livecodebench-solution-judge",
+        help="Judge saved LiveCodeBench solutions with typed Jev signals",
+    )
+    lcb_judge.add_argument(
+        "--plan",
+        default=str(ROOT / "results" / "benchmark-plans" / "livecodebench-release-v6.json"),
+    )
+    lcb_judge.add_argument("--generation", required=True)
+    lcb_judge.add_argument("--offset", type=int, default=0)
+    lcb_judge.add_argument("--limit", type=int)
+    lcb_judge.add_argument("--max-jev-usd", type=float, default=5.0)
+    lcb_judge.add_argument("--output", required=True)
+
+    lcb_cascade = sub.add_parser(
+        "livecodebench-cascade-report",
+        help="Calibrate on one split and evaluate a paired weak/strong cascade",
+    )
+    lcb_cascade.add_argument("--calibration-judgments", required=True)
+    lcb_cascade.add_argument("--calibration-evaluation", required=True)
+    lcb_cascade.add_argument("--heldout-judgments", required=True)
+    lcb_cascade.add_argument("--weak-evaluation", required=True)
+    lcb_cascade.add_argument("--strong-evaluation", required=True)
+    lcb_cascade.add_argument("--minimum-failure-recall", type=float, default=0.80)
+    lcb_cascade.add_argument("--output", required=True)
 
     tb_plan = sub.add_parser(
         "terminalbench-plan",
@@ -559,6 +590,49 @@ def main(argv: list[str] | None = None) -> None:
             max_output_tokens=args.max_output_tokens,
         )
         print(json.dumps(summary, ensure_ascii=False, indent=2))
+        return
+    if args.command == "livecodebench-solution-judge":
+        tasks = load_livecodebench_plan(args.plan, offset=args.offset, limit=args.limit)
+        summary = run_solution_judgments(
+            tasks,
+            args.generation,
+            output_dir=args.output,
+            config=config,
+            max_jev_usd=args.max_jev_usd,
+        )
+        print(
+            json.dumps(
+                {key: value for key, value in summary.items() if key != "measurements"},
+                ensure_ascii=False,
+                indent=2,
+            )
+        )
+        return
+    if args.command == "livecodebench-cascade-report":
+        calibration_judgments = json.loads(
+            Path(args.calibration_judgments).read_text(encoding="utf-8")
+        )["measurements"]
+        heldout_judgments = json.loads(
+            Path(args.heldout_judgments).read_text(encoding="utf-8")
+        )["measurements"]
+        calibration = choose_escalation_threshold(
+            calibration_judgments,
+            json.loads(Path(args.calibration_evaluation).read_text(encoding="utf-8")),
+            minimum_failure_recall=args.minimum_failure_recall,
+        )
+        paired = evaluate_paired_cascade(
+            heldout_judgments,
+            json.loads(Path(args.weak_evaluation).read_text(encoding="utf-8")),
+            json.loads(Path(args.strong_evaluation).read_text(encoding="utf-8")),
+            threshold=float(calibration["chosen"]["threshold"]),
+        )
+        payload = {"calibration": calibration, "heldout_paired": paired}
+        destination = Path(args.output)
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        destination.write_text(
+            json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+        )
+        print(json.dumps(payload, ensure_ascii=False, indent=2))
         return
     if args.command == "terminalbench-plan":
         tasks = load_terminalbench_tasks(args.dataset_root)
