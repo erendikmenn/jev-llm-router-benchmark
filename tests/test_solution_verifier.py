@@ -5,6 +5,7 @@ import pytest
 from jev_router.solution_verifier import (
     choose_escalation_threshold,
     evaluate_paired_cascade,
+    meets_escalation_threshold,
     solution_escalation_score,
 )
 
@@ -62,3 +63,7 @@ def test_paired_cascade_can_capture_model_complementarity():
     assert result["strong_passed"] == 2
     assert result["cascade_passed"] == 3
     assert result["strong_calls"] == 1
+
+
+def test_threshold_comparison_tolerates_float_subtraction_noise():
+    assert meets_escalation_threshold(0.6599999999999999, 0.66)

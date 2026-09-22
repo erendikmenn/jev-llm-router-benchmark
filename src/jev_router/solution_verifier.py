@@ -82,12 +82,19 @@ class SolutionJudgment:
 
 def solution_escalation_score(signals: dict[str, float]) -> float:
     """Conservative, monotonic score calibrated later on hidden-test labels."""
-    return max(
-        1.0 - signals["fully_correct"],
-        signals["edge_case_failure"],
-        signals["complexity_failure"],
-        signals["needs_stronger_model"],
+    return round(
+        max(
+            1.0 - signals["fully_correct"],
+            signals["edge_case_failure"],
+            signals["complexity_failure"],
+            signals["needs_stronger_model"],
+        ),
+        12,
     )
+
+
+def meets_escalation_threshold(score: float, threshold: float) -> bool:
+    return float(score) >= float(threshold) - 1e-12
 
 
 class OpenRouterSolutionJudgeProvider:
@@ -281,10 +288,16 @@ def choose_escalation_threshold(
     failures = sum(not labels[row["question_id"]] for row in eligible)
     if failures == 0:
         raise ValueError("calibration requires at least one failed solution")
-    candidates = sorted({0.0, 1.0, *(float(row["escalation_score"]) for row in eligible)})
+    candidates = sorted(
+        {0.0, 1.0, *(round(float(row["escalation_score"]), 12) for row in eligible)}
+    )
     points = []
     for threshold in candidates:
-        escalated = [row for row in eligible if float(row["escalation_score"]) >= threshold]
+        escalated = [
+            row
+            for row in eligible
+            if meets_escalation_threshold(float(row["escalation_score"]), threshold)
+        ]
         caught = sum(not labels[row["question_id"]] for row in escalated)
         passed_escalated = sum(labels[row["question_id"]] for row in escalated)
         points.append(
@@ -322,7 +335,11 @@ def evaluate_paired_cascade(
     strong = {row["question_id"]: bool(row["passed"]) for row in strong_evaluation["per_task"]}
     scores = {row["question_id"]: float(row["escalation_score"]) for row in judgments}
     ids = sorted(weak.keys() & strong.keys() & scores.keys())
-    escalated = {question_id for question_id in ids if scores[question_id] >= threshold}
+    escalated = {
+        question_id
+        for question_id in ids
+        if meets_escalation_threshold(scores[question_id], threshold)
+    }
     cascade_passed = sum(
         strong[question_id] if question_id in escalated else weak[question_id]
         for question_id in ids

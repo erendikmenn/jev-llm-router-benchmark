@@ -8,6 +8,8 @@ import statistics
 from collections import defaultdict
 from pathlib import Path
 
+from jev_router.solution_verifier import meets_escalation_threshold
+
 
 def percentile(values: list[float], quantile: float) -> float | None:
     if not values:
@@ -70,7 +72,7 @@ def analyze(
     rows = []
     for question_id in ids:
         score = float(judge[question_id]["escalation_score"])
-        escalated = score >= threshold
+        escalated = meets_escalation_threshold(score, threshold)
         weak_passed = bool(weak_eval[question_id]["passed"])
         strong_passed = bool(strong_eval[question_id]["passed"])
         judgment = judge[question_id].get("judgment") or {}
