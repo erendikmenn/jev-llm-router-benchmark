@@ -1,0 +1,64 @@
+{
+  "suite": "livecodebench-release-v6-openrouter-paired",
+  "date": "2026-09-22",
+  "dataset_revision": "0fe84c3912ea0c4d4a78037083943e8f0c4dd505",
+  "harness_revision": "28fef95ea8c9f7a547c8329f2cd3d32b92c1fa24",
+  "calibration": {
+    "tasks": 100,
+    "offset": 0,
+    "selected_strong_probability_threshold": 0.08,
+    "router_passed": 99,
+    "sol_passed": 99,
+    "luna_passed": 92
+  },
+  "heldout": {
+    "tasks": 100,
+    "offset": 100,
+    "threshold_frozen_before_evaluation": true,
+    "router_passed": 94,
+    "sol_passed": 94,
+    "luna_passed": 84,
+    "router_cost_usd": 0.375997958,
+    "sol_cost_usd": 0.4263475,
+    "cost_savings_rate": 0.11809507971783573,
+    "strong_calls": 68
+  },
+  "combined": {
+    "tasks": 200,
+    "router_passed": 193,
+    "router_pass_at_1": 0.965,
+    "router_pass_at_1_95ci_wilson": [
+      0.9295293884777092,
+      0.9829444579914328
+    ],
+    "sol_passed": 193,
+    "sol_pass_at_1": 0.965,
+    "luna_passed": 176,
+    "luna_pass_at_1": 0.88,
+    "router_vs_sol_paired": {
+      "both_pass": 193,
+      "router_only_pass": 0,
+      "sol_only_pass": 0,
+      "both_fail": 7
+    },
+    "strong_calls": 134,
+    "strong_call_rate": 0.67,
+    "router_cost_usd": 0.72489073,
+    "sol_cost_usd": 0.8322555,
+    "saving_usd": 0.10736477,
+    "cost_savings_rate": 0.1290045785218602,
+    "sol_to_router_cost_multiple": 1.1481116609119832
+  },
+  "actual_experiment_spend": {
+    "provider_reported_known_usd": 1.032690302,
+    "unreported_failed_call_conservative_upper_bound_usd": 0.1017754,
+    "conservative_total_upper_bound_usd": 1.134465702,
+    "campaign_cap_usd": 5.0
+  },
+  "interpretation": {
+    "quality_gate": "passed_on_this_heldout_sample",
+    "cost_gate": "passed",
+    "latency_gate": "not_passed; routing overhead and Luna latency made the router slower than always-Sol",
+    "generalization": "not established for repository-level or Turkish tasks"
+  }
+}

@@ -4,7 +4,7 @@ Jev ile üretimden önce model rotası seçen ve üretimden sonra kod değişikl
 
 Bu repo bir RAG projesi değildir ve başka ErenAILab projelerinden bağımsızdır. Ana sonuç ilkesi: “ucuzladı” tek başına başarı değildir; kalite farkı, eşleştirilmiş belirsizlik, hata/fallback oranı ve mutlak USD ile birlikte raporlanır.
 
-Repo 40 görevlik fixture pilotuna ek olarak OpenRouter üzerinden `typesafe/jev-1.13`, `openai/gpt-5.6-luna` ve `openai/gpt-5.6-sol` ile kontrollü canlı smoke akışını destekler. Canlı smoke 8–12 görev, concurrency=1 ve kısa çıktı bütçesiyle sınırlandırılır.
+Repo 40 görevlik fixture pilotuna ek olarak OpenRouter üzerinden `typesafe/jev-1.13`, `openai/gpt-5.6-luna` ve `openai/gpt-5.6-sol` ile kontrollü canlı akışı destekler. Worker üretimi OpenRouter API'den yapılabilir; yerel Codex kimliği zorunlu değildir.
 
 Ayrıca dört resmî İngilizce benchmark ailesinden 200 dev + 1.000 kilitli test örneği hazırlayan yeniden üretilebilir veri betiği ve ayrıntılı canlı analiz akışı vardır. Üçüncü taraf sorular repoya commitlenmez; kaynak revision'ları, örnekleme tohumu ve veri hash'i kaydedilir.
 
@@ -53,6 +53,11 @@ uv run jev-router swebench-generate --arm always-luna --limit 1
 uv run jev-router livecodebench-plan --dataset-dir /path/to/livecodebench-jsonl
 uv run jev-router livecodebench-run --plan results/benchmark-plans/livecodebench-release-v6.json \
   --repo . --offset 0 --limit 20 --output results/livecodebench-segment
+uv run jev-router livecodebench-openrouter-run --limit 100 --role luna \
+  --max-usd 0.60 --output results/livecodebench-openrouter-luna
+uv run jev-router livecodebench-openrouter-cascade-run --limit 100 \
+  --threshold 0.21 --difficulty-gates --max-usd 2.50 \
+  --output results/livecodebench-openrouter-cascade
 uv run jev-router terminalbench-plan --dataset-root /path/to/terminal-bench-2
 uv run jev-router terminalbench-run --plan results/benchmark-plans/terminal-bench-2.json \
   --dataset-root /path/to/terminal-bench-2 --route-only
@@ -185,6 +190,19 @@ Jev→yerel Codex zincirinde çalıştırıldı ve resmî gizli testlerle puanla
 always-Luna `%94`, always-Sol `%98` verdi; bu nedenle altyapı başarılı olsa da mevcut
 routing politikasının kalite/hız üstünlüğü henüz kanıtlanmış değildir. Tam, eleştirel
 yorum ve maliyet hesabı [1.055 görev raporundadır](results/livecodebench-official-1055-20260920/REPORT_TR.md).
+
+## OpenRouter Router v2 — 2026-09-22
+
+İlk 100 görevde kalibre edilip ikinci 100 görevden önce dondurulan Jev eşiğiyle,
+router ve always-Sol aynı 193/200 (`%96,5`) soruyu geçti. Router Sol'u görevlerin
+`%67`'sinde kullandı; paired politika maliyeti `$0,724891`, always-Sol maliyeti
+`$0,832256` oldu. Böylece bu örnekte task-level kalite kaybı gözlenmeden `%12,90`
+maliyet tasarrufu elde edildi. Held-out 100'de sonuç router 94, Sol 94, Luna 84'tür.
+
+Hız iyileşmedi: routing ek yüküyle held-out ortalama süre yaklaşık `8,40 s`, Sol
+worker ortalaması `7,60 s` oldu. Sonuç yalnız izole LiveCodeBench problemleri içindir;
+repository ajan görevlerine genellenmez. Tam yöntem, harcama üst sınırı ve başarısız
+denemeler: [`results/openrouter-router-v2-livecodebench-200-20260922/REPORT_TR.md`](results/openrouter-router-v2-livecodebench-200-20260922/REPORT_TR.md).
 
 ## Anahtar ve gizlilik
 

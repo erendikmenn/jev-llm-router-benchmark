@@ -1,0 +1,25 @@
+{
+  "suite": "livecodebench-openrouter-prompt-router",
+  "official_checker": true,
+  "threshold": 0.08,
+  "tasks": 100,
+  "passed": 94,
+  "pass_at_1": 0.94,
+  "strong_baseline_passed": 94,
+  "weak_baseline_passed": 84,
+  "strong_calls": 68,
+  "strong_call_rate": 0.68,
+  "cost_usd": {
+    "worker": 0.3706703,
+    "jev_route": 0.005327658,
+    "total": 0.375997958,
+    "strong_baseline": 0.4263475,
+    "savings_vs_strong_rate": 0.11809507971783573
+  },
+  "latency_ms": {
+    "observed": 96,
+    "mean": 8404.641460986417,
+    "p50": 6092.172624506929,
+    "p95": 20944.991239754017
+  }
+}
