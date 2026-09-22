@@ -1,0 +1,43 @@
+{
+  "suite": "balanced-trajectory-fixture-smoke",
+  "date": "2026-09-22",
+  "external_api_calls": 0,
+  "external_cost_usd": 0.0,
+  "repository_tests": {
+    "passed": 107,
+    "failed": 0
+  },
+  "new_policy_tests": {
+    "total": 11,
+    "covered_paths": [
+      "profile_selection",
+      "tracked_and_untracked_progress",
+      "deleted_file_progress",
+      "verifier_failure_to_sol",
+      "repeated_failure_spinning",
+      "high_stakes_role_gate",
+      "destructive_change_block",
+      "sensitive_path_exclusion",
+      "untracked_file_review_evidence",
+      "balanced_pipeline_acceptance",
+      "balanced_pipeline_block"
+    ]
+  },
+  "dry_runs": [
+    {
+      "task": "Update one README sentence",
+      "selected_role": "luna",
+      "task_router_called": false,
+      "executed": false
+    },
+    {
+      "task": "Change OAuth token validation",
+      "selected_role": "astra",
+      "hard_guard": "critical_domain_to_astra",
+      "task_router_called": false,
+      "executed": false
+    }
+  ],
+  "product_quality_claim": false,
+  "next_required_measurement": "new paired held-out worker benchmark"
+}

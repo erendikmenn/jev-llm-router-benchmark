@@ -1,7 +1,20 @@
 # Balanced trajectory router — uygulama ve benchmark planı
 
-Durum: V0.01 sonrası geliştirme sözleşmesi  
+Durum: ilk çalışan iskelet ve fixture doğrulaması tamam; canlı held-out ölçüm bekliyor
+
 Tarih: 2026-09-22
+
+## Uygulama durumu
+
+- [x] V0.01 baseline ve `v0.0.1` etiketi donduruldu.
+- [x] `ProgressSnapshot`, deterministik evidence gate ve hassas-path fail-closed davranışı eklendi.
+- [x] CLI'da `quality-first` ve `balanced` profil seçimi eklendi.
+- [x] Balanced profilde Luna verifier/no-diff/dispatch hatasından doğrudan Sol'a geçiş eklendi.
+- [x] Hata ve progress özeti güçlü düzeltme promptuna eklendi.
+- [x] Accept, verifier failure, spinning, untracked file, high-stakes ve destructive yollar fixture testlerinde doğrulandı.
+- [ ] Mevcut gerçek receipt'ler için shadow/replay skorlayıcı.
+- [ ] Dev'de dondurulmuş balanced eşikleri ve yeni paired held-out kampanya.
+- [ ] SWE-bench/Terminal-Bench repository düzeyi kalite-maliyet raporu.
 
 ## Hedef
 

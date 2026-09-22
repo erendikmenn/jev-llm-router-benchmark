@@ -162,3 +162,28 @@ def test_repository_privacy_allow_and_deny_patterns(tmp_path):
         "docs/note.md",
         "src/private.py",
     }
+
+
+def test_untracked_source_file_is_included_as_new_file_evidence(tmp_path):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    git(repo, "init", "-q")
+    git(repo, "config", "user.name", "Test")
+    git(repo, "config", "user.email", "test@example.com")
+    (repo / "README.md").write_text("baseline\n", encoding="utf-8")
+    git(repo, "add", ".")
+    git(repo, "commit", "-qm", "initial")
+    (repo / "new_module.py").write_text("answer = 42\n", encoding="utf-8")
+
+    packet = collect_git_review_packet(
+        repo,
+        packet_id="new-file",
+        task="Add a module.",
+        acceptance_criteria=["Module returns the answer."],
+    )
+
+    assert packet.changed_files == ("new_module.py",)
+    assert "new file mode 100644" in packet.diff
+    assert "+answer = 42" in packet.diff
+    assert packet.relevant_code["new_module.py"] == "answer = 42\n"
+    assert packet.evidence["git_numstat"] == "1\t0\tnew_module.py"

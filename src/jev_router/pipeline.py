@@ -17,6 +17,13 @@ from .judge_models import ReviewDecision
 from .judge_service import ReviewBundle, ReviewRun, estimate_review_cost, run_review_bundle
 from .providers.base import ReviewJudgeProvider
 from .tiered_routing import TIERS
+from .trajectory import (
+    EvidenceGate,
+    ProgressSnapshot,
+    TrajectoryProfile,
+    collect_progress_snapshot,
+    decide_evidence_gate,
+)
 
 
 @dataclass(frozen=True)
@@ -38,7 +45,10 @@ class PipelineRound:
     role: str
     dispatch: CodexDispatchReceipt
     verifiers: tuple[VerifierReceipt, ...]
+    progress: ProgressSnapshot
+    evidence_gate: EvidenceGate
     review: ReviewBundle
+    review_called: bool
     outcome: str
 
     def to_dict(self) -> dict:
@@ -47,7 +57,10 @@ class PipelineRound:
             "role": self.role,
             "dispatch": self.dispatch.to_dict(),
             "verifiers": [asdict(item) | {"passed": item.passed} for item in self.verifiers],
+            "progress": self.progress.to_dict(),
+            "evidence_gate": self.evidence_gate.to_dict(),
             "review": self.review.to_dict(),
+            "review_called": self.review_called,
             "outcome": self.outcome,
         }
 
@@ -55,6 +68,7 @@ class PipelineRound:
 @dataclass(frozen=True)
 class PipelineResult:
     status: str
+    profile: TrajectoryProfile
     initial_role: str
     final_role: str
     rounds: tuple[PipelineRound, ...]
@@ -64,6 +78,7 @@ class PipelineResult:
     def to_dict(self) -> dict:
         return {
             "status": self.status,
+            "profile": self.profile,
             "initial_role": self.initial_role,
             "final_role": self.final_role,
             "rounds": [item.to_dict() for item in self.rounds],
@@ -117,20 +132,58 @@ def _next_tier(role: str) -> str | None:
     return TIERS[index + 1] if index + 1 < len(TIERS) else None
 
 
+def _balanced_next_role(role: str) -> str | None:
+    normalized = "luna" if role == "cheap" else "sol" if role == "strong" else role
+    if normalized in {"luna", "terra"}:
+        return "sol"
+    if normalized == "sol":
+        return "astra"
+    return None
+
+
+def _synthetic_review(action: str, reason_codes: tuple[str, ...]) -> ReviewBundle:
+    risk_level = "critical" if action == "block" else "high"
+    decision = ReviewDecision(
+        action=action,
+        fired_rules=reason_codes,
+        signals={},
+        risk_level=risk_level,
+        risk_confidence=1.0,
+    )
+    return ReviewBundle(decision, (), 0.0, 0.0, ())
+
+
 def _retry_prompt(
     task: str,
-    role: str,
+    previous_role: str,
+    next_role: str,
     review: ReviewBundle,
     verifiers: tuple[VerifierReceipt, ...],
+    progress: ProgressSnapshot,
+    dispatch: CodexDispatchReceipt,
 ) -> str:
-    failed_commands = [" ".join(item.command) for item in verifiers if not item.passed]
+    failed_evidence = []
+    for item in verifiers:
+        if item.passed:
+            continue
+        output = (item.stderr_tail or item.stdout_tail or "no output")[-1500:]
+        failed_evidence.append(
+            f"- {' '.join(item.command)} (exit {item.returncode}):\n{output}"
+        )
+    dispatch_error = dispatch.stderr[-1500:] if dispatch.stderr else "none"
     return (
         f"Continue the existing implementation for this task:\n\n{task}\n\n"
-        f"The previous {role} attempt was not accepted. Review rules: "
-        f"{', '.join(review.decision.fired_rules) or 'none'}. "
-        f"Failed verifier commands: {failed_commands or 'none'}. "
-        "Inspect the current working tree, correct the implementation, run relevant tests, "
-        "and do not discard valid existing changes."
+        f"The previous {previous_role} attempt was not accepted; you are the {next_role} "
+        "repair worker. Preserve valid existing changes and fix only what remains.\n"
+        f"Reason codes: {', '.join(review.decision.fired_rules) or 'none'}.\n"
+        f"Changed files: {', '.join(progress.changed_files) or 'none'}.\n"
+        f"Diff size: {progress.diff_bytes} bytes; added/deleted lines: "
+        f"{progress.lines_added}/{progress.lines_deleted}.\n"
+        f"Worker stderr: {dispatch_error}\n"
+        "Failed verifier evidence:\n"
+        f"{chr(10).join(failed_evidence) if failed_evidence else '- none'}\n"
+        "Inspect the task, current worktree and relevant code, correct the implementation, "
+        "then run the relevant tests. Do not discard valid existing changes."
     )
 
 
@@ -143,6 +196,7 @@ def run_coding_pipeline(
     review_provider: ReviewJudgeProvider,
     config: AppConfig,
     verifier_commands: Iterable[tuple[str, ...]] = (),
+    profile: TrajectoryProfile = "quality-first",
     max_rounds: int = 3,
     max_review_usd: float = 0.05,
     sandbox: str = "workspace-write",
@@ -151,6 +205,8 @@ def run_coding_pipeline(
 ) -> PipelineResult:
     if max_rounds < 1:
         raise ValueError("max_rounds must be positive")
+    if profile not in {"quality-first", "balanced"}:
+        raise ValueError(f"unknown trajectory profile: {profile}")
     repository = Path(repository).resolve()
     criteria = tuple(acceptance_criteria) or (task,)
     commands = tuple(verifier_commands)
@@ -159,6 +215,7 @@ def run_coding_pipeline(
     rounds: list[PipelineRound] = []
     role_attempts: dict[str, int] = {}
     review_spend = 0.0
+    previous_progress: ProgressSnapshot | None = None
     started = time.perf_counter()
 
     for number in range(1, max_rounds + 1):
@@ -166,44 +223,64 @@ def run_coding_pipeline(
         plan = build_codex_dispatch_plan(repository, role, sandbox=sandbox)
         dispatch = dispatch_fn(plan, prompt)
         verifiers = run_verifiers(repository, commands)
-        packets = collect_git_review_packet_chunks(
+        progress = collect_progress_snapshot(
             repository,
-            packet_id=f"pipeline-round-{number}",
-            task=task,
-            acceptance_criteria=criteria,
-            base="HEAD",
-            head="WORKTREE",
-            evidence={
-                "verifiers": [asdict(item) | {"passed": item.passed} for item in verifiers],
-                "agent_authored_tests_are_independent": False,
-            },
-            max_diff_chars=int(config.judge["max_diff_chars"]),
-            max_file_chars=int(config.judge["max_file_chars"]),
-            max_context_chars=int(config.judge["max_context_chars"]),
+            dispatch_returncode=dispatch.returncode,
+            verifiers=verifiers,
+            previous=previous_progress,
         )
-        estimated_review = sum(estimate_review_cost(packet, config) for packet in packets)
-        budget_preflight = review_spend + estimated_review > max_review_usd
-        if budget_preflight:
-            budget_run = ReviewRun(
-                decision=ReviewDecision(
-                    "escalate", ("review_budget_preflight",), {}, "high", 1.0
-                ),
-                cost_usd=0.0,
-                cost_source="not_called_budget_preflight",
-                latency_ms=0.0,
-                input_tokens=0,
-                output_tokens=0,
-                provider_error="budget_preflight",
-            )
-            review = ReviewBundle(
-                budget_run.decision,
-                (budget_run,),
-                0.0,
-                0.0,
-                ("budget_preflight",),
-            )
+        evidence_gate = (
+            decide_evidence_gate(progress, current_role=role)
+            if profile == "balanced"
+            else EvidenceGate("review", ("quality_first_full_review",))
+        )
+        budget_preflight = False
+        review_called = evidence_gate.action == "review"
+        if not review_called:
+            review = _synthetic_review(evidence_gate.action, evidence_gate.reason_codes)
         else:
-            review = run_review_bundle(packets, review_provider, config)
+            packets = collect_git_review_packet_chunks(
+                repository,
+                packet_id=f"pipeline-round-{number}",
+                task=task,
+                acceptance_criteria=criteria,
+                base="HEAD",
+                head="WORKTREE",
+                evidence={
+                    "progress": progress.to_dict(),
+                    "verifiers": [
+                        asdict(item) | {"passed": item.passed} for item in verifiers
+                    ],
+                    "agent_authored_tests_are_independent": False,
+                },
+                max_diff_chars=int(config.judge["max_diff_chars"]),
+                max_file_chars=int(config.judge["max_file_chars"]),
+                max_context_chars=int(config.judge["max_context_chars"]),
+            )
+            estimated_review = sum(estimate_review_cost(packet, config) for packet in packets)
+            budget_preflight = review_spend + estimated_review > max_review_usd
+            if budget_preflight:
+                budget_run = ReviewRun(
+                    decision=ReviewDecision(
+                        "escalate", ("review_budget_preflight",), {}, "high", 1.0
+                    ),
+                    cost_usd=0.0,
+                    cost_source="not_called_budget_preflight",
+                    latency_ms=0.0,
+                    input_tokens=0,
+                    output_tokens=0,
+                    provider_error="budget_preflight",
+                )
+                review = ReviewBundle(
+                    budget_run.decision,
+                    (budget_run,),
+                    0.0,
+                    0.0,
+                    ("budget_preflight",),
+                )
+                review_called = False
+            else:
+                review = run_review_bundle(packets, review_provider, config)
         review_spend += review.cost_usd
         verifier_passed = all(item.passed for item in verifiers)
         next_role: str | None = None
@@ -211,13 +288,15 @@ def run_coding_pipeline(
         if budget_preflight or review_spend > max_review_usd:
             outcome = "budget_exceeded"
             status = "blocked"
-        elif dispatch.returncode != 0:
-            outcome = "dispatch_failed"
-            next_role = _next_tier(role)
-            status = "continue" if next_role is not None else "needs_human_review"
         elif review.decision.action == "block":
             outcome = "blocked_by_policy"
             status = "blocked"
+        elif dispatch.returncode != 0:
+            outcome = "dispatch_failed"
+            next_role = (
+                _balanced_next_role(role) if profile == "balanced" else _next_tier(role)
+            )
+            status = "continue" if next_role is not None else "needs_human_review"
         elif review.decision.action == "accept" and verifier_passed:
             outcome = "accepted"
             status = "accepted"
@@ -225,12 +304,15 @@ def run_coding_pipeline(
             outcome = "round_limit"
             status = "needs_human_review"
         else:
-            should_promote = (
-                review.decision.action == "escalate"
-                or dispatch.returncode != 0
-                or role_attempts[role] >= 2
-            )
-            next_role = _next_tier(role) if should_promote else role
+            if profile == "balanced":
+                next_role = _balanced_next_role(role)
+            else:
+                should_promote = (
+                    review.decision.action == "escalate"
+                    or dispatch.returncode != 0
+                    or role_attempts[role] >= 2
+                )
+                next_role = _next_tier(role) if should_promote else role
             if next_role is None:
                 outcome = "frontier_exhausted"
                 status = "needs_human_review"
@@ -238,17 +320,38 @@ def run_coding_pipeline(
                 outcome = "promote" if next_role != role else "revise_same_role"
                 status = "continue"
 
-        completed_round = PipelineRound(number, role, dispatch, verifiers, review, outcome)
+        completed_round = PipelineRound(
+            number,
+            role,
+            dispatch,
+            verifiers,
+            progress,
+            evidence_gate,
+            review,
+            review_called,
+            outcome,
+        )
         rounds.append(completed_round)
         if round_observer is not None:
             round_observer(completed_round)
         if status != "continue":
             break
+        previous_role = role
         role = next_role
-        prompt = _retry_prompt(task, role, review, verifiers)
+        prompt = _retry_prompt(
+            task,
+            previous_role,
+            role,
+            review,
+            verifiers,
+            progress,
+            dispatch,
+        )
+        previous_progress = progress
 
     return PipelineResult(
         status=status,
+        profile=profile,
         initial_role=initial_role,
         final_role=role,
         rounds=tuple(rounds),

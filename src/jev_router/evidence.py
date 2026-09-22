@@ -85,14 +85,14 @@ def _git(repo: Path, *args: str) -> str:
     return result.stdout
 
 
-def _is_sensitive_path(path: str) -> bool:
+def is_sensitive_path(path: str) -> bool:
     candidate = Path(path)
     lowered = {part.casefold() for part in candidate.parts}
     return bool(lowered & _SENSITIVE_PATH_PARTS) or candidate.suffix.casefold() in _SENSITIVE_SUFFIXES
 
 
 def _path_allowed(path: str, allow_paths: tuple[str, ...], deny_paths: tuple[str, ...]) -> bool:
-    if _is_sensitive_path(path) or any(fnmatch(path, pattern) for pattern in deny_paths):
+    if is_sensitive_path(path) or any(fnmatch(path, pattern) for pattern in deny_paths):
         return False
     return not allow_paths or any(fnmatch(path, pattern) for pattern in allow_paths)
 
@@ -161,12 +161,42 @@ def _worktree_file(repo: Path, path: str) -> str | None:
         target.relative_to(repo.resolve())
     except ValueError as exc:
         raise EvidenceError(f"changed path escapes repository: {path}") from exc
-    if not target.is_file() or _is_sensitive_path(path) or not _is_text_path(path):
+    if not target.is_file() or is_sensitive_path(path) or not _is_text_path(path):
         return None
     try:
         return target.read_text(encoding="utf-8")
     except (UnicodeDecodeError, OSError):
         return None
+
+
+def _untracked_patch(repo: Path, paths: Iterable[str]) -> str:
+    sections: list[str] = []
+    for path in paths:
+        content = _worktree_file(repo, path)
+        if content is None:
+            continue
+        lines = content.splitlines(keepends=True)
+        body = "".join(f"+{line}" for line in lines)
+        if content and not content.endswith("\n"):
+            body += "\n\\ No newline at end of file\n"
+        sections.append(
+            f"diff --git a/{path} b/{path}\n"
+            "new file mode 100644\n"
+            "--- /dev/null\n"
+            f"+++ b/{path}\n"
+            f"@@ -0,0 +1,{len(lines)} @@\n"
+            f"{body}"
+        )
+    return "".join(sections)
+
+
+def _untracked_numstat(repo: Path, paths: Iterable[str]) -> str:
+    rows: list[str] = []
+    for path in paths:
+        content = _worktree_file(repo, path)
+        if content is not None:
+            rows.append(f"{len(content.splitlines())}\t0\t{path}")
+    return "\n".join(rows)
 
 
 def collect_git_review_packet(
@@ -193,18 +223,30 @@ def collect_git_review_packet(
 
     if head == "WORKTREE":
         diff_args = ("diff", "--no-ext-diff", "--unified=40", base, "--")
-        names_args = ("diff", "--name-only", "--diff-filter=ACMRT", base, "--")
+        names_args = ("diff", "--name-only", "--diff-filter=ACDMRT", base, "--")
         stats_args = ("diff", "--numstat", base, "--")
     else:
         diff_args = ("diff", "--no-ext-diff", "--unified=40", base, head, "--")
-        names_args = ("diff", "--name-only", "--diff-filter=ACMRT", base, head, "--")
+        names_args = ("diff", "--name-only", "--diff-filter=ACDMRT", base, head, "--")
         stats_args = ("diff", "--numstat", base, head, "--")
 
     allow_patterns = tuple(allow_paths)
     deny_patterns = tuple(deny_paths)
-    raw_changed_files = tuple(
+    tracked_changed_files = tuple(
         path for path in _git(repository, *names_args).splitlines() if path
     )
+    untracked_files = (
+        tuple(
+            path
+            for path in _git(
+                repository, "ls-files", "--others", "--exclude-standard"
+            ).splitlines()
+            if path
+        )
+        if head == "WORKTREE"
+        else ()
+    )
+    raw_changed_files = tuple(dict.fromkeys((*tracked_changed_files, *untracked_files)))
     all_changed_files = tuple(
         path
         for path in raw_changed_files
@@ -217,7 +259,12 @@ def collect_git_review_packet(
         if requested_paths is None or path in requested_paths
     )
     if changed_files:
-        unredacted_diff = _git(repository, *diff_args, *changed_files)
+        selected_tracked = tuple(path for path in changed_files if path in tracked_changed_files)
+        selected_untracked = tuple(path for path in changed_files if path in untracked_files)
+        tracked_diff = (
+            _git(repository, *diff_args, *selected_tracked) if selected_tracked else ""
+        )
+        unredacted_diff = tracked_diff + _untracked_patch(repository, selected_untracked)
         raw_diff = redact_secrets(unredacted_diff)
     else:
         unredacted_diff = ""
@@ -233,7 +280,7 @@ def collect_git_review_packet(
         if head == "WORKTREE":
             content = _worktree_file(repository, path)
         else:
-            if _is_sensitive_path(path) or not _is_text_path(path):
+            if is_sensitive_path(path) or not _is_text_path(path):
                 content = None
             else:
                 try:
@@ -250,9 +297,18 @@ def collect_git_review_packet(
     inferred = set(infer_risk_flags(changed_files, unredacted_diff))
     inferred.update(risk_flags)
     collected_evidence = dict(evidence or {})
-    collected_evidence["git_numstat"] = (
-        _git(repository, *stats_args, *changed_files).strip() if changed_files else ""
-    )
+    if changed_files:
+        tracked_stats = (
+            _git(repository, *stats_args, *selected_tracked).strip()
+            if selected_tracked
+            else ""
+        )
+        untracked_stats = _untracked_numstat(repository, selected_untracked)
+        collected_evidence["git_numstat"] = "\n".join(
+            part for part in (tracked_stats, untracked_stats) if part
+        )
+    else:
+        collected_evidence["git_numstat"] = ""
     collected_evidence["evidence_source"] = "local_git"
     collected_evidence["agent_authored_tests_are_independent"] = False
 

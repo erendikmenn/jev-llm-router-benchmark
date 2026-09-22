@@ -61,7 +61,11 @@ from .terminalbench_runner import (
     run_terminalbench,
     write_terminalbench_plan,
 )
-from .tiered_routing import OpenRouterTieredJevProvider, decide_tiered_route
+from .tiered_routing import (
+    OpenRouterTieredJevProvider,
+    decide_tiered_route,
+    deterministic_task_guard,
+)
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -331,6 +335,12 @@ def parser() -> argparse.ArgumentParser:
         "--role",
         choices=["auto", "luna", "terra", "sol", "astra"],
         default="auto",
+    )
+    pipeline.add_argument(
+        "--profile",
+        choices=["quality-first", "balanced"],
+        default="quality-first",
+        help="Use prompt-first routing or Luna-first evidence-based escalation",
     )
     pipeline.add_argument("--verify-json", action="append", default=[])
     pipeline.add_argument("--max-rounds", type=int, default=3)
@@ -815,18 +825,33 @@ def main(argv: list[str] | None = None) -> None:
         task = _anonymous_task(args.task)
         route_metadata: dict = {"source": "forced"}
         if args.role == "auto":
-            try:
-                tiered_provider = OpenRouterTieredJevProvider(config)
-                tiered = decide_tiered_route(task, tiered_provider.judge(task))
-                selected_role = tiered.selected
-                route_metadata = tiered.to_dict()
-            except ProviderError as exc:
-                selected_role = "astra"
+            if args.profile == "balanced":
+                local_guard = deterministic_task_guard(task)
+                if local_guard is None:
+                    selected_role = "luna"
+                    reason_codes = ("balanced_luna_first",)
+                else:
+                    selected_role, reason_codes = local_guard
                 route_metadata = {
-                    "selected": "astra",
-                    "rule": f"jev_error_fallback:{exc.kind}",
-                    "source": "fail_safe",
+                    "selected": selected_role,
+                    "rule": "+".join(reason_codes),
+                    "hard_guards": reason_codes if local_guard is not None else (),
+                    "source": "local_trajectory_policy",
+                    "task_router_called": False,
                 }
+            else:
+                try:
+                    tiered_provider = OpenRouterTieredJevProvider(config)
+                    tiered = decide_tiered_route(task, tiered_provider.judge(task))
+                    selected_role = tiered.selected
+                    route_metadata = tiered.to_dict()
+                except ProviderError as exc:
+                    selected_role = "astra"
+                    route_metadata = {
+                        "selected": "astra",
+                        "rule": f"jev_error_fallback:{exc.kind}",
+                        "source": "fail_safe",
+                    }
         else:
             selected_role = args.role
         commands: list[tuple[str, ...]] = []
@@ -841,7 +866,12 @@ def main(argv: list[str] | None = None) -> None:
             plan = build_codex_dispatch_plan(args.repo, selected_role, sandbox=args.sandbox)
             print(
                 json.dumps(
-                    {"executed": False, "route": route_metadata, "plan": plan.to_dict()},
+                    {
+                        "executed": False,
+                        "profile": args.profile,
+                        "route": route_metadata,
+                        "plan": plan.to_dict(),
+                    },
                     ensure_ascii=False,
                     indent=2,
                 )
@@ -855,6 +885,7 @@ def main(argv: list[str] | None = None) -> None:
             review_provider=OpenRouterReviewJudgeProvider(config),
             config=config,
             verifier_commands=commands,
+            profile=args.profile,
             max_rounds=args.max_rounds,
             max_review_usd=args.max_review_usd,
             sandbox=args.sandbox,

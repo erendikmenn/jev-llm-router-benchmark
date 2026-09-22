@@ -177,6 +177,16 @@ def _promote(current: str, minimum: str) -> str:
     return TIERS[max(_TIER_INDEX[current], _TIER_INDEX[minimum])]
 
 
+def deterministic_task_guard(task: Task) -> tuple[str, tuple[str, ...]] | None:
+    """Return a local, provider-free minimum role for explicit critical domains."""
+
+    if _CRITICAL_PATTERNS.search(task.prompt) and not bool(
+        task.constraints.get("isolated_code")
+    ):
+        return "astra", ("critical_domain_to_astra",)
+    return None
+
+
 def decide_tiered_route(
     task: Task,
     judgment: TieredJudgment,
@@ -193,9 +203,11 @@ def decide_tiered_route(
         if strong_probability >= isolated_code_strong_probability_threshold - 1e-12:
             selected = _promote(selected, "sol")
             guards.append("calibrated_isolated_code_minimum_sol")
-    if _CRITICAL_PATTERNS.search(task.prompt) and not isolated_code:
-        selected = _promote(selected, "astra")
-        guards.append("critical_domain_to_astra")
+    deterministic_guard = deterministic_task_guard(task)
+    if deterministic_guard is not None:
+        minimum, guard_reasons = deterministic_guard
+        selected = _promote(selected, minimum)
+        guards.extend(guard_reasons)
     elif judgment.risk in {"high", "critical"}:
         selected = _promote(selected, "sol")
         guards.append("high_risk_minimum_sol")

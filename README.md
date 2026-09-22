@@ -59,6 +59,19 @@ görev ──> hard guard + Jev router ──> uygun worker rolü
 
 Jev yanıt veya kod yazmaz. Dar olasılık sinyalleri üretir; maliyet hesabı, eşikler, risk guard'ları, retry ve fail-safe davranış deterministik koddadır. Agent'ın kendi yazdığı testler bağımsız başarı kanıtı sayılmaz; judge doğrudan görev, kabul kriterleri, diff, ilgili kod ve mevcut kanıtları görür.
 
+`pipeline --profile balanced` deneysel Luna-first akıştır. Açık kritik alan yoksa Luna
+bir tur çalışır; sistem değişen/yeni dosyaları, diff parmak izini, eklenen/silinen
+satırları, process sonucunu ve verifier stdout/stderr'ini kaydeder. Dispatch hatası,
+boş diff veya kalan verifier varsa Jev çağrısını atlayıp kanıtı Sol düzeltme turuna
+verir. Makine kapıları geçtiğinde Jev semantik yeterliliği denetler. `.env` ve credential
+path'leri progress receipt'ine alınmaz; yalnız dışlanan hassas path sayısı ve fail-closed
+risk flag'i tutulur.
+
+İlk dış-API kullanmayan fixture smoke'unda bütün repository testleri geçti; Luna
+verifier failure'ı Jev çağrılmadan Sol'a yükseltildi ve destructive değişiklik
+bloklandı. Bu bir model kalite sonucu değildir. Ayrıntı:
+[`results/balanced-trajectory-fixture-20260922/REPORT_TR.md`](results/balanced-trajectory-fixture-20260922/REPORT_TR.md).
+
 `route` yalnız görev metnini gönderir. `review` ve `control`, judge kararı için temizlenmiş ve boyutu sınırlanmış diff/ilgili kodu Jev sağlayıcısına gönderir; `.env`, credential/key dosyaları dışlanır ve bilinen secret biçimleri redakte edilir. Dolayısıyla judge modu “yalnız karar dışarı gider” değildir. Hassas repository'lerde fixture/native politika kullanılmalı veya bu dış aktarım açıkça kabul edilmelidir.
 
 `codex-route`, seçilen Luna/Sol rolünü yerel `codex exec` sürecine mevcut Codex kimliğiyle teslim edebilir; Terra ve Astra forced baseline olarak da kullanılabilir. Güvenlik için varsayılan davranış dry-run'dır ve gerçek teslim `--execute` ister. `control` ise henüz worker çalıştırmaz; pre-route ve post-change judge kararını tek receipt'te birleştirir.
@@ -126,6 +139,23 @@ uv run jev-router codex-route --mode live-jev --repo . --execute --task "..."
 # Aynı görevde doğrudan model baseline'ı
 uv run jev-router codex-route --role luna --sandbox read-only --execute --task "..."
 uv run jev-router codex-route --role sol --sandbox read-only --execute --task "..."
+
+# Deneysel Luna-first trajectory akışı; --execute olmadan yalnız planı gösterir
+uv run jev-router pipeline --profile balanced --repo . \
+  --task "İstenen değişikliği uygula" \
+  --criterion "Kabul kriteri sağlanır" \
+  --verify-json '["uv","run","pytest","-q"]'
+
+# Gerçek worker + verifier + seçici Jev/Sol akışı
+# Jev review için OPENROUTER_API_KEY gerekir; worker mevcut Codex kimliğini kullanır
+uv run jev-router pipeline --profile balanced --execute --repo . \
+  --task "İstenen değişikliği uygula" \
+  --criterion "Kabul kriteri sağlanır" \
+  --verify-json '["uv","run","pytest","-q"]' \
+  --output results/balanced-run.json
+
+# V0.01 davranışını koruyan task-router-first profil
+uv run jev-router pipeline --profile quality-first --repo . --task "..."
 
 # 40 sentetik vaka; canlı test yalnız dondurulmuş test split'inde
 uv run jev-router judge-benchmark --mode fixture --split all \
@@ -257,6 +287,10 @@ Her koşu dizini şunları üretir:
 - `summary.json`: kalite farkı ve eşleştirilmiş bootstrap GA, başarı, hata/fallback, model oranları, USD/istek, USD/1000, USD/başarı ve p50/p95.
 - `manifest.json`: commit, tam model kimlikleri, veri hash'i, prompt/fiyat sürümleri, seed, retry, cache, concurrency ve streaming ayarları.
 - `cost-quality.svg`, `latency-quality.svg`, `REPORT_TR.md`.
+
+Trajectory pipeline receipt'i bunlara ek olarak tur başına `progress`, `evidence_gate`,
+`review_called` ve `outcome` alanlarını yazar. Böylece Luna'nın ne yaptığı, Jev'nin
+çağrılıp çağrılmadığı ve Sol'a hangi somut nedenle geçildiği sonradan replay edilebilir.
 
 Canlı smoke'ta tam Luna/Sol matrisi her görev/model için yalnız bir kez üretilir ve Jev'in seçtiği yol aynı canlı yanıtı yeniden kullanır. Streaming açıktır; ilk boş olmayan metin parçasine kadar TTFT, tam hedef latency ve Jev latency ayrı saklanır.
 
