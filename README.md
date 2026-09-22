@@ -37,7 +37,9 @@ V0.01 silinmeyecek veya sonradan daha iyi görünecek şekilde yeniden ayarlanma
 yeni `balanced` politika aynı veya daha iyi kaliteyi daha az Sol kullanımıyla göstermeye
 çalışacaktır. Tam deney kartı ve ham özetler
 [`results/openrouter-router-v2-livecodebench-200-20260922/`](results/openrouter-router-v2-livecodebench-200-20260922/)
-altındadır.
+altındadır. Luna'nın önce çalışıp gerçek diff/test/hata kanıtına göre seçici biçimde
+Sol'a yükseltildiği sonraki sürümün durum makinesi, hız/maliyet sınırları ve kabul
+kapıları [balanced trajectory planında](docs/BALANCED_TRAJECTORY_PLAN_TR.md) tanımlıdır.
 
 ## Router + judge mimarisi
 
