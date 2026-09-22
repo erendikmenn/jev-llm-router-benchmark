@@ -1,0 +1,267 @@
+{
+  "schema_version": 1,
+  "truth_source": "official_swebench_evaluator",
+  "arms": {
+    "always-luna": {
+      "submitted": 2,
+      "officially_evaluable": 2,
+      "resolved": 0,
+      "pass_rate": 0.0,
+      "infra_or_evaluator_errors": 0,
+      "mean_execution_elapsed_ms": 240177.66668750846,
+      "p50_execution_elapsed_ms": 240177.66668750846,
+      "p95_execution_elapsed_ms": 252444.48425000883,
+      "codex_usage": {
+        "cache_write_input_tokens": 0,
+        "cached_input_tokens": 2385408,
+        "input_tokens": 2521790,
+        "output_tokens": 16218,
+        "reasoning_output_tokens": 5878
+      },
+      "jev_cost_usd": 0.0
+    },
+    "always-terra": {
+      "submitted": 2,
+      "officially_evaluable": 2,
+      "resolved": 2,
+      "pass_rate": 1.0,
+      "infra_or_evaluator_errors": 0,
+      "mean_execution_elapsed_ms": 528919.1693335015,
+      "p50_execution_elapsed_ms": 528919.1693335015,
+      "p95_execution_elapsed_ms": 708082.1812080103,
+      "codex_usage": {
+        "cache_write_input_tokens": 0,
+        "cached_input_tokens": 2529280,
+        "input_tokens": 2706120,
+        "output_tokens": 23513,
+        "reasoning_output_tokens": 10106
+      },
+      "jev_cost_usd": 0.0
+    },
+    "always-sol": {
+      "submitted": 2,
+      "officially_evaluable": 2,
+      "resolved": 1,
+      "pass_rate": 0.5,
+      "infra_or_evaluator_errors": 0,
+      "mean_execution_elapsed_ms": 422745.5693125012,
+      "p50_execution_elapsed_ms": 422745.5693125012,
+      "p95_execution_elapsed_ms": 576633.9466670033,
+      "codex_usage": {
+        "cache_write_input_tokens": 0,
+        "cached_input_tokens": 3099648,
+        "input_tokens": 3222345,
+        "output_tokens": 32197,
+        "reasoning_output_tokens": 13979
+      },
+      "jev_cost_usd": 0.0
+    },
+    "always-astra": {
+      "submitted": 2,
+      "officially_evaluable": 2,
+      "resolved": 2,
+      "pass_rate": 1.0,
+      "infra_or_evaluator_errors": 0,
+      "mean_execution_elapsed_ms": 157003.73227050295,
+      "p50_execution_elapsed_ms": 157003.73227050295,
+      "p95_execution_elapsed_ms": 185685.14600000344,
+      "codex_usage": {
+        "cache_write_input_tokens": 0,
+        "cached_input_tokens": 795520,
+        "input_tokens": 893080,
+        "output_tokens": 6887,
+        "reasoning_output_tokens": 879
+      },
+      "jev_cost_usd": 0.0
+    },
+    "router-only": {
+      "submitted": 2,
+      "officially_evaluable": 2,
+      "resolved": 1,
+      "pass_rate": 0.5,
+      "infra_or_evaluator_errors": 0,
+      "mean_execution_elapsed_ms": 399373.22529200173,
+      "p50_execution_elapsed_ms": 399373.22529200173,
+      "p95_execution_elapsed_ms": 504509.6289590001,
+      "codex_usage": {
+        "cache_write_input_tokens": 0,
+        "cached_input_tokens": 2833792,
+        "input_tokens": 3011063,
+        "output_tokens": 22890,
+        "reasoning_output_tokens": 9638
+      },
+      "jev_cost_usd": 0.00012873
+    },
+    "router-judge": {
+      "submitted": 2,
+      "officially_evaluable": 2,
+      "resolved": 2,
+      "pass_rate": 1.0,
+      "infra_or_evaluator_errors": 0,
+      "mean_execution_elapsed_ms": 673217.0322914971,
+      "p50_execution_elapsed_ms": 673217.0322914971,
+      "p95_execution_elapsed_ms": 831158.1173329905,
+      "codex_usage": {
+        "cache_write_input_tokens": 0,
+        "cached_input_tokens": 4139392,
+        "input_tokens": 4376610,
+        "output_tokens": 41011,
+        "reasoning_output_tokens": 19245
+      },
+      "jev_cost_usd": 0.00372939,
+      "judge": {
+        "accepted": 0,
+        "accepted_and_resolved": 0,
+        "unsafe_false_accept": 0,
+        "nonaccepted_but_resolved": 2,
+        "accept_precision": null,
+        "resolved_recall": 0.0
+      },
+      "trajectory": {
+        "tasks_with_sol_or_astra": 0,
+        "tasks_luna_only": 0,
+        "worker_rounds": 0,
+        "review_calls": 0
+      }
+    },
+    "balanced-trajectory": {
+      "submitted": 2,
+      "officially_evaluable": 2,
+      "resolved": 2,
+      "pass_rate": 1.0,
+      "infra_or_evaluator_errors": 0,
+      "mean_execution_elapsed_ms": 518351.4647500124,
+      "p50_execution_elapsed_ms": 518351.4647500124,
+      "p95_execution_elapsed_ms": 590956.9090000005,
+      "codex_usage": {
+        "cache_write_input_tokens": 0,
+        "cached_input_tokens": 3467776,
+        "input_tokens": 3778507,
+        "output_tokens": 27853,
+        "reasoning_output_tokens": 10477
+      },
+      "jev_cost_usd": 0.002830632,
+      "judge": {
+        "accepted": 0,
+        "accepted_and_resolved": 0,
+        "unsafe_false_accept": 0,
+        "nonaccepted_but_resolved": 2,
+        "accept_precision": null,
+        "resolved_recall": 0.0
+      },
+      "trajectory": {
+        "tasks_with_sol_or_astra": 2,
+        "tasks_luna_only": 0,
+        "worker_rounds": 4,
+        "review_calls": 4
+      }
+    }
+  },
+  "routing": {
+    "oracle_covered": 2,
+    "exact": 2,
+    "under_routed": 0,
+    "over_routed": 2,
+    "no_fixed_tier_succeeded": 0,
+    "classified_router_decisions": 4,
+    "exact_route_rate": 0.5,
+    "under_route_rate": 0.0,
+    "over_route_rate": 0.5
+  },
+  "tasks": [
+    {
+      "instance_id": "sphinx-doc__sphinx-10323",
+      "arms": {
+        "always-luna": {
+          "resolved": false,
+          "evaluable": true,
+          "selected_role": "luna"
+        },
+        "always-terra": {
+          "resolved": true,
+          "evaluable": true,
+          "selected_role": "terra"
+        },
+        "always-sol": {
+          "resolved": false,
+          "evaluable": true,
+          "selected_role": "sol"
+        },
+        "always-astra": {
+          "resolved": true,
+          "evaluable": true,
+          "selected_role": "astra"
+        },
+        "router-only": {
+          "resolved": false,
+          "evaluable": true,
+          "selected_role": "terra",
+          "routing_label": "exact"
+        },
+        "router-judge": {
+          "resolved": true,
+          "evaluable": true,
+          "selected_role": "terra",
+          "routing_label": "exact"
+        },
+        "balanced-trajectory": {
+          "resolved": true,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": "terra",
+      "oracle_status": "observed_cheapest_success"
+    },
+    {
+      "instance_id": "sympy__sympy-21379",
+      "arms": {
+        "always-luna": {
+          "resolved": false,
+          "evaluable": true,
+          "selected_role": "luna"
+        },
+        "always-terra": {
+          "resolved": true,
+          "evaluable": true,
+          "selected_role": "terra"
+        },
+        "always-sol": {
+          "resolved": true,
+          "evaluable": true,
+          "selected_role": "sol"
+        },
+        "always-astra": {
+          "resolved": true,
+          "evaluable": true,
+          "selected_role": "astra"
+        },
+        "router-only": {
+          "resolved": true,
+          "evaluable": true,
+          "selected_role": "sol",
+          "routing_label": "over_routed"
+        },
+        "router-judge": {
+          "resolved": true,
+          "evaluable": true,
+          "selected_role": "sol",
+          "routing_label": "over_routed"
+        },
+        "balanced-trajectory": {
+          "resolved": true,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": "terra",
+      "oracle_status": "observed_cheapest_success"
+    }
+  ],
+  "limitations": [
+    "The oracle is the cheapest fixed-tier run observed to pass; model stochasticity remains.",
+    "Codex subscription usage is reported as tokens and latency, not invented API dollars.",
+    "Infrastructure and evaluator errors are excluded from pass-rate denominators.",
+    "Judge labels describe the final pipeline patch, not every intermediate retry patch."
+  ]
+}

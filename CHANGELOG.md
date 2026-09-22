@@ -12,6 +12,9 @@
   progress gate.
 - Generated cache ve binary non-source artefaktlarını scope/diff evidence'ından çıkarma.
 - Tur başına replay edilebilir progress/evidence-gate/review-called receipt'i.
+- Resmî SWE-bench adaptöründe `balanced-trajectory` deney kolu ve trajectory ölçümleri.
+- İlk iki-görev resmî test: final 2/2 resolved, fakat doğru Luna patch'lerinde 2/2
+  gereksiz Sol escalation; judge kalibrasyonu sonraki darboğaz olarak kaydedildi.
 
 ## v0.0.1 — 2026-09-22
 

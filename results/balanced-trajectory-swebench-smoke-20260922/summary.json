@@ -1,0 +1,66 @@
+{
+  "suite": "swebench-verified-balanced-trajectory-smoke",
+  "date": "2026-09-22",
+  "tasks": 2,
+  "truth_source": "official_swebench_evaluator",
+  "infrastructure_or_evaluator_errors": 0,
+  "balanced_final": {
+    "resolved": 2,
+    "pass_rate": 1.0,
+    "automatic_accepts": 0,
+    "luna_only_tasks": 0,
+    "tasks_escalated_to_sol": 2,
+    "worker_rounds": 4,
+    "mean_elapsed_minutes": 8.639191079166872,
+    "input_tokens": 3778507,
+    "cached_input_tokens": 3467776,
+    "output_tokens": 27853,
+    "jev_cost_usd": 0.002830632
+  },
+  "recorded_luna_round_one_counterfactual": {
+    "resolved": 2,
+    "pass_rate": 1.0,
+    "sol_calls": 0,
+    "mean_worker_plus_review_minutes": 2.9147827336748983,
+    "input_tokens": 2239997,
+    "cached_input_tokens": 2067200,
+    "output_tokens": 11376,
+    "jev_cost_usd": 0.001262646,
+    "note": "Official evaluation was applied to already-recorded round-one patches; this is an oracle counterfactual, not the policy output."
+  },
+  "always_sol_historical_paired_tasks": {
+    "resolved": 1,
+    "pass_rate": 0.5,
+    "mean_elapsed_minutes": 7.045759488541687,
+    "input_tokens": 3222345,
+    "cached_input_tokens": 3099648,
+    "output_tokens": 32197
+  },
+  "balanced_final_vs_always_sol": {
+    "resolved_delta_tasks": 1,
+    "elapsed_delta_percent": 22.615469534782417,
+    "input_token_delta_percent": 17.259542351920732,
+    "output_token_delta_percent": -13.491940242879775
+  },
+  "round_one_oracle_vs_always_sol": {
+    "resolved_delta_tasks": 1,
+    "elapsed_delta_percent": -58.63055143087173,
+    "input_token_delta_percent": -30.48550046627534,
+    "output_token_delta_percent": -64.66751560704414
+  },
+  "judge_diagnosis": {
+    "correct_luna_patches_rejected": 2,
+    "unnecessary_sol_escalations": 2,
+    "primary_reason_codes": [
+      "deep_review_requested",
+      "clearly_incomplete_requirements"
+    ],
+    "conclusion": "Worker quality passed this smoke; semantic acceptance calibration failed."
+  },
+  "limitations": [
+    "Only two development tasks; no statistical generalization.",
+    "Fixed-model baselines are historical independent samples, so model stochasticity remains.",
+    "Round-one evaluation is an oracle counterfactual and cannot be used as the online policy label.",
+    "No hidden evaluator feedback was exposed to either worker round."
+  ]
+}
