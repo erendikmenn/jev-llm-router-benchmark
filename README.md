@@ -8,6 +8,37 @@ Repo 40 görevlik fixture pilotuna ek olarak OpenRouter üzerinden `typesafe/jev
 
 Ayrıca dört resmî İngilizce benchmark ailesinden 200 dev + 1.000 kilitli test örneği hazırlayan yeniden üretilebilir veri betiği ve ayrıntılı canlı analiz akışı vardır. Üçüncü taraf sorular repoya commitlenmez; kaynak revision'ları, örnekleme tohumu ve veri hash'i kaydedilir.
 
+## V0.01 (`v0.0.1`) benchmark referansı
+
+V0.01, mevcut **quality-first** politikanın dondurulmuş referansıdır. Bu politika
+görevi çözmeden önce Jev'e yalnız görev metnini gösterir; Jev Luna veya Sol'u seçer,
+seçilen model çözümü üretir. Eşik ilk 100 LiveCodeBench sorusunda seçilmiş ve sonraki
+100 sorunun sonucu görülmeden önce `0,08` olarak dondurulmuştur.
+
+| Bölme | Görev | Luna | Always-Sol | V0.01 router | Sol çağrı oranı | Router maliyeti | Always-Sol maliyeti | Tasarruf |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| Dev / kalibrasyon | 100 | 92 (%92) | 99 (%99) | 99 (%99) | %66 | $0,348893 | $0,405908 | %14,05 |
+| Kilitli test | 100 | 84 (%84) | 94 (%94) | 94 (%94) | %68 | $0,375998 | $0,426348 | %11,81 |
+| Birleşik | 200 | 176 (%88) | 193 (%96,5) | 193 (%96,5) | %67 | $0,724891 | $0,832256 | %12,90 |
+
+| Ölçüm | V0.01 sonucu | Basit yorum |
+|---|---:|---|
+| Router–Sol kalite farkı | `0,0` yüzde puan | Bu 200 soruda router ile Sol aynı 193 soruyu geçti ve aynı 7 soruda kaldı. |
+| Router başarı oranı için %95 Wilson GA | `%92,95–%98,29` | `%96,5` tahmininin örneklem belirsizliğidir; başka görev ailelerinde eşdeğerlik garantisi değildir. |
+| Sol'dan kaçınılan görev | `66/200` (%33) | Her üç görevin yaklaşık birinde ucuz Luna kullanıldı. |
+| Ölçülen politika tasarrufu | `$0,107365` (%12,90) | Kalite kaybı gözlenmedi, fakat hedeflenen `%30–40` tasarrufa henüz ulaşılamadı. |
+| Held-out ortalama uçtan uca süre | Router `8,40 sn`; Sol `7,60 sn` | Router yaklaşık `%10,6` daha yavaştı; hız kapısı geçilmedi. |
+| Toplam deney harcaması | bilinen `$1,032690`; muhafazakâr üst sınır `$1,134466` | Paired worker, calibration, judge ve smoke çağrılarının tamamı `$5` kampanya tavanının altında kaldı. |
+| Code-judge held-out doğruluğu | `%71,4` | Sentetik 28 vakada hatalı/riskli değişiklikleri yakalama recall'u `%100`, geçerli değişikliği kabul recall'u yalnız `%28,6`; güvenli ama fazla muhafazakâr. |
+
+Sonuç: **V0.01 kalite ve maliyet kapısını bu LiveCodeBench örneğinde geçti; hız,
+`%30–40` tasarruf ve repository-agent genellemesi kapılarını geçmedi.** Bu nedenle
+V0.01 silinmeyecek veya sonradan daha iyi görünecek şekilde yeniden ayarlanmayacak;
+yeni `balanced` politika aynı veya daha iyi kaliteyi daha az Sol kullanımıyla göstermeye
+çalışacaktır. Tam deney kartı ve ham özetler
+[`results/openrouter-router-v2-livecodebench-200-20260922/`](results/openrouter-router-v2-livecodebench-200-20260922/)
+altındadır.
+
 ## Router + judge mimarisi
 
 ```text
