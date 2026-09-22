@@ -35,18 +35,54 @@ class OpenRouterChatProvider:
 
     def generate(self, request: GenerationRequest, role: str) -> GenerationResult:
         model = getattr(self.config, role)
+        return self._generate(
+            request,
+            model_id=model.model_id,
+            supports_streaming=model.supports_streaming,
+            reasoning_effort="none",
+        )
+
+    def generate_tier(self, request: GenerationRequest, tier: str) -> GenerationResult:
+        """Generate with one of the four Codex-compatible OpenRouter tiers.
+
+        This path deliberately uses the user's OpenRouter account rather than the
+        local Codex CLI. Provider-reported usage and cost remain the source of
+        truth for benchmark accounting.
+        """
+        profiles = self.config.raw["codex_tiers"]
+        if tier not in profiles:
+            raise ValueError(f"unknown OpenRouter tier: {tier}")
+        profile = profiles[tier]
+        model_id = str(profile["model"])
+        if "/" not in model_id:
+            model_id = f"openai/{model_id}"
+        return self._generate(
+            request,
+            model_id=model_id,
+            supports_streaming=True,
+            reasoning_effort=str(profile["reasoning_effort"]),
+        )
+
+    def _generate(
+        self,
+        request: GenerationRequest,
+        *,
+        model_id: str,
+        supports_streaming: bool,
+        reasoning_effort: str,
+    ) -> GenerationResult:
         attempts: list[Attempt] = []
         max_retries = int(self.config.experiment["max_retries"])
         timeout = float(self.config.experiment["request_timeout_seconds"])
-        stream = bool(self.config.experiment.get("stream", True)) and model.supports_streaming
+        stream = bool(self.config.experiment.get("stream", True)) and supports_streaming
         body = {
-            "model": model.model_id,
+            "model": model_id,
             "messages": [
                 {"role": "system", "content": request.system},
                 {"role": "user", "content": request.prompt},
             ],
             "max_tokens": request.max_output_tokens,
-            "reasoning": {"effort": "none"},
+            "reasoning": {"effort": reasoning_effort},
             "stream": stream,
         }
         for attempt_index in range(max_retries + 1):
@@ -78,7 +114,7 @@ class OpenRouterChatProvider:
                     usage=usage,
                     latency_ms=sum(item.latency_ms for item in attempts),
                     ttft_ms=parsed["ttft_ms"],
-                    model_id=parsed["model"] or model.model_id,
+                    model_id=parsed["model"] or model_id,
                     attempts=tuple(attempts),
                     provider_cost_usd=parsed["cost"],
                     generation_id=parsed["id"],

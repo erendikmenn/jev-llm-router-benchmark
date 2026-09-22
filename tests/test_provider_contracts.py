@@ -32,6 +32,31 @@ def test_openrouter_stream_captures_text_usage_cost_and_ttft():
     assert parsed["ttft_ms"] is not None
 
 
+def test_openrouter_tier_uses_openrouter_model_and_configured_reasoning(monkeypatch):
+    monkeypatch.setenv("OPENROUTER_API_KEY", "test-only")
+    provider = OpenRouterChatProvider(load_config("configs/default.toml"))
+    captured = {}
+
+    def fake_generate(request, **kwargs):
+        captured.update(kwargs)
+        return "ok"
+
+    monkeypatch.setattr(provider, "_generate", fake_generate)
+    request = __import__("jev_router.models", fromlist=["GenerationRequest"]).GenerationRequest(
+        "task", "prompt", "system", 128
+    )
+
+    assert provider.generate_tier(request, "sol") == "ok"
+    assert captured == {
+        "model_id": "openai/gpt-5.6-sol",
+        "supports_streaming": True,
+        "reasoning_effort": "high",
+    }
+
+    with pytest.raises(ValueError, match="unknown OpenRouter tier"):
+        provider.generate_tier(request, "unknown")
+
+
 class FakeResponse:
     def __init__(self, payload: bytes):
         self.payload = payload
