@@ -59,7 +59,11 @@ def analyze(
     judgments: dict,
     *,
     threshold: float,
+    direct_weak_difficulties: frozenset[str] = frozenset(),
+    direct_strong_difficulties: frozenset[str] = frozenset(),
 ) -> dict:
+    if direct_weak_difficulties & direct_strong_difficulties:
+        raise ValueError("a difficulty cannot be both direct-weak and direct-strong")
     weak = _indexed(weak_generation.get("measurements") or [], "weak generation")
     strong = _indexed(strong_generation.get("measurements") or [], "strong generation")
     weak_eval = _indexed(weak_evaluation.get("per_task") or [], "weak evaluation")
@@ -74,7 +78,22 @@ def analyze(
     rows = []
     for question_id in ids:
         score = float(judge[question_id]["escalation_score"])
-        escalated = meets_escalation_threshold(score, threshold)
+        difficulty = weak[question_id]["difficulty"]
+        if difficulty in direct_strong_difficulties:
+            route_mode = "direct_strong"
+            escalated = True
+            used_judge = False
+            used_weak = False
+        elif difficulty in direct_weak_difficulties:
+            route_mode = "direct_weak"
+            escalated = False
+            used_judge = False
+            used_weak = True
+        else:
+            route_mode = "jev_cascade"
+            escalated = meets_escalation_threshold(score, threshold)
+            used_judge = True
+            used_weak = True
         weak_passed = bool(weak_eval[question_id]["passed"])
         strong_passed = bool(strong_eval[question_id]["passed"])
         judgment = judge[question_id].get("judgment") or {}
@@ -86,7 +105,8 @@ def analyze(
         rows.append(
             {
                 "question_id": question_id,
-                "difficulty": weak[question_id]["difficulty"],
+                "difficulty": difficulty,
+                "route_mode": route_mode,
                 "escalation_score": score,
                 "escalated": escalated,
                 "weak_passed": weak_passed,
@@ -100,10 +120,22 @@ def analyze(
                 "strong_latency_ms": strong_latency,
                 "judge_latency_ms": judge_latency,
                 "cascade_sequential_latency_ms": (
-                    weak_latency + judge_latency + (strong_latency if escalated else 0.0)
-                    if weak_latency is not None and (not escalated or strong_latency is not None)
+                    (weak_latency if used_weak else 0.0)
+                    + (judge_latency if used_judge else 0.0)
+                    + (strong_latency if escalated else 0.0)
+                    if (not used_weak or weak_latency is not None)
+                    and (not escalated or strong_latency is not None)
                     else None
                 ),
+                "policy_weak_cost_usd": float(weak[question_id]["worker_cost_usd"])
+                if used_weak
+                else 0.0,
+                "policy_strong_cost_usd": float(strong[question_id]["worker_cost_usd"])
+                if escalated
+                else 0.0,
+                "policy_judge_cost_usd": float(judge[question_id].get("jev_cost_usd", 0.0))
+                if used_judge
+                else 0.0,
             }
         )
 
@@ -118,9 +150,10 @@ def analyze(
     false_escalations = [row for row in escalated if row["weak_passed"]]
     weak_cost = sum(row["weak_cost_usd"] for row in rows)
     strong_cost = sum(row["strong_cost_usd"] for row in rows)
-    judge_cost = sum(row["judge_cost_usd"] for row in rows)
-    escalated_strong_cost = sum(row["strong_cost_usd"] for row in escalated)
-    cascade_cost = weak_cost + judge_cost + escalated_strong_cost
+    judge_cost = sum(row["policy_judge_cost_usd"] for row in rows)
+    policy_weak_cost = sum(row["policy_weak_cost_usd"] for row in rows)
+    escalated_strong_cost = sum(row["policy_strong_cost_usd"] for row in rows)
+    cascade_cost = policy_weak_cost + judge_cost + escalated_strong_cost
 
     by_difficulty: dict[str, list[dict]] = defaultdict(list)
     for row in rows:
@@ -132,6 +165,11 @@ def analyze(
             weak_evaluation.get("official_checker") and strong_evaluation.get("official_checker")
         ),
         "threshold": threshold,
+        "policy": {
+            "direct_weak_difficulties": sorted(direct_weak_difficulties),
+            "direct_strong_difficulties": sorted(direct_strong_difficulties),
+            "other_difficulties": "weak_then_jev_then_optional_strong",
+        },
         "tasks": total,
         "quality": {
             "weak": {"passed": weak_passed, "pass_at_1": weak_passed / total, "95ci_wilson": wilson(weak_passed, total)},
@@ -154,6 +192,7 @@ def analyze(
         "cost_usd": {
             "weak_all": weak_cost,
             "strong_all": strong_cost,
+            "policy_weak": policy_weak_cost,
             "judge_all": judge_cost,
             "escalated_strong": escalated_strong_cost,
             "cascade": cascade_cost,
@@ -190,6 +229,8 @@ def main() -> None:
     parser.add_argument("--strong-evaluation", required=True)
     parser.add_argument("--judgments", required=True)
     parser.add_argument("--threshold", required=True, type=float)
+    parser.add_argument("--direct-weak-difficulty", action="append", default=[])
+    parser.add_argument("--direct-strong-difficulty", action="append", default=[])
     parser.add_argument("--output", required=True)
     args = parser.parse_args()
     load = lambda path: json.loads(Path(path).read_text(encoding="utf-8"))
@@ -200,6 +241,8 @@ def main() -> None:
         load(args.strong_evaluation),
         load(args.judgments),
         threshold=args.threshold,
+        direct_weak_difficulties=frozenset(args.direct_weak_difficulty),
+        direct_strong_difficulties=frozenset(args.direct_strong_difficulty),
     )
     destination = Path(args.output).resolve()
     destination.parent.mkdir(parents=True, exist_ok=True)

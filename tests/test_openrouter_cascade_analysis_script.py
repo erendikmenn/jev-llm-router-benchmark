@@ -69,3 +69,25 @@ def test_analysis_rejects_unpaired_inputs():
             {"measurements": []},
             threshold=0.5,
         )
+
+
+def test_analysis_supports_direct_difficulty_gates():
+    result = MODULE.analyze(
+        generation("luna", [0.01, 0.02]),
+        evaluation(True, False),
+        generation("sol", [0.10, 0.20]),
+        evaluation(True, True),
+        {
+            "measurements": [
+                {"question_id": "a", "escalation_score": 0.9, "jev_cost_usd": 0.001, "judgment": {"latency_ms": 10}},
+                {"question_id": "b", "escalation_score": 0.1, "jev_cost_usd": 0.001, "judgment": {"latency_ms": 10}},
+            ]
+        },
+        threshold=0.5,
+        direct_weak_difficulties=frozenset({"easy"}),
+        direct_strong_difficulties=frozenset({"hard"}),
+    )
+
+    assert result["quality"]["cascade"]["passed"] == 2
+    assert result["cost_usd"]["cascade"] == pytest.approx(0.21)
+    assert result["cost_usd"]["judge_all"] == 0.0
