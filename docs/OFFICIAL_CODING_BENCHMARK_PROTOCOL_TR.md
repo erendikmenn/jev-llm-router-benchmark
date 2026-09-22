@@ -41,6 +41,7 @@ Resmî evaluator daha sonra patch'i bağımsız container'a uygular. Agent'ın y
 - `always-luna`, `always-terra`, `always-sol`, `always-astra`: counterfactual baz çizgileri.
 - `router-only`: Jev yalnız en düşük yeterli tier'i seçer; seçilen Codex rolü bir kez çalışır.
 - `router-judge`: Aynı route sonrası Jev diff'i inceler; deterministik politika accept, revise, escalate veya block uygular.
+- `balanced-trajectory`: Task-router çağrısı yapmadan Luna ile başlar; gerçek diff/progress kanıtı ve Jev review sonucuna göre yalnız gerektiğinde Sol/Astra'ya yükselir.
 
 Doğru route etiketi, dört sabit kolun aynı görevdeki resmî sonuçlarından türetilir. En ucuz başarılı sabit tier “observed oracle”dır. Router daha düşük ve yetersiz tier seçerse `under_routed`; daha pahalı tier seçerse `over_routed`; aynısını seçerse `exact` olur. Dört sabit sonuç tamamlanmamışsa routing accuracy hesaplanmaz.
 
@@ -72,6 +73,7 @@ uv run jev-router swebench-generate --arm always-sol --limit 20 --execute
 uv run jev-router swebench-generate --arm always-astra --limit 20 --execute
 uv run jev-router swebench-generate --arm router-only --limit 20 --execute
 uv run jev-router swebench-generate --arm router-judge --limit 20 --execute
+uv run jev-router swebench-generate --arm balanced-trajectory --limit 20 --execute
 
 # 4. predictions.jsonl dosyalarının her birini resmî evaluator ile değerlendir
 uvx --from swebench swebench eval verified -p PATH/predictions.jsonl \

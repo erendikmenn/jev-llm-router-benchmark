@@ -26,7 +26,9 @@ ARMS = (
     "always-astra",
     "router-only",
     "router-judge",
+    "balanced-trajectory",
 )
+PIPELINE_ARMS = frozenset({"router-judge", "balanced-trajectory"})
 
 
 @dataclass(frozen=True)
@@ -157,8 +159,8 @@ def generate_swebench_arm(
 ) -> dict:
     if arm not in ARMS:
         raise ValueError(f"unknown SWE-bench arm: {arm}")
-    if arm == "router-judge" and review_provider is None:
-        raise ValueError("router-judge arm requires a review provider")
+    if arm in PIPELINE_ARMS and review_provider is None:
+        raise ValueError(f"{arm} arm requires a review provider")
     workspace_root = Path(workspace_root).resolve()
     output = Path(output_dir).resolve()
     output.mkdir(parents=True, exist_ok=True)
@@ -175,6 +177,14 @@ def generate_swebench_arm(
         if arm.startswith("always-"):
             role = arm.removeprefix("always-")
             route = {"selected": role, "rule": "fixed_baseline"}
+        elif arm == "balanced-trajectory":
+            role = "luna"
+            route = {
+                "selected": role,
+                "rule": "balanced_luna_first",
+                "source": "local_trajectory_policy",
+                "task_router_called": False,
+            }
         else:
             anonymous = Task(
                 task.instance_id,
@@ -204,7 +214,7 @@ def generate_swebench_arm(
         route_latency_ms = (time.perf_counter() - route_started) * 1000
         prompt = _task_prompt(task)
         round_measurements: list[dict] = []
-        if arm == "router-judge":
+        if arm in PIPELINE_ARMS:
             def observe_round(round_) -> None:
                 round_patch = _git_diff(workspace)
                 prediction_path = receipts_dir / (
@@ -229,6 +239,9 @@ def generate_swebench_arm(
                         "round": round_.number,
                         "role": round_.role,
                         "judge_action": round_.review.decision.action,
+                        "review_called": round_.review_called,
+                        "evidence_gate": round_.evidence_gate.to_dict(),
+                        "progress": round_.progress.to_dict(),
                         "outcome": round_.outcome,
                         "patch_bytes": len(round_patch.encode("utf-8")),
                         "prediction": str(prediction_path),
@@ -242,6 +255,9 @@ def generate_swebench_arm(
                 initial_role=role,
                 review_provider=review_provider,
                 config=config,
+                profile=(
+                    "balanced" if arm == "balanced-trajectory" else "quality-first"
+                ),
                 max_rounds=max_rounds,
                 max_review_usd=max_review_usd,
                 round_observer=observe_round,

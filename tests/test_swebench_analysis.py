@@ -124,6 +124,51 @@ def test_judge_false_accept_is_measured_against_official_outcome(tmp_path):
     assert report["arms"]["router-judge"]["judge"]["accept_precision"] == 0.0
 
 
+def test_balanced_trajectory_reports_escalation_and_review_counts(tmp_path):
+    generation = _write(
+        tmp_path,
+        "balanced-generation.json",
+        {
+            "measurements": [
+                {
+                    "instance_id": "task",
+                    "status": "accepted",
+                    "selected_role": "luna",
+                    "execution_elapsed_ms": 20,
+                    "rounds": [
+                        {"role": "luna", "review_called": False},
+                        {"role": "sol", "review_called": True},
+                    ],
+                }
+            ]
+        },
+    )
+    evaluation = _write(
+        tmp_path,
+        "balanced-evaluation.json",
+        {
+            "submitted_ids": ["task"],
+            "resolved_ids": ["task"],
+            "error_ids": [],
+            "infra_failure_ids": [],
+        },
+    )
+
+    report = analyze_swebench_runs(
+        {"balanced-trajectory": generation},
+        {"balanced-trajectory": evaluation},
+    )
+
+    trajectory = report["arms"]["balanced-trajectory"]["trajectory"]
+    assert trajectory == {
+        "tasks_with_sol_or_astra": 1,
+        "tasks_luna_only": 0,
+        "worker_rounds": 2,
+        "review_calls": 1,
+    }
+    assert report["arms"]["balanced-trajectory"]["judge"]["accepted"] == 1
+
+
 def test_run_segments_merge_without_duplicate_instances(tmp_path):
     generation_paths = []
     evaluation_paths = []

@@ -7,6 +7,8 @@ from statistics import median
 
 TIERS = ("luna", "terra", "sol", "astra")
 FIXED_ARMS = {f"always-{tier}": tier for tier in TIERS}
+ROUTER_ARMS = {"router-only", "router-judge"}
+PIPELINE_ARMS = {"router-judge", "balanced-trajectory"}
 
 
 def _load(path: str | Path) -> dict:
@@ -32,7 +34,9 @@ def analyze_swebench_runs(
     """Join Codex receipts to official SWE-bench outcomes without inventing labels."""
     generations = {arm: _load(path) for arm, path in generation_summaries.items()}
     evaluations = {arm: _load(path) for arm, path in evaluation_reports.items()}
-    unknown = (set(generations) | set(evaluations)) - (set(FIXED_ARMS) | {"router-only", "router-judge"})
+    unknown = (set(generations) | set(evaluations)) - (
+        set(FIXED_ARMS) | ROUTER_ARMS | PIPELINE_ARMS
+    )
     if unknown:
         raise ValueError(f"unknown arms: {sorted(unknown)}")
     if set(generations) != set(evaluations):
@@ -92,7 +96,7 @@ def analyze_swebench_runs(
             "codex_usage": codex_usage,
             "jev_cost_usd": route_cost + review_cost,
         }
-        if arm == "router-judge":
+        if arm in PIPELINE_ARMS:
             accepted = {
                 task_id
                 for task_id, measurement in measurements.items()
@@ -117,6 +121,23 @@ def analyze_swebench_runs(
                     len(true_accepts) / len(resolved & eligible)
                     if resolved & eligible
                     else None
+                ),
+            }
+            round_roles = [
+                tuple(round_.get("role") for round_ in measurement.get("rounds", []))
+                for measurement in measurements.values()
+            ]
+            by_arm[arm]["trajectory"] = {
+                "tasks_with_sol_or_astra": sum(
+                    any(role in {"sol", "astra"} for role in roles)
+                    for roles in round_roles
+                ),
+                "tasks_luna_only": sum(roles == ("luna",) for roles in round_roles),
+                "worker_rounds": sum(len(roles) for roles in round_roles),
+                "review_calls": sum(
+                    bool(round_.get("review_called"))
+                    for measurement in measurements.values()
+                    for round_ in measurement.get("rounds", [])
                 ),
             }
         for task_id in submitted:
@@ -151,7 +172,7 @@ def analyze_swebench_runs(
         row["oracle_role"] = oracle
         row["oracle_status"] = "observed_cheapest_success"
         routing_counts["oracle_covered"] += 1
-        for arm in ("router-only", "router-judge"):
+        for arm in ROUTER_ARMS:
             if arm not in fixed or not fixed[arm]["evaluable"]:
                 continue
             selected = fixed[arm]["selected_role"]

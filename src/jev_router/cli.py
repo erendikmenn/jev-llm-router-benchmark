@@ -500,7 +500,7 @@ def main(argv: list[str] | None = None) -> None:
             return
         review_provider = (
             OpenRouterReviewJudgeProvider(config)
-            if args.arm == "router-judge"
+            if args.arm in {"router-judge", "balanced-trajectory"}
             else None
         )
         result = generate_swebench_arm(
@@ -536,7 +536,7 @@ def main(argv: list[str] | None = None) -> None:
             return
         review_provider = (
             OpenRouterReviewJudgeProvider(config)
-            if args.arm == "router-judge"
+            if args.arm in {"router-judge", "balanced-trajectory"}
             else None
         )
         result = generate_swebench_pro_arm(

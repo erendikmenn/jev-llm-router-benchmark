@@ -76,6 +76,7 @@ def test_all_four_fixed_tiers_and_router_arms_are_available():
         "always-astra",
         "router-only",
         "router-judge",
+        "balanced-trajectory",
     )
 
 
