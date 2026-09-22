@@ -1,0 +1,42 @@
+{
+  "suite": "balanced-trajectory-live-smoke",
+  "date": "2026-09-22",
+  "tasks": 1,
+  "status": "accepted",
+  "initial_role": "luna",
+  "final_role": "luna",
+  "worker_rounds": 1,
+  "sol_calls": 0,
+  "task_router_calls": 0,
+  "independent_verifiers": {
+    "passed": 1,
+    "tests_run": 2
+  },
+  "jev_review": {
+    "action": "accept",
+    "cost_usd": 0.00006279,
+    "latency_ms": 1228.714041004423,
+    "input_tokens": 1495,
+    "output_tokens": 175
+  },
+  "codex_worker": {
+    "elapsed_ms": 19388.079541007755,
+    "input_tokens": 71727,
+    "cached_input_tokens": 54272,
+    "output_tokens": 534,
+    "reasoning_output_tokens": 61,
+    "usd_cost": null,
+    "billing_note": "Used the signed-in Codex account; this is not an OpenRouter worker charge."
+  },
+  "total_elapsed_ms": 20720.812834013486,
+  "pre_fix_run": {
+    "status": "needs_human_review",
+    "cause": "Generated __pycache__ files were incorrectly included as scope changes.",
+    "luna_solution_and_tests_were_correct": true,
+    "unnecessary_sol_call": true,
+    "total_elapsed_ms": 84455.02183400095,
+    "jev_review_cost_usd": 0.000126
+  },
+  "product_quality_claim": false,
+  "limitation": "Single synthetic integration task; no paired always-Sol baseline."
+}

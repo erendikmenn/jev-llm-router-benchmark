@@ -187,3 +187,28 @@ def test_untracked_source_file_is_included_as_new_file_evidence(tmp_path):
     assert "+answer = 42" in packet.diff
     assert packet.relevant_code["new_module.py"] == "answer = 42\n"
     assert packet.evidence["git_numstat"] == "1\t0\tnew_module.py"
+
+
+def test_generated_cache_file_is_not_sent_to_review(tmp_path):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    git(repo, "init", "-q")
+    git(repo, "config", "user.name", "Test")
+    git(repo, "config", "user.email", "test@example.com")
+    (repo / "app.py").write_text("value = 1\n", encoding="utf-8")
+    git(repo, "add", ".")
+    git(repo, "commit", "-qm", "initial")
+    (repo / "app.py").write_text("value = 2\n", encoding="utf-8")
+    cache = repo / "__pycache__" / "app.cpython-314.pyc"
+    cache.parent.mkdir()
+    cache.write_bytes(b"generated")
+
+    packet = collect_git_review_packet(
+        repo,
+        packet_id="cache-filter",
+        task="Update the value.",
+        acceptance_criteria=["Value is two."],
+    )
+
+    assert packet.changed_files == ("app.py",)
+    assert "__pycache__" not in packet.diff

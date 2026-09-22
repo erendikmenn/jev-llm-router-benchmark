@@ -10,6 +10,7 @@
   aktarımı.
 - Hassas path'leri receipt'ten çıkaran, secret/destructive değişiklikte fail-closed
   progress gate.
+- Generated cache ve binary non-source artefaktlarını scope/diff evidence'ından çıkarma.
 - Tur başına replay edilebilir progress/evidence-gate/review-called receipt'i.
 
 ## v0.0.1 — 2026-09-22

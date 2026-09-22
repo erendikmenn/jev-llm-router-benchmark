@@ -6,7 +6,7 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Iterable, Literal
 
-from .evidence import infer_risk_flags, is_sensitive_path
+from .evidence import infer_risk_flags, is_reviewable_path, is_sensitive_path
 
 
 TrajectoryProfile = Literal["quality-first", "balanced"]
@@ -43,6 +43,7 @@ class ProgressSnapshot:
     verifier_failure_sha256: str | None
     risk_flags: tuple[str, ...]
     sensitive_paths_excluded: int
+    non_source_paths_excluded: int
     repeated_diff: bool
     repeated_failure: bool
 
@@ -142,10 +143,15 @@ def collect_progress_snapshot(
         for path in (*raw_tracked_files, *raw_untracked)
         if is_sensitive_path(path)
     )
-    tracked_files = tuple(
-        path for path in raw_tracked_files if not is_sensitive_path(path)
+    non_source_paths = tuple(
+        path
+        for path in (*raw_tracked_files, *raw_untracked)
+        if not is_sensitive_path(path) and not is_reviewable_path(path)
     )
-    untracked = tuple(path for path in raw_untracked if not is_sensitive_path(path))
+    tracked_files = tuple(
+        path for path in raw_tracked_files if is_reviewable_path(path)
+    )
+    untracked = tuple(path for path in raw_untracked if is_reviewable_path(path))
     changed_files = tuple(dict.fromkeys((*tracked_files, *untracked)))
     tracked_diff = (
         _git(repo, "diff", "--no-ext-diff", "--binary", "HEAD", "--", *tracked_files)
@@ -206,6 +212,7 @@ def collect_progress_snapshot(
         verifier_failure_sha256=failure_sha256,
         risk_flags=tuple(sorted(risk_flags)),
         sensitive_paths_excluded=len(sensitive_paths),
+        non_source_paths_excluded=len(non_source_paths),
         repeated_diff=(
             previous is not None
             and bool(changed_files)

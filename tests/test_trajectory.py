@@ -148,3 +148,20 @@ def test_deleted_file_counts_as_real_progress(tmp_path):
     assert snapshot.lines_deleted == 1
     assert snapshot.has_changes
     assert decide_evidence_gate(snapshot).action == "review"
+
+
+def test_generated_test_cache_is_excluded_from_progress(tmp_path):
+    repo = repository(tmp_path)
+    (repo / "value.txt").write_text("after\n", encoding="utf-8")
+    cache = repo / "__pycache__" / "value.cpython-314.pyc"
+    cache.parent.mkdir()
+    cache.write_bytes(b"generated")
+    snapshot = collect_progress_snapshot(
+        repo,
+        dispatch_returncode=0,
+        verifiers=(verifier(),),
+    )
+
+    assert snapshot.changed_files == ("value.txt",)
+    assert snapshot.non_source_paths_excluded == 1
+    assert decide_evidence_gate(snapshot).action == "review"

@@ -12,6 +12,7 @@ Tarih: 2026-09-22
 - [x] Balanced profilde Luna verifier/no-diff/dispatch hatasından doğrudan Sol'a geçiş eklendi.
 - [x] Hata ve progress özeti güçlü düzeltme promptuna eklendi.
 - [x] Accept, verifier failure, spinning, untracked file, high-stakes ve destructive yollar fixture testlerinde doğrulandı.
+- [x] Tek gerçek Codex + Jev smoke'unda Luna-only kabul yolu doğrulandı; generated-file evidence gürültüsü bulunup düzeltildi.
 - [ ] Mevcut gerçek receipt'ler için shadow/replay skorlayıcı.
 - [ ] Dev'de dondurulmuş balanced eşikleri ve yeni paired held-out kampanya.
 - [ ] SWE-bench/Terminal-Bench repository düzeyi kalite-maliyet raporu.

@@ -44,6 +44,15 @@ _BINARY_SUFFIXES = {
     ".woff2",
     ".zip",
 }
+_GENERATED_PATH_PARTS = {
+    ".cache",
+    ".mypy_cache",
+    ".pytest_cache",
+    ".ruff_cache",
+    "__pycache__",
+    "node_modules",
+}
+_GENERATED_SUFFIXES = {".pyc", ".pyo"}
 _SECRET_PATTERNS = (
     (
         re.compile(r"(?i)(authorization\s*:\s*bearer\s+)[A-Za-z0-9._~+/=-]+"),
@@ -91,14 +100,23 @@ def is_sensitive_path(path: str) -> bool:
     return bool(lowered & _SENSITIVE_PATH_PARTS) or candidate.suffix.casefold() in _SENSITIVE_SUFFIXES
 
 
+def is_reviewable_path(path: str) -> bool:
+    candidate = Path(path)
+    lowered = {part.casefold() for part in candidate.parts}
+    return not (
+        is_sensitive_path(path)
+        or bool(lowered & _GENERATED_PATH_PARTS)
+        or candidate.suffix.casefold() in _GENERATED_SUFFIXES
+        or candidate.suffix.casefold() in _BINARY_SUFFIXES
+    )
+
+
 def _path_allowed(path: str, allow_paths: tuple[str, ...], deny_paths: tuple[str, ...]) -> bool:
-    if is_sensitive_path(path) or any(fnmatch(path, pattern) for pattern in deny_paths):
+    if not is_reviewable_path(path) or any(
+        fnmatch(path, pattern) for pattern in deny_paths
+    ):
         return False
     return not allow_paths or any(fnmatch(path, pattern) for pattern in allow_paths)
-
-
-def _is_text_path(path: str) -> bool:
-    return Path(path).suffix.casefold() not in _BINARY_SUFFIXES
 
 
 def redact_secrets(text: str) -> str:
@@ -161,7 +179,7 @@ def _worktree_file(repo: Path, path: str) -> str | None:
         target.relative_to(repo.resolve())
     except ValueError as exc:
         raise EvidenceError(f"changed path escapes repository: {path}") from exc
-    if not target.is_file() or is_sensitive_path(path) or not _is_text_path(path):
+    if not target.is_file() or not is_reviewable_path(path):
         return None
     try:
         return target.read_text(encoding="utf-8")
@@ -280,7 +298,7 @@ def collect_git_review_packet(
         if head == "WORKTREE":
             content = _worktree_file(repository, path)
         else:
-            if is_sensitive_path(path) or not _is_text_path(path):
+            if not is_reviewable_path(path):
                 content = None
             else:
                 try:
