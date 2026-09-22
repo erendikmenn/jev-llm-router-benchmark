@@ -41,11 +41,13 @@ def _indexed(rows: list[dict], label: str) -> dict[str, dict]:
     return indexed
 
 
-def _latencies(values: list[float]) -> dict[str, float | None]:
+def _latencies(values: list[float | None]) -> dict[str, float | int | None]:
+    observed = [value for value in values if value is not None]
     return {
-        "mean_ms": sum(values) / len(values) if values else None,
-        "p50_ms": statistics.median(values) if values else None,
-        "p95_ms": percentile(values, 0.95),
+        "observed": len(observed),
+        "mean_ms": sum(observed) / len(observed) if observed else None,
+        "p50_ms": statistics.median(observed) if observed else None,
+        "p95_ms": percentile(observed, 0.95),
     }
 
 
@@ -76,8 +78,10 @@ def analyze(
         weak_passed = bool(weak_eval[question_id]["passed"])
         strong_passed = bool(strong_eval[question_id]["passed"])
         judgment = judge[question_id].get("judgment") or {}
-        weak_latency = float(weak[question_id]["worker"]["latency_ms"])
-        strong_latency = float(strong[question_id]["worker"]["latency_ms"])
+        weak_raw_latency = weak[question_id]["worker"].get("latency_ms")
+        strong_raw_latency = strong[question_id]["worker"].get("latency_ms")
+        weak_latency = float(weak_raw_latency) if weak_raw_latency is not None else None
+        strong_latency = float(strong_raw_latency) if strong_raw_latency is not None else None
         judge_latency = float(judgment.get("latency_ms", 0.0))
         rows.append(
             {
@@ -97,6 +101,8 @@ def analyze(
                 "judge_latency_ms": judge_latency,
                 "cascade_sequential_latency_ms": (
                     weak_latency + judge_latency + (strong_latency if escalated else 0.0)
+                    if weak_latency is not None and (not escalated or strong_latency is not None)
+                    else None
                 ),
             }
         )
