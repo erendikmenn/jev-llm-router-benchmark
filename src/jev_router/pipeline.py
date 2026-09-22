@@ -141,6 +141,55 @@ def _balanced_next_role(role: str) -> str | None:
     return None
 
 
+def _balanced_effective_action(review: ReviewBundle, config: AppConfig) -> str:
+    """Turn Jev's semantic review into a cost-aware trajectory decision.
+
+    The semantic judge is useful for finding concrete defects and operational risk, but
+    epistemic uncertainty (for example, asking for deeper repository exploration) is not
+    evidence that a second coding worker will improve the patch.  The balanced policy
+    therefore promotes only on provider failure, material risk, or a high-confidence
+    visible implementation defect.  Softer disagreement is retained in the receipt as a
+    shadow warning and measured later by the official benchmark evaluator.
+    """
+
+    decision = review.decision
+    if decision.action == "block":
+        return "block"
+    if review.provider_errors:
+        return "escalate"
+
+    rules = {
+        rule.split(":", 1)[-1] if rule.startswith("chunk_") else rule
+        for rule in decision.fired_rules
+    }
+    if rules & {
+        "high_stakes_static_risk_flag",
+        "high_semantic_risk",
+        "critical_static_risk_flag",
+        "critical_semantic_risk",
+        "semantic_policy_violation",
+    }:
+        return "escalate"
+
+    signals = decision.signals
+    clear_failure = float(
+        config.judge.get("balanced_clear_failure_probability", 0.20)
+    )
+    regression_failure = float(
+        config.judge.get("balanced_regression_escalate", 0.90)
+    )
+    if signals.get("requirements_complete", 1.0) < clear_failure:
+        return "escalate"
+    if (
+        signals.get("scope_aligned", 1.0) < clear_failure
+        and signals.get("behavior_supported", 1.0) < clear_failure
+    ):
+        return "escalate"
+    if signals.get("regression_risk", 0.0) >= regression_failure:
+        return "escalate"
+    return "accept"
+
+
 def _synthetic_review(action: str, reason_codes: tuple[str, ...]) -> ReviewBundle:
     risk_level = "critical" if action == "block" else "high"
     decision = ReviewDecision(
@@ -283,12 +332,15 @@ def run_coding_pipeline(
                 review = run_review_bundle(packets, review_provider, config)
         review_spend += review.cost_usd
         verifier_passed = all(item.passed for item in verifiers)
+        effective_action = review.decision.action
+        if profile == "balanced" and review_called:
+            effective_action = _balanced_effective_action(review, config)
         next_role: str | None = None
 
         if budget_preflight or review_spend > max_review_usd:
             outcome = "budget_exceeded"
             status = "blocked"
-        elif review.decision.action == "block":
+        elif effective_action == "block":
             outcome = "blocked_by_policy"
             status = "blocked"
         elif dispatch.returncode != 0:
@@ -297,8 +349,12 @@ def run_coding_pipeline(
                 _balanced_next_role(role) if profile == "balanced" else _next_tier(role)
             )
             status = "continue" if next_role is not None else "needs_human_review"
-        elif review.decision.action == "accept" and verifier_passed:
-            outcome = "accepted"
+        elif effective_action == "accept" and verifier_passed:
+            outcome = (
+                "accepted"
+                if review.decision.action == "accept"
+                else "accepted_with_shadow_warning"
+            )
             status = "accepted"
         elif number == max_rounds:
             outcome = "round_limit"

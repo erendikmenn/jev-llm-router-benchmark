@@ -58,9 +58,14 @@ REVIEW_QUESTIONS = {
     "needs_deep_review": {
         "type": "noul",
         "instructions": (
-            "Does deciding correctness require repository exploration, execution, or multi-step "
-            "reasoning beyond the supplied state?"
+            "Is there concrete evidence in the supplied state that another, stronger coding "
+            "worker must inspect or modify this patch? Do not answer true merely because hidden "
+            "tests, more execution, or broader repository exploration could increase confidence."
         ),
+        "criteria": {
+            "true": "A specific visible defect or unresolved requirement is likely to need a stronger worker.",
+            "false": "No concrete defect is visible, even if independent verification would still be useful.",
+        },
     },
     "policy_violation": {
         "type": "noul",

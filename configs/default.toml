@@ -33,6 +33,10 @@ risk_confidence_min = 0.35
 uncertainty_band = 0.10
 max_uncertain_signals = 2
 clear_revise_probability = 0.55
+# Balanced trajectory escalation requires concrete failure evidence. Jev uncertainty
+# remains visible in receipts but does not, by itself, buy another full coding pass.
+balanced_clear_failure_probability = 0.20
+balanced_regression_escalate = 0.90
 max_diff_chars = 40000
 max_file_chars = 20000
 max_context_chars = 72000
