@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "suite": "swebench-verified",
+  "split": "locked-test-100",
+  "policy_commit": "5c56cff",
+  "truth_source": "official_swebench_evaluator",
+  "final": {
+    "submitted": 100,
+    "completed": 100,
+    "resolved": 74,
+    "unresolved": 26,
+    "pass_rate": 0.74,
+    "infra_or_evaluator_errors": 0,
+    "empty_patches": 0
+  },
+  "trajectory": {
+    "luna_only_tasks": 87,
+    "sol_escalated_tasks": 13,
+    "worker_rounds": 113,
+    "review_calls": 102,
+    "luna_only_resolved": 62,
+    "sol_escalated_final_resolved": 12,
+    "sol_escalated_first_luna_resolved": 11,
+    "rescued_by_sol": [
+      "astropy__astropy-13236"
+    ],
+    "regressed_by_sol": [],
+    "both_unresolved": [
+      "django__django-15732"
+    ],
+    "already_resolved_before_sol": 11
+  },
+  "latency": {
+    "mean_minutes": 3.8774368462639885,
+    "p50_minutes": 3.0475840430498162,
+    "p95_minutes": 10.953132612499758,
+    "serial_total_hours": 6.462394743773315,
+    "luna_only_mean_minutes": 3.022665511263015,
+    "sol_escalated_mean_minutes": 9.597829626655116,
+    "first_round_only_mean_minutes": 2.937470990236034
+  },
+  "usage": {
+    "input_tokens": 76498957,
+    "cached_input_tokens": 70379520,
+    "output_tokens": 647113,
+    "reasoning_output_tokens": 237091,
+    "jev_cost_usd": 0.056379162
+  },
+  "first_round_only_counterfactual": {
+    "resolved": 73,
+    "pass_rate": 0.73,
+    "input_tokens": 60584163,
+    "cached_input_tokens": 55206400,
+    "output_tokens": 528869,
+    "reasoning_output_tokens": 190169,
+    "jev_cost_usd": 0.049694064
+  },
+  "verdict": "Quality is 74/100 and the 100-task harness is sound, but the router is not yet economically calibrated: 13 Sol calls produced one observed rescue, while 25 Luna-only patches still failed."
+}

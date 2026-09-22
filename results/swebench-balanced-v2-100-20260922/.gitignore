@@ -1,0 +1,6 @@
+# Large/redundant intermediate artifacts. Curated summaries and final predictions
+# remain versioned for reproducibility.
+part-*/
+official-eval/
+round1-luna/official-eval/
+round1-luna/predictions.jsonl

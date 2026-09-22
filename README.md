@@ -86,6 +86,16 @@ geçti. Sonuç: worker kalitesi bu küçük örnekte yeterli, Jev kabul kalibras
 ekonomik hedefi karşılamıyor. Tam tablo ve sınırlar:
 [`results/balanced-trajectory-swebench-smoke-20260922/REPORT_TR.md`](results/balanced-trajectory-swebench-smoke-20260922/REPORT_TR.md).
 
+Balanced v2, kilitli 100 görevlik SWE-bench Verified kapısında **74/100 resolved**
+aldı; evaluator/infra hatası ve boş patch sıfırdı. 87 görev Luna-only, 13 görev
+Luna+Sol çalıştı; ortalama süre `3,88 dk`, medyan `3,05 dk`, p95 `10,95 dk` ve
+OpenRouter Jev maliyeti `$0,056379` oldu. Kaydedilmiş ilk Luna patch'leri ayrıca
+puanlandığında `73/100` bulundu: 13 Sol turu yalnız bir görevi kurtardı, 11 görevde
+Luna zaten doğruydu, bir görevi iki model de çözemedi. Sonuç: iki görevlik smoke'taki
+gereksiz `%100` Sol oranı `%13`'e indi, fakat Jev kalite ayrımı ve escalation ekonomisi
+henüz ürün kapısını geçmiyor. Tam rapor:
+[`results/swebench-balanced-v2-100-20260922/REPORT_TR.md`](results/swebench-balanced-v2-100-20260922/REPORT_TR.md).
+
 `route` yalnız görev metnini gönderir. `review` ve `control`, judge kararı için temizlenmiş ve boyutu sınırlanmış diff/ilgili kodu Jev sağlayıcısına gönderir; `.env`, credential/key dosyaları dışlanır ve bilinen secret biçimleri redakte edilir. Dolayısıyla judge modu “yalnız karar dışarı gider” değildir. Hassas repository'lerde fixture/native politika kullanılmalı veya bu dış aktarım açıkça kabul edilmelidir.
 
 `codex-route`, seçilen Luna/Sol rolünü yerel `codex exec` sürecine mevcut Codex kimliğiyle teslim edebilir; Terra ve Astra forced baseline olarak da kullanılabilir. Güvenlik için varsayılan davranış dry-run'dır ve gerçek teslim `--execute` ister. `control` ise henüz worker çalıştırmaz; pre-route ve post-change judge kararını tek receipt'te birleştirir.

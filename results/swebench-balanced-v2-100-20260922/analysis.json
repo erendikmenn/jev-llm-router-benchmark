@@ -1,0 +1,1257 @@
+{
+  "schema_version": 1,
+  "truth_source": "official_swebench_evaluator",
+  "arms": {
+    "balanced-trajectory": {
+      "submitted": 100,
+      "officially_evaluable": 100,
+      "resolved": 74,
+      "pass_rate": 0.74,
+      "infra_or_evaluator_errors": 0,
+      "mean_execution_elapsed_ms": 232646.21077583928,
+      "p50_execution_elapsed_ms": 179199.45043699408,
+      "p95_execution_elapsed_ms": 657187.9567499855,
+      "codex_usage": {
+        "cache_write_input_tokens": 0,
+        "cached_input_tokens": 70379520,
+        "input_tokens": 76498957,
+        "output_tokens": 647113,
+        "reasoning_output_tokens": 237091
+      },
+      "jev_cost_usd": 0.056379162,
+      "judge": {
+        "accepted": 87,
+        "accepted_and_resolved": 62,
+        "unsafe_false_accept": 25,
+        "nonaccepted_but_resolved": 12,
+        "accept_precision": 0.7126436781609196,
+        "resolved_recall": 0.8378378378378378
+      },
+      "trajectory": {
+        "tasks_with_sol_or_astra": 13,
+        "tasks_luna_only": 87,
+        "worker_rounds": 113,
+        "review_calls": 102
+      }
+    }
+  },
+  "routing": {
+    "oracle_covered": 0,
+    "exact": 0,
+    "under_routed": 0,
+    "over_routed": 0,
+    "no_fixed_tier_succeeded": 0,
+    "classified_router_decisions": 0,
+    "exact_route_rate": null,
+    "under_route_rate": null,
+    "over_route_rate": null
+  },
+  "tasks": [
+    {
+      "instance_id": "astropy__astropy-13236",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": true,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "astropy__astropy-13977",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": false,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "astropy__astropy-14995",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": true,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "astropy__astropy-7671",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": true,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "astropy__astropy-8872",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": true,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "django__django-10973",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": true,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "django__django-10999",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": false,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "django__django-11099",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": true,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "django__django-11119",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": true,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "django__django-11133",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": true,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "django__django-11292",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": true,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "django__django-11477",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": false,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "django__django-11551",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": true,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "django__django-11728",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": false,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "django__django-12143",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": true,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "django__django-12209",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": true,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "django__django-12262",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": true,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "django__django-12325",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": false,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "django__django-12663",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": true,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "django__django-12754",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": true,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "django__django-12858",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": true,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "django__django-12965",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": false,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "django__django-13023",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": false,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "django__django-13449",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": false,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "django__django-13568",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": true,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "django__django-13569",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": true,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "django__django-13658",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": true,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "django__django-13809",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": true,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "django__django-14011",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": false,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "django__django-14053",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": true,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "django__django-14122",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": true,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "django__django-14349",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": true,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "django__django-14434",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": true,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "django__django-14500",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": true,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "django__django-14725",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": true,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "django__django-15268",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": true,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "django__django-15277",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": true,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "django__django-15278",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": true,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "django__django-15375",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": true,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "django__django-15503",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": false,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "django__django-15563",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": false,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "django__django-15732",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": false,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "django__django-15863",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": true,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "django__django-15916",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": false,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "django__django-16100",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": false,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "django__django-16116",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": true,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "django__django-16139",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": true,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "django__django-16145",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": true,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "django__django-16454",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": true,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "django__django-16527",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": true,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "django__django-16661",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": true,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "django__django-16662",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": true,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "django__django-16877",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": true,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "matplotlib__matplotlib-13989",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": true,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "matplotlib__matplotlib-14623",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": true,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "matplotlib__matplotlib-20676",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": false,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "matplotlib__matplotlib-23299",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": false,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "matplotlib__matplotlib-23412",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": true,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "matplotlib__matplotlib-24177",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": false,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "matplotlib__matplotlib-24870",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": false,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "matplotlib__matplotlib-25122",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": true,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "matplotlib__matplotlib-25960",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": false,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "pydata__xarray-4356",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": true,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "pydata__xarray-6461",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": true,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "pydata__xarray-6938",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": false,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "pytest-dev__pytest-5631",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": true,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "pytest-dev__pytest-6197",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": true,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "pytest-dev__pytest-7982",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": true,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "scikit-learn__scikit-learn-11578",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": true,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "scikit-learn__scikit-learn-13135",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": true,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "scikit-learn__scikit-learn-13328",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": true,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "scikit-learn__scikit-learn-13496",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": true,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "scikit-learn__scikit-learn-14053",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": true,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "scikit-learn__scikit-learn-14141",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": true,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "scikit-learn__scikit-learn-14496",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": true,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "scikit-learn__scikit-learn-14894",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": true,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "scikit-learn__scikit-learn-26194",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": true,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-10466",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": true,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-7462",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": false,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-8035",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": false,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-8120",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": true,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-8548",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": false,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-8595",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": true,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-8721",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": true,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-9258",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": true,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-9320",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": true,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-9658",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": true,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-9673",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": false,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "sympy__sympy-12481",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": true,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "sympy__sympy-13372",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": true,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "sympy__sympy-13877",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": true,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "sympy__sympy-13974",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": false,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "sympy__sympy-14531",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": true,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "sympy__sympy-15809",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": true,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "sympy__sympy-17655",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": true,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "sympy__sympy-18189",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": true,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "sympy__sympy-19040",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": true,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "sympy__sympy-20590",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": true,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "sympy__sympy-23262",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": true,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    },
+    {
+      "instance_id": "sympy__sympy-24443",
+      "arms": {
+        "balanced-trajectory": {
+          "resolved": false,
+          "evaluable": true,
+          "selected_role": "luna"
+        }
+      },
+      "oracle_role": null,
+      "oracle_status": "incomplete_fixed_matrix"
+    }
+  ],
+  "limitations": [
+    "The oracle is the cheapest fixed-tier run observed to pass; model stochasticity remains.",
+    "Codex subscription usage is reported as tokens and latency, not invented API dollars.",
+    "Infrastructure and evaluator errors are excluded from pass-rate denominators.",
+    "Judge labels describe the final pipeline patch, not every intermediate retry patch."
+  ]
+}

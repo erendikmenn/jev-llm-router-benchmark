@@ -1,0 +1,68 @@
+{
+  "schema_version": 2,
+  "total_instances": 13,
+  "submitted_instances": 13,
+  "completed_instances": 13,
+  "resolved_instances": 11,
+  "unresolved_instances": 2,
+  "infra_failure_instances": 0,
+  "ambiguous_failure_instances": 0,
+  "empty_patch_instances": 0,
+  "error_instances": 0,
+  "submitted_ids": [
+    "astropy__astropy-13236",
+    "django__django-11099",
+    "django__django-12754",
+    "django__django-13568",
+    "django__django-14434",
+    "django__django-14500",
+    "django__django-15268",
+    "django__django-15278",
+    "django__django-15732",
+    "django__django-16116",
+    "django__django-16139",
+    "django__django-16527",
+    "django__django-16662"
+  ],
+  "completed_ids": [
+    "astropy__astropy-13236",
+    "django__django-11099",
+    "django__django-12754",
+    "django__django-13568",
+    "django__django-14434",
+    "django__django-14500",
+    "django__django-15268",
+    "django__django-15278",
+    "django__django-15732",
+    "django__django-16116",
+    "django__django-16139",
+    "django__django-16527",
+    "django__django-16662"
+  ],
+  "resolved_ids": [
+    "django__django-11099",
+    "django__django-12754",
+    "django__django-13568",
+    "django__django-14434",
+    "django__django-14500",
+    "django__django-15268",
+    "django__django-15278",
+    "django__django-16116",
+    "django__django-16139",
+    "django__django-16527",
+    "django__django-16662"
+  ],
+  "unresolved_ids": [
+    "astropy__astropy-13236",
+    "django__django-15732"
+  ],
+  "infra_failure_ids": [],
+  "ambiguous_failure_ids": [],
+  "empty_patch_ids": [],
+  "error_ids": [],
+  "merged_from": [
+    "results/swebench-balanced-v2-100-20260922/round1-luna/official-eval/batch-00/jev-router__balanced-trajectory__round-1-luna.balanced-v2-registry-b00.json",
+    "results/swebench-balanced-v2-100-20260922/round1-luna/official-eval/batch-01/jev-router__balanced-trajectory__round-1-luna.balanced-v2-registry-b01.json",
+    "results/swebench-balanced-v2-100-20260922/round1-luna/official-eval/batch-03/jev-router__balanced-trajectory__round-1-luna.balanced-v2-registry-b03.json"
+  ]
+}
