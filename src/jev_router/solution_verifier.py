@@ -39,6 +39,14 @@ SOLUTION_QUESTIONS = {
             "worst-case valid input?"
         ),
     },
+    "specification_mismatch": {
+        "type": "noul",
+        "instructions": (
+            "Independently derive the candidate's index bounds, transition positions, operation "
+            "costs, signs, and required return contract from the problem statement. Does at least "
+            "one implemented formula differ from that exact derivation, even by one index?"
+        ),
+    },
     "needs_stronger_model": {
         "type": "noul",
         "instructions": (
@@ -87,6 +95,7 @@ def solution_escalation_score(signals: dict[str, float]) -> float:
             1.0 - signals["fully_correct"],
             signals["edge_case_failure"],
             signals["complexity_failure"],
+            signals.get("specification_mismatch", 0.0),
             signals["needs_stronger_model"],
         ),
         12,

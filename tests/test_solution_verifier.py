@@ -25,6 +25,7 @@ def test_escalation_score_is_conservative_maximum():
             "fully_correct": 0.8,
             "edge_case_failure": 0.3,
             "complexity_failure": 0.1,
+            "specification_mismatch": 0.2,
             "needs_stronger_model": 0.7,
         }
     )
