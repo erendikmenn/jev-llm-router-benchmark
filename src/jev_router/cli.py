@@ -228,6 +228,11 @@ def parser() -> argparse.ArgumentParser:
     lcb_openrouter_cascade.add_argument("--strong-role", default="sol", choices=["luna", "terra", "sol", "astra"])
     lcb_openrouter_cascade.add_argument("--max-usd", type=float, default=5.0)
     lcb_openrouter_cascade.add_argument("--max-output-tokens", type=int, default=2048)
+    lcb_openrouter_cascade.add_argument(
+        "--difficulty-gates",
+        action="store_true",
+        help="Send easy directly to Luna, hard directly to Sol, and judge medium solutions",
+    )
     lcb_openrouter_cascade.add_argument("--output", required=True)
 
     lcb_judge = sub.add_parser(
@@ -611,6 +616,8 @@ def main(argv: list[str] | None = None) -> None:
             forced_role=args.role,
             max_total_usd=args.max_usd,
             max_output_tokens=args.max_output_tokens,
+            direct_weak_difficulties=frozenset({"easy"}) if args.difficulty_gates else frozenset(),
+            direct_strong_difficulties=frozenset({"hard"}) if args.difficulty_gates else frozenset(),
         )
         print(json.dumps(summary, ensure_ascii=False, indent=2))
         return

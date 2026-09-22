@@ -42,6 +42,24 @@ def _receipt(result: GenerationResult) -> dict:
     }
 
 
+def _run_worker(worker, request, role: str, config: AppConfig) -> tuple[float, str, dict, str | None]:
+    try:
+        result = worker.generate_tier(request, role)
+        return (
+            float(result.provider_cost_usd or 0.0),
+            extract_livecodebench_code(result.text),
+            _receipt(result),
+            None,
+        )
+    except ProviderError as exc:
+        return (
+            _attempt_cost(config, role, exc),
+            "",
+            {"error": exc.kind, "attempts": len(exc.attempts)},
+            exc.kind,
+        )
+
+
 def _write(output: Path, rows: list[dict], *, threshold: float, max_total_usd: float) -> dict:
     weak_cost = sum(float(row["weak_cost_usd"]) for row in rows)
     strong_cost = sum(float(row["strong_cost_usd"]) for row in rows)
@@ -89,10 +107,14 @@ def run_livecodebench_openrouter_cascade(
     strong_role: str = "sol",
     max_total_usd: float = 5.0,
     max_output_tokens: int = 2048,
+    direct_weak_difficulties: frozenset[str] = frozenset(),
+    direct_strong_difficulties: frozenset[str] = frozenset(),
 ) -> dict:
     """Generate with a weak tier, use Jev only for escalation, then optionally retry strong."""
     if max_total_usd <= 0:
         raise ValueError("max_total_usd must be positive")
+    if direct_weak_difficulties & direct_strong_difficulties:
+        raise ValueError("a difficulty cannot be both direct-weak and direct-strong")
     output = Path(output_dir).resolve()
     output.mkdir(parents=True, exist_ok=True)
     summary_path = output / "generation-summary.json"
@@ -128,22 +150,56 @@ def run_livecodebench_openrouter_cascade(
             max_output_tokens,
             {"suite": "livecodebench", "difficulty": task.difficulty},
         )
-        try:
-            weak_result = worker.generate_tier(request, weak_role)
-            weak_cost = float(weak_result.provider_cost_usd or 0.0)
-            weak_code = extract_livecodebench_code(weak_result.text)
-            weak_receipt = _receipt(weak_result)
-            weak_error = None
-        except ProviderError as exc:
-            weak_cost = _attempt_cost(config, weak_role, exc)
-            weak_code = ""
-            weak_receipt = {"error": exc.kind, "attempts": len(exc.attempts)}
-            weak_error = exc.kind
+        if task.difficulty in direct_strong_difficulties:
+            strong_reserve = estimate_tier_request_cost(
+                config, strong_role, prompt=prompt, max_output_tokens=max_output_tokens
+            )
+            if spent + strong_reserve > max_total_usd:
+                raise RuntimeError("estimated direct-strong call would exceed cost cap")
+            strong_cost, strong_code, strong_receipt, strong_error = _run_worker(
+                worker, request, strong_role, config
+            )
+            spent += strong_cost
+            row = {
+                "question_id": task.question_id,
+                "difficulty": task.difficulty,
+                "weak_role": weak_role,
+                "strong_role": strong_role,
+                "threshold": threshold,
+                "escalation_score": 1.0,
+                "escalated": True,
+                "escalation_reason": "difficulty_direct_strong",
+                "weak_cost_usd": 0.0,
+                "strong_cost_usd": strong_cost,
+                "jev_cost_usd": 0.0,
+                "weak": None,
+                "strong": strong_receipt,
+                "judgment": None,
+                "status": "completed" if strong_code else "generation_failed",
+                "error": strong_error,
+                "code": strong_code,
+            }
+            rows.append(row)
+            _write(output, rows, threshold=threshold, max_total_usd=max_total_usd)
+            print(
+                f"[progress] openrouter-cascade {index}/{len(tasks)} {task.question_id} "
+                f"escalated=True spent=${spent:.6f}",
+                flush=True,
+            )
+            continue
+
+        weak_cost, weak_code, weak_receipt, weak_error = _run_worker(
+            worker, request, weak_role, config
+        )
         spent += weak_cost
 
         judgment_payload = None
         jev_cost = 0.0
-        if weak_error or not weak_code:
+        if task.difficulty in direct_weak_difficulties:
+            escalated = False
+            escalation_score = 0.0
+            escalation_reason = "difficulty_direct_weak"
+        elif weak_error or not weak_code:
             escalated = True
             escalation_score = 1.0
             escalation_reason = "weak_empty_or_failed"
@@ -171,15 +227,9 @@ def run_livecodebench_openrouter_cascade(
             )
             if spent + strong_reserve > max_total_usd:
                 raise RuntimeError("estimated strong escalation would exceed cost cap")
-            try:
-                strong_result = worker.generate_tier(request, strong_role)
-                strong_cost = float(strong_result.provider_cost_usd or 0.0)
-                strong_code = extract_livecodebench_code(strong_result.text)
-                strong_receipt = _receipt(strong_result)
-            except ProviderError as exc:
-                strong_cost = _attempt_cost(config, strong_role, exc)
-                strong_receipt = {"error": exc.kind, "attempts": len(exc.attempts)}
-                strong_error = exc.kind
+            strong_cost, strong_code, strong_receipt, strong_error = _run_worker(
+                worker, request, strong_role, config
+            )
             spent += strong_cost
 
         code = strong_code if strong_code else weak_code

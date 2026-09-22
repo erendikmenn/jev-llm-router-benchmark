@@ -123,3 +123,42 @@ def test_cascade_accepts_weak_code_below_threshold(monkeypatch, tmp_path):
 
     assert summary["strong_calls"] == 0
     assert summary["measurements"][0]["code"] == "print('luna')"
+
+
+def test_difficulty_gate_sends_hard_directly_to_strong(monkeypatch, tmp_path):
+    import jev_router.openrouter_cascade_runner as module
+
+    calls = []
+
+    class Worker:
+        def __init__(self, config):
+            pass
+
+        def generate_tier(self, request, tier):
+            calls.append(tier)
+            return result(tier, 0.01, "print('sol')")
+
+    class JudgeMustNotRun:
+        def __init__(self, config):
+            pass
+
+        def judge(self, task, code):
+            raise AssertionError("hard direct route must skip Jev")
+
+    hard = task()
+    object.__setattr__(hard, "difficulty", "hard")
+    monkeypatch.setattr(module, "OpenRouterChatProvider", Worker)
+    monkeypatch.setattr(module, "OpenRouterSolutionJudgeProvider", JudgeMustNotRun)
+    summary = run_livecodebench_openrouter_cascade(
+        [hard],
+        output_dir=tmp_path,
+        config=load_config("configs/default.toml"),
+        threshold=0.21,
+        max_total_usd=1.0,
+        max_output_tokens=256,
+        direct_strong_difficulties=frozenset({"hard"}),
+    )
+
+    assert calls == ["sol"]
+    assert summary["measurements"][0]["escalation_reason"] == "difficulty_direct_strong"
+    assert summary["weak_cost_usd"] == 0.0
