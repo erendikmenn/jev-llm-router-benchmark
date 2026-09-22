@@ -27,6 +27,7 @@ from .livecodebench_runner import (
 from .manifest import build_manifest, write_manifest
 from .models import GenerationRequest, Task
 from .openrouter_lcb_runner import run_livecodebench_openrouter
+from .openrouter_cascade_runner import run_livecodebench_openrouter_cascade
 from .pipeline import run_coding_pipeline
 from .pricing import estimate_request_cost
 from .providers import (
@@ -211,6 +212,23 @@ def parser() -> argparse.ArgumentParser:
     lcb_openrouter.add_argument("--max-usd", type=float, default=5.0)
     lcb_openrouter.add_argument("--max-output-tokens", type=int, default=2048)
     lcb_openrouter.add_argument("--output", required=True)
+
+    lcb_openrouter_cascade = sub.add_parser(
+        "livecodebench-openrouter-cascade-run",
+        help="Run Luna, Jev solution verification, and conditional Sol through OpenRouter",
+    )
+    lcb_openrouter_cascade.add_argument(
+        "--plan",
+        default=str(ROOT / "results" / "benchmark-plans" / "livecodebench-release-v6.json"),
+    )
+    lcb_openrouter_cascade.add_argument("--offset", type=int, default=0)
+    lcb_openrouter_cascade.add_argument("--limit", type=int)
+    lcb_openrouter_cascade.add_argument("--threshold", type=float, required=True)
+    lcb_openrouter_cascade.add_argument("--weak-role", default="luna", choices=["luna", "terra", "sol", "astra"])
+    lcb_openrouter_cascade.add_argument("--strong-role", default="sol", choices=["luna", "terra", "sol", "astra"])
+    lcb_openrouter_cascade.add_argument("--max-usd", type=float, default=5.0)
+    lcb_openrouter_cascade.add_argument("--max-output-tokens", type=int, default=2048)
+    lcb_openrouter_cascade.add_argument("--output", required=True)
 
     lcb_judge = sub.add_parser(
         "livecodebench-solution-judge",
@@ -591,6 +609,20 @@ def main(argv: list[str] | None = None) -> None:
             output_dir=args.output,
             config=config,
             forced_role=args.role,
+            max_total_usd=args.max_usd,
+            max_output_tokens=args.max_output_tokens,
+        )
+        print(json.dumps(summary, ensure_ascii=False, indent=2))
+        return
+    if args.command == "livecodebench-openrouter-cascade-run":
+        tasks = load_livecodebench_plan(args.plan, offset=args.offset, limit=args.limit)
+        summary = run_livecodebench_openrouter_cascade(
+            tasks,
+            output_dir=args.output,
+            config=config,
+            threshold=args.threshold,
+            weak_role=args.weak_role,
+            strong_role=args.strong_role,
             max_total_usd=args.max_usd,
             max_output_tokens=args.max_output_tokens,
         )
