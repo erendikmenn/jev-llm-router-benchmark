@@ -177,10 +177,22 @@ def _promote(current: str, minimum: str) -> str:
     return TIERS[max(_TIER_INDEX[current], _TIER_INDEX[minimum])]
 
 
-def decide_tiered_route(task: Task, judgment: TieredJudgment) -> TieredRouteDecision:
+def decide_tiered_route(
+    task: Task,
+    judgment: TieredJudgment,
+    *,
+    isolated_code_strong_probability_threshold: float | None = None,
+) -> TieredRouteDecision:
     selected = judgment.selected if judgment.selected in TIERS else "sol"
     guards: list[str] = []
     isolated_code = bool(task.constraints.get("isolated_code"))
+    if isolated_code and isolated_code_strong_probability_threshold is not None:
+        if not 0.0 <= isolated_code_strong_probability_threshold <= 1.0:
+            raise ValueError("isolated code threshold must be between zero and one")
+        strong_probability = 1.0 - float(judgment.probabilities.get("luna", 0.0))
+        if strong_probability >= isolated_code_strong_probability_threshold - 1e-12:
+            selected = _promote(selected, "sol")
+            guards.append("calibrated_isolated_code_minimum_sol")
     if _CRITICAL_PATTERNS.search(task.prompt) and not isolated_code:
         selected = _promote(selected, "astra")
         guards.append("critical_domain_to_astra")

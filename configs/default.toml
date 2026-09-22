@@ -19,6 +19,7 @@ jev_context_tokens = 32000
 jev_state_plus_longest_question_tokens = 32000
 low_confidence_fallback = "strong"
 unsupported_fallback = "reject"
+isolated_code_strong_probability_threshold = 0.08
 
 [judge]
 requirements_min = 0.70

@@ -145,7 +145,13 @@ def run_livecodebench_openrouter(
                 {},
             )
             try:
-                decision = decide_tiered_route(routing_task, router.judge(routing_task))
+                decision = decide_tiered_route(
+                    routing_task,
+                    router.judge(routing_task),
+                    isolated_code_strong_probability_threshold=float(
+                        config.router["isolated_code_strong_probability_threshold"]
+                    ),
+                )
                 role = decision.selected
                 route = decision.to_dict()
             except ProviderError as exc:

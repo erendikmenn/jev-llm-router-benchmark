@@ -59,6 +59,29 @@ def test_isolated_algorithm_does_not_treat_payment_word_as_real_world_risk():
     assert decision.rule == "jev_least_sufficient_profile"
 
 
+def test_calibrated_isolated_code_probability_promotes_to_sol():
+    isolated = Task(
+        "x",
+        "test",
+        "en",
+        "coding",
+        "Solve this isolated algorithm.",
+        "official_harness",
+        [],
+        {"isolated_code": True, "requires_tools": False},
+        {},
+        {},
+    )
+    decision = decide_tiered_route(
+        isolated,
+        judgment(),
+        isolated_code_strong_probability_threshold=0.08,
+    )
+
+    assert decision.selected == "sol"
+    assert "calibrated_isolated_code_minimum_sol" in decision.hard_guards
+
+
 def test_ambiguity_and_low_confidence_promote_to_sol():
     decision = decide_tiered_route(
         task("Improve this module."), judgment(ambiguity=0.8, confidence=0.1)

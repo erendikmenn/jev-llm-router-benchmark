@@ -257,7 +257,11 @@ def run_livecodebench(
             )
             try:
                 route_decision = decide_tiered_route(
-                    routing_task, OpenRouterTieredJevProvider(config).judge(routing_task)
+                    routing_task,
+                    OpenRouterTieredJevProvider(config).judge(routing_task),
+                    isolated_code_strong_probability_threshold=float(
+                        config.router["isolated_code_strong_probability_threshold"]
+                    ),
                 )
                 role = route_decision.selected
                 route = route_decision.to_dict()
