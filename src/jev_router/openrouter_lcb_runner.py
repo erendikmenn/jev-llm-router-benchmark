@@ -107,7 +107,9 @@ def run_livecodebench_openrouter(
         if summary_path.is_file()
         else []
     )
-    completed = {row["question_id"] for row in rows if row.get("status") == "completed"}
+    # A failed first attempt is still the pass@1 result. Never silently resample it
+    # on resume because that would inflate benchmark quality and hide its cost.
+    completed = {row["question_id"] for row in rows}
     spent = sum(
         float(row.get("worker_cost_usd", 0.0))
         + float(row.get("jev_route_cost_usd", 0.0))

@@ -101,7 +101,7 @@ def run_livecodebench_openrouter_cascade(
         if summary_path.is_file()
         else []
     )
-    completed = {row["question_id"] for row in rows if row.get("status") == "completed"}
+    completed = {row["question_id"] for row in rows}
     spent = sum(
         float(row.get("weak_cost_usd", 0.0))
         + float(row.get("strong_cost_usd", 0.0))

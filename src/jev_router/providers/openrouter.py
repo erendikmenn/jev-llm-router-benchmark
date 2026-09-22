@@ -109,6 +109,13 @@ class OpenRouterChatProvider:
                 if usage.input_tokens <= 0:
                     raise ProviderError("missing_usage", "OpenRouter response omitted usage")
                 attempts.append(Attempt(usage, latency, "ok"))
+                if not parsed["text"]:
+                    raise ProviderError(
+                        "invalid_response",
+                        "OpenRouter returned no output text",
+                        False,
+                        tuple(attempts),
+                    )
                 return GenerationResult(
                     text=parsed["text"],
                     usage=usage,
@@ -141,11 +148,9 @@ class OpenRouterChatProvider:
             raise ProviderError("provider_error", str(payload["error"].get("message", "provider error")))
         choice = (payload.get("choices") or [{}])[0]
         content = (choice.get("message") or {}).get("content")
-        if not isinstance(content, str) or not content:
-            raise ProviderError("invalid_response", "OpenRouter returned no output text")
         raw_usage = payload.get("usage") or {}
         return {
-            "text": content,
+            "text": content if isinstance(content, str) else "",
             "usage": _usage_from_chat(raw_usage),
             "cost": float(raw_usage["cost"]) if raw_usage.get("cost") is not None else None,
             "ttft_ms": None,
@@ -188,8 +193,6 @@ class OpenRouterChatProvider:
                 if raw_usage.get("cost") is not None:
                     cost = float(raw_usage["cost"])
         text = "".join(chunks)
-        if not text:
-            raise ProviderError("invalid_response", "OpenRouter stream returned no output text")
         return {
             "text": text,
             "usage": usage,

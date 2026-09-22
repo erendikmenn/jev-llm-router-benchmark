@@ -68,3 +68,44 @@ def test_openrouter_lcb_run_checkpoints_provider_cost(monkeypatch, tmp_path):
     assert summary["worker_cost_usd"] == 0.0001
     assert summary["measurements"][0]["code"].startswith("print(")
     assert (tmp_path / "predictions.json").is_file()
+
+
+def test_openrouter_lcb_resume_does_not_resample_failed_pass_at_1(monkeypatch, tmp_path):
+    import json
+    import jev_router.openrouter_lcb_runner as module
+
+    (tmp_path / "generation-summary.json").write_text(
+        json.dumps(
+            {
+                "measurements": [
+                    {
+                        "question_id": "q1",
+                        "status": "generation_failed",
+                        "worker_cost_usd": 0.001,
+                        "jev_route_cost_usd": 0.0,
+                        "code": "",
+                    }
+                ]
+            }
+        )
+    )
+
+    class MustNotRun:
+        def __init__(self, config):
+            pass
+
+        def generate_tier(self, request, tier):
+            raise AssertionError("pass@1 failure must not be resampled")
+
+    monkeypatch.setattr(module, "OpenRouterChatProvider", MustNotRun)
+    summary = run_livecodebench_openrouter(
+        [sample_task()],
+        output_dir=tmp_path,
+        config=load_config("configs/default.toml"),
+        forced_role="luna",
+        max_total_usd=0.01,
+        max_output_tokens=256,
+    )
+
+    assert summary["tasks_attempted"] == 1
+    assert summary["dispatch_completed"] == 0
